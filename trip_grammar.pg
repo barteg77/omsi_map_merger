@@ -1,0 +1,71 @@
+// Copyright 2020 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+TRIP: split_line
+      time_table_trip_file
+      split_line
+      line_end
+      NONEMPTY_LINE
+      NONEMPTY_LINE
+      line_end
+      trip_header
+      OPTIONAL_LINE
+      OPTIONAL_LINE
+      OPTIONAL_LINE
+      line_end
+      dot_split_line
+      stations
+      dot_split_line
+      line_end
+      STATIONS?
+      line_end
+      dot_split_line
+      profiles
+      dot_split_line
+      line_end
+      LINES?;
+
+NONEMPTY_LINE: normal_line line_end;
+STATION_TYP2_GROUP: station_typ2_header
+                    NONEMPTY_LINE
+                    line_end;
+STATION_TYP2_GROUP_LIST: STATION_TYP2_GROUP
+                       | STATION_TYP2_GROUP_LIST STATION_TYP2_GROUP;
+STATION_GROUP: station_header
+               NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+               NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+               line_end;
+STATION_GROUP_LIST: STATION_GROUP
+                  | STATION_GROUP_LIST STATION_GROUP;
+STATIONS: STATION_TYP2_GROUP_LIST
+        | STATION_GROUP_LIST;
+OPTIONAL_LINE: line_end
+             | normal_line line_end;
+LINES: OPTIONAL_LINE
+     | LINES OPTIONAL_LINE;
+
+terminals
+split_line: /-----------------------\n/;
+time_table_trip_file: /Time Table Trip File\n/;
+line_end: /\n/;
+normal_line: /[^\n][^\r\n]*/;
+trip_header: /\[trip\]\n/;
+dot_split_line: /\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\n/;
+stations: /        Stations\n/;
+station_typ2_header: /\[station_typ2\]\n/;
+station_header: /\[station\]\n/;
+profiles: /        Profiles\n/;

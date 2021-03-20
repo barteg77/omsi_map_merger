@@ -1,0 +1,55 @@
+// Copyright 2020 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+STATION_LINKS: split_line
+               time_table_station_links_list_file
+               split_line
+               line_end
+               NONEMPTY_LINE
+               NONEMPTY_LINE
+               line_end
+               STATION_LINK_GROUP_LIST?;
+
+NONEMPTY_LINE: normal_line line_end;
+NONEMPTY_LINES: NONEMPTY_LINE
+              | NONEMPTY_LINES NONEMPTY_LINE;
+STATION_LINK_ENTRY_GROUP: NONEMPTY_LINE
+                          station_link_entry_group_header
+                          NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+                          NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+                          NONEMPTY_LINES?
+                          line_end;
+STATION_LINK_ENTRY_GROUP_LIST: STATION_LINK_ENTRY_GROUP
+                             | STATION_LINK_ENTRY_GROUP_LIST STATION_LINK_ENTRY_GROUP;
+STATION_LINK_GROUP: NONEMPTY_LINE
+                    line_end
+                    station_link_header
+                    NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+                    NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+                    NONEMPTY_LINE
+                    line_end
+                    STATION_LINK_ENTRY_GROUP_LIST;
+STATION_LINK_GROUP_LIST: STATION_LINK_GROUP
+                       | STATION_LINK_GROUP_LIST STATION_LINK_GROUP;
+
+terminals
+split_line: /---------------------------\n/;
+time_table_station_links_list_file: /Time Table StnLinkList File\n/;
+line_end: /\n/;
+normal_line: /[^\n][^\r\n]*/;
+station_link_entry_group_header: /\[StnLink_entry\]\n/;
+station_link_header: /\[StnLink\]\n/;

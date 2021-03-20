@@ -1,0 +1,41 @@
+// Copyright 2020 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+TRACK: split_line
+       time_table_track_file
+       split_line
+       line_end
+       NONEMPTY_LINE
+       NONEMPTY_LINE
+       line_end
+       TRACK_ENTRY_GROUP_LIST?;
+
+NONEMPTY_LINE: normal_line line_end;
+TRACK_ENTRY_GROUP: NONEMPTY_LINE
+                   track_entry_header
+                   NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
+                   NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE?
+                   line_end;
+TRACK_ENTRY_GROUP_LIST: TRACK_ENTRY_GROUP
+                      | TRACK_ENTRY_GROUP_LIST TRACK_ENTRY_GROUP;
+
+terminals
+split_line: /-----------------------\n/;
+normal_line: /[^[\n][^\r\n]*/;
+time_table_track_file: /Time Table Track File\n/;
+line_end: /\n/;
+track_entry_header: /\[track_entry\]\n/;

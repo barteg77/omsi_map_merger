@@ -1,0 +1,168 @@
+// Copyright 2020, 2021 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+GLOBAL_CONFIG: INITIAL_COMMENT_GROUP?
+               NAME_GROUP?
+               FRIENDLYNAME_GROUP?
+               DESCRIPTION_GROUP?
+               VERSION_GROUP?
+               NEXTIDCODE_GROUP?
+               WORLDCOORDINATES_GROUP?
+               DYNHELPERACTIVE_GROUP?
+               REALRAIL_GROUP?
+               BACKGROUNDIMAGE_GROUP?
+               MAPCAM_GROUP?
+               MONEYSYSTEM_GROUP?
+               TICKETPACK_GROUP?
+               REPAIR_TIME_MIN_GROUP?
+               YEARS_GROUP?
+               REALYEAROFFSET_GROUP?
+               STANDARDDEPOT_GROUP?
+               GROUNDTEX_GROUP_LIST?
+               ADDSEASON_GROUP_LIST?
+               TRAFFICDENSITY_ROAD_GROUP_LIST?
+               TRAFFICDENSITY_PASSENGER_GROUP_LIST?
+               ENTRYPOINTS_GROUP_LIST?
+               MAP_GROUP_LIST?;
+
+INITIAL_COMMENT_GROUP: normal_line
+                       line_end*;
+NAME_GROUP: name_header
+            OPTIONAL_LINE
+            line_end;
+FRIENDLYNAME_GROUP: friendlyname_header
+                    OPTIONAL_LINE
+                    line_end;
+DESCRIPTION_GROUP: description_header
+                   LINES
+                   end
+                   line_end;
+VERSION_GROUP: version_header
+               OPTIONAL_LINE
+               line_end;
+NEXTIDCODE_GROUP: NextIDCode_header
+                  OPTIONAL_LINE
+                  line_end;
+WORLDCOORDINATES_GROUP: worldcoordinates_header
+                        line_end;
+DYNHELPERACTIVE_GROUP: dynhelperactive_header
+                       line_end;
+REALRAIL_GROUP: realrail_header
+                line_end;
+BACKGROUNDIMAGE_GROUP: backgroundimage_header
+                       OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                       OPTIONAL_LINE OPTIONAL_LINE
+                       line_end;
+MAPCAM_GROUP: mapcam_header
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              line_end;
+MONEYSYSTEM_GROUP: moneysystem_header
+                   OPTIONAL_LINE
+                   line_end;
+TICKETPACK_GROUP: ticketpack_header
+                  OPTIONAL_LINE
+                  line_end;
+REPAIR_TIME_MIN_GROUP: repair_time_min_header
+                       OPTIONAL_LINE
+                       line_end*;
+YEARS_GROUP: years_header
+             OPTIONAL_LINE OPTIONAL_LINE
+             line_end;
+REALYEAROFFSET_GROUP: realyearoffset_header
+                      OPTIONAL_LINE;
+STANDARDDEPOT_GROUP: standarddepot_header
+                     OPTIONAL_LINE
+                     line_end;
+GROUNDTEX_GROUP: groundtex_header
+                 OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                 OPTIONAL_LINE
+                 line_end;
+GROUNDTEX_GROUP_LIST: GROUNDTEX_GROUP
+                    | GROUNDTEX_GROUP_LIST GROUNDTEX_GROUP;
+ADDSEASON_GROUP: ADDSEASON_LINE
+                 addseason_header
+                 OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                 line_end;
+ADDSEASON_GROUP_LIST: ADDSEASON_GROUP
+                    | ADDSEASON_GROUP_LIST ADDSEASON_GROUP;
+TRAFFICDENSITY_ROAD_GROUP: trafficdensity_road_header
+                           OPTIONAL_LINE OPTIONAL_LINE
+                           line_end;
+TRAFFICDENSITY_ROAD_GROUP_LIST: TRAFFICDENSITY_ROAD_GROUP
+                              | TRAFFICDENSITY_ROAD_GROUP_LIST TRAFFICDENSITY_ROAD_GROUP;
+TRAFFICDENSITY_PASSENGER_GROUP: trafficdensity_passenger_header
+                                OPTIONAL_LINE OPTIONAL_LINE
+                                line_end;
+TRAFFICDENSITY_PASSENGER_GROUP_LIST: TRAFFICDENSITY_PASSENGER_GROUP
+                                   | TRAFFICDENSITY_PASSENGER_GROUP_LIST TRAFFICDENSITY_PASSENGER_GROUP;
+ENTRYPOINTS_GROUP: NONEMPTY_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_STRANGE_LINE;
+ENTRYPOINTS_GROUP_LIST_: ENTRYPOINTS_GROUP
+                       | ENTRYPOINTS_GROUP_LIST_ ENTRYPOINTS_GROUP;
+ENTRYPOINTS_GROUP_LIST: entrypoints_header
+                        NONEMPTY_LINE
+                        ENTRYPOINTS_GROUP_LIST_?
+                        line_end;
+MAP_GROUP: map_header
+           OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+           line_end;
+MAP_GROUP_LIST: MAP_GROUP
+              | MAP_GROUP_LIST MAP_GROUP;
+
+LINES: DESCRIPTION_LINE
+     | LINES DESCRIPTION_LINE;
+DESCRIPTION_LINE: line_end
+                | description_line line_end;
+OPTIONAL_LINE: line_end
+             | normal_line line_end;
+OPTIONAL_STRANGE_LINE: line_end
+                     | normal_line line_end
+                     | strange_line line_end;
+NONEMPTY_LINE: normal_line line_end;
+ADDSEASON_LINE: addseason_line line_end;
+
+terminals
+line_end: /\n/;
+normal_line: /[^[ \n][^\r\n]*/;
+description_line: /([^[\n]|\[[^e\n]|\[e[^n\n]|\[en[^d\n]|\[end[^\]\n])[^\r\n]*/;
+strange_line: /[[ ][^\r\n]*/;
+name_header: /\[name\]\n/;
+friendlyname_header: /\[friendlyname\]\n/;
+description_header: /\[description\]\n/;
+end: /\[end\]\n/;
+version_header: /\[version\]\n/;
+NextIDCode_header: /\[NextIDCode\]\n/;
+worldcoordinates_header: /\[worldcoordinates\]\n/;
+dynhelperactive_header: /\[dynhelperactive\]\n/;
+realrail_header: /\[realrail\]\n/;
+backgroundimage_header: /\[backgroundimage\]\n/;
+mapcam_header: /\[mapcam\]\n/;
+moneysystem_header: /\[moneysystem\]\n/;
+ticketpack_header: /\[ticketpack\]\n/;
+repair_time_min_header: /\[repair_time_min\]\n/;
+years_header: /\[years\]\n/;
+realyearoffset_header: /\[realyearoffset\]\n/;
+standarddepot_header: /\[standarddepot\]\n/;
+groundtex_header: /\[groundtex\]\n/;
+addseason_header: /\[addseason\]\n/;
+addseason_line: / [^\r\n]*:/;
+trafficdensity_road_header: /\[trafficdensity_road\]\n/;
+trafficdensity_passenger_header: /\[trafficdensity_passenger\]\n/;
+entrypoints_header: /\[entrypoints\]\n/;
+map_header: /\[map\]\n/;

@@ -1,0 +1,57 @@
+// Copyright 2020 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+AILISTS: line_end*
+         AIGROUP_GROUP_LIST;
+
+AIGROUP_2_GROUP: aigroup_2_header
+                 OPTIONAL_LINE
+                 OPTIONAL_LINE
+                 LINES
+                 end
+                 line_end*;
+AIGROUP_DEPOT_TYPGROUP_2_GROUP: aigroup_depot_typgroup_2_header
+                                OPTIONAL_LINE
+                                LINES?
+                                end
+                                line_end*;
+AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST: AIGROUP_DEPOT_TYPGROUP_2_GROUP
+                                   | AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST AIGROUP_DEPOT_TYPGROUP_2_GROUP;
+AIGROUP_DEPOT_GROUP: aigroup_depot_header
+                     OPTIONAL_LINE
+                     OPTIONAL_LINE
+                     line_end*
+                     AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST;
+AIGROUP_GROUP: AIGROUP_2_GROUP
+             | AIGROUP_DEPOT_GROUP;
+AIGROUP_GROUP_LIST: AIGROUP_GROUP
+                  | AIGROUP_GROUP_LIST AIGROUP_GROUP;
+OPTIONAL_LINE: line_end
+             | normal_line line_end;
+LINES: DESCRIPTION_LINE
+     | LINES DESCRIPTION_LINE;
+DESCRIPTION_LINE: line_end
+                | description_line line_end;
+
+terminals
+line_end: /\n/;
+normal_line: /[^[\n][^\r\n]*/;
+aigroup_2_header: /\[aigroup_2\]\n/;
+aigroup_depot_typgroup_2_header: /\[aigroup_depot_typgroup_2\]\n/;
+aigroup_depot_header: /\[aigroup_depot\]\n/;
+description_line: /([^[\n]|\[[^e\n]|\[e[^n\n]|\[en[^d\n]|\[end[^\]\n])[^\r\n]*/;
+end: /\[end\]/;//tu nie ma \n bo nie zawszee po tym cos jeszcze jest np jest koniec pliku no i co??

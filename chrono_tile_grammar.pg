@@ -1,0 +1,143 @@
+// Copyright 2020 Bartosz Gajewski
+//
+// This file is part of OMSI Map Merger.
+//
+// OMSI Map Merger is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3 of the License, or
+// (at your option) any later version.
+//
+// OMSI Map Merger is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+CHRONO_TILE: NONEMPTY_LINE
+             line_end
+             VERSION_GROUP
+             GROUP_LIST?;
+
+VERSION_GROUP: version_header
+               NONEMPTY_LINE
+               line_end;
+
+SELECT_GROUP_HEADER : select_spline_header
+                    | select_object_header;
+SELECT_GROUP: SELECT_GROUP_HEADER
+              NONEMPTY_LINE
+              LINES;
+SPLINE_TERRAIN_ALIGN_2_GROUP: spline_terrain_align_2_header
+                              OPTIONAL_LINE
+                              line_end;
+MIRROR_GROUP: mirror
+            | line_end;
+SPLINE_GROUP: spline_header
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE
+              MIRROR_GROUP
+              line_end
+              SPLINE_TERRAIN_ALIGN_2_GROUP?
+              RULE_GROUP_LIST?;
+SPLINE_H_GROUP: spline_h_header
+                OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                MIRROR_GROUP
+                line_end
+                SPLINE_TERRAIN_ALIGN_2_GROUP?
+                RULE_GROUP_LIST?;
+SPLINE_TERRAIN_ALIGN_GROUP: spline_terrain_align_header
+                            line_end;
+OBJECT_HEADER_GROUP: object_header
+                   | attachObj_header;
+OBJECT_GROUP: NONEMPTY_LINE
+              OBJECT_HEADER_GROUP
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+              OPTIONAL_LINE OPTIONAL_LINE
+              LINES?
+              line_end
+              VARPARENT_GROUP?
+              SPLINE_TERRAIN_ALIGN_GROUP?
+              RULE_GROUP_LIST?;
+SPLINEATTACHEMENT_GROUP: NONEMPTY_LINE
+                         splineAttachement_header
+                         OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                         OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                         OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                         OPTIONAL_LINE OPTIONAL_LINE
+                         LINES?
+                         line_end
+                         VARPARENT_GROUP?
+                         SPLINE_TERRAIN_ALIGN_GROUP?
+                         RULE_GROUP_LIST?;
+SPLINEATTACHEMENT_REPEATER_GROUP: NONEMPTY_LINE
+                                  splineAttachement_repeater_header
+                                  OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                                  OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                                  OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                                  OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                                  LINES?
+                                  line_end
+                                  VARPARENT_GROUP?
+                                  SPLINE_TERRAIN_ALIGN_GROUP?
+                                  RULE_GROUP_LIST?;
+VARPARENT_GROUP: varparent_header
+                 OPTIONAL_LINE
+                 line_end;
+RULE_GROUP: rule_header
+            OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+            line_end;
+KILL_RULE_GROUP: kill_rule_header
+                 OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                 line_end;
+RULE_GROUP_LIST: RULE_GROUP
+               | KILL_RULE_GROUP
+               | RULE_GROUP_LIST RULE_GROUP
+               | RULE_GROUP_LIST KILL_RULE_GROUP;
+
+GROUP_LIST: SELECT_GROUP
+          | SPLINE_GROUP
+          | SPLINE_H_GROUP
+          | OBJECT_GROUP
+          | SPLINEATTACHEMENT_GROUP
+          | SPLINEATTACHEMENT_REPEATER_GROUP
+          | GROUP_LIST SELECT_GROUP
+          | GROUP_LIST SPLINE_GROUP
+          | GROUP_LIST SPLINE_H_GROUP
+          | GROUP_LIST OBJECT_GROUP
+          | GROUP_LIST SPLINEATTACHEMENT_GROUP
+          | GROUP_LIST SPLINEATTACHEMENT_REPEATER_GROUP;
+
+NONEMPTY_LINE: normal_line line_end;
+OPTIONAL_LINE: line_end
+             | normal_line line_end;
+LINES: OPTIONAL_LINE
+     | LINES OPTIONAL_LINE;
+
+terminals
+normal_line: /[^[\n][^\r\n]*|\[delete\]|\[typ\]|\[rule\]|\[kill_rule\]/;
+line_end: /\n/;
+version_header: /\[version\]\n/;
+select_spline_header: /\[selspline\]\n/;
+select_object_header: /\[selobject\]\n/;
+varparent_header: /\[varparent\]\n/;
+rule_header: /\[rule\]\n/;
+kill_rule_header: /\[kill_rule\]\n/;
+mirror: /mirror\n/;
+spline_terrain_align_2_header: /\[spline_terrain_align_2\]\n/;
+spline_header: /\[spline\]\n/;
+spline_h_header: /\[spline_h\]\n/;
+spline_terrain_align_header: /\[spline_terrain_align\]\n/;
+object_header: /\[object\]\n/;
+attachObj_header: /\[attachObj\]\n/;
+splineAttachement_header: /\[splineAttachement\]\n/;
+splineAttachement_repeater_header: /\[splineAttachement_repeater\]\n/;
