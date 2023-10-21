@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -25,7 +25,7 @@ class Spline:
                  id=None,
                  id_previous=None,
                  id_next=None,
-				 pos_x=None,
+                 pos_x=None,
                  pos_z=None,
                  pos_y=None,
                  rotate=None,
