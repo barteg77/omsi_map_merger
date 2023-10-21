@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -38,7 +38,8 @@ def merge(map1_directory,
         for map1_aigroup in map1._ailists.aigroups:
             for map2_aigroup in map2._ailists.aigroups:
                 if map1_aigroup.name == map2_aigroup.name:
-                    return True;
+                    return True
+        return False
     
     def change_map2_aigroups_names():
         while aigroups_are_same_names():
