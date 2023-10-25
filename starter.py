@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -30,26 +30,129 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
-directories_layout = [[sg.Text("Map 1 directory"),sg.In(key="map1_directory"), sg.FolderBrowse()],
-               [sg.Text("Map 2 directory"),sg.In(key="map2_directory"), sg.FolderBrowse()],
-               ]
-layout = [  [sg.Column(directories_layout), sg.Image(os.path.join(os.path.dirname(os.path.realpath(__file__)), "gplv3-with-text-136x68.png"))],
-            [sg.HorizontalSeparator(),],
-            [sg.Text("Set map 2 shift…"),],
-            [sg.Graph(canvas_size=(640, 640), graph_bottom_left=(-320,-320), graph_top_right=(320, 320), background_color="white", key="graph")],
-            [sg.Button("    ←    ", key="shift_left"),
-             sg.Button("    ↑    ", key="shift_up"),
-             sg.Button("    ↓    ", key="shift_down"),
-             sg.Button("    →    ", key="shift_right"),
-             sg.Text("Colours:"),
-             sg.Text(" MAP1 ", text_color="black", background_color="yellow"),
-             sg.Text(" MAP2 ", text_color="white", background_color="green"),
-             sg.Text(" BOTH MAPS ", text_color="white", background_color="red")],
-            [sg.HorizontalSeparator(),],
-            [sg.Checkbox("Keep original main ground texture on tiles of Map 2 if are not same", key="keep_map2_groundtex"),],
-            [sg.Text("New map directory"),sg.In(key="new_map_directory"), sg.FolderBrowse()],
-            [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
-         ]
+class MapToMerge:
+    def __init__(self,
+                 directory,
+                 shift_x,
+                 shift_y,
+                 ):
+        self.directory = directory
+        self.shift_x = shift_x
+        self.shift_y = shift_y
+    
+    def __str__(self):
+        return self.directory
+
+class MapsListManager:
+    def __init__(self,
+                 maps_list: list[MapToMerge],
+                 key_listbox: str,
+                 key_add_input: str,
+                 key_add_button: str,
+                 key_remove: str,
+                 key_confirm: str,
+                 key_status: str,
+                 ):
+        self.__maps_list: list[MapToMerge] = maps_list
+        self.__key_listbox: str = key_listbox
+        self.__key_add_input: str = key_add_input
+        self.__key_add_button: str = key_add_button
+        self.__key_remove: str = key_remove
+        self.__key_confirm: str = key_confirm
+        self.__key_status: str = key_status
+    
+    def __refresh_confirm(self):
+        window[self.__key_confirm].update(disabled = len(self.__maps_list) < 2)
+
+    def handle_listbox(self):
+        window[self.__key_remove].update(disabled=False)
+
+    def handle_add(self):#write 'void'
+        if not os.path.isdir(values[self.__key_add_input]):
+            sg.popup(f"\"{values['maps_directories_add_input']}\" is not directory")
+        else:
+            add_norm: str = os.path.abspath(values[self.__key_add_input])
+            if add_norm in map(lambda x: x.directory, self.__maps_list):
+                sg.popup("This map has been added to merge before.\nMerging map with iself is not allowed.")
+            else:
+                self.__maps_list.append(MapToMerge(add_norm, 0, 0))
+                window[self.__key_listbox].update(values=self.__maps_list)#tu dac self.__maps_list i dalej tez
+                window[self.__key_remove].update(disabled=True)
+                self.__refresh_confirm()
+    
+    def handle_remove(self):
+        del self.__maps_list[window[self.__key_listbox].get_indexes()[0]]
+        window[self.__key_listbox].update(values=self.__maps_list)
+        window[self.__key_remove].update(disabled=True)
+        self.__refresh_confirm()
+    
+    def handle_confirm(self):
+        for key in [self.__key_listbox, self.__key_add_input, self.__key_add_button, self.__key_remove, self.__key_confirm]:
+            window[key].update(disabled=True)
+        window[self.__key_status].update(value="CONFIRMED", background_color='green')
+        #now enable map reading section
+
+maps_to_merge: list[MapToMerge] = []
+maps_list_manager = MapsListManager(maps_to_merge,
+                                    'maps_directories',
+                                    'maps_directories_add_input',
+                                    'maps_directories_add_button',
+                                    'maps_directories_remove',
+                                    'maps_directories_confirm',
+                                    'maps_directories_status')
+
+treedata = sg.TreeData()
+treedata.Insert("", '_A_', 'Tree Item 1', [1234], )
+treedata.Insert("", '_B_', 'B', [])
+treedata.Insert("_A_", '_A1_', '✅Sb I\ntem 1', ['can', 'be', 'anything'], )
+
+directories_layout = [
+    [sg.Text("Select directories of maps you want to merge. (at least 2)")],
+    [sg.Listbox([], size=(70,5), key='maps_directories', enable_events=True)],
+    [
+        sg.Input(visible=False, enable_events=True, key='maps_directories_add_input'),
+        sg.FolderBrowse("Add", key='maps_directories_add_button'),
+        sg.Button("Remove", key='maps_directories_remove', disabled=True),
+    ],
+    [
+        sg.Button("Confirm selected maps directories", key="maps_directories_confirm", disabled=True),
+        sg.Text("Directory selection status: "),
+        sg.StatusBar("NOT COMPLETED", key='maps_directories_status')],
+    ]
+
+file_details = sg.Multiline(s=(15,10), disabled=True, default_text="det")
+map_reading_panel = [
+    [sg.Button("Read whole maps", key="read_whole_maps", disabled=True), sg.Text("Maps reading status: "), sg.StatusBar("trudno powiedzieć")],
+    [sg.Tree(treedata, ["Type", "Path", "Status"], num_rows=20, enable_events=True, key="maps_tree")],
+    [
+        sg.Button("Parse file", key="parse_file"),
+        sg.Button("Open text editor", key="open_text_editor"),
+    ],
+    [file_details],
+]
+
+layout_left = [
+    [sg.Frame("Select maps to merge", directories_layout)],
+    [sg.Frame("Reading maps files", map_reading_panel)],
+]
+
+layout_right = [
+    [sg.Text("Set map 2 shift…"),],
+    [sg.Graph(canvas_size=(640, 640), graph_bottom_left=(-320,-320), graph_top_right=(320, 320), background_color="white", key="graph")],
+    [sg.Button("    ←    ", key="shift_left"),
+        sg.Button("    ↑    ", key="shift_up"),
+        sg.Button("    ↓    ", key="shift_down"),
+        sg.Button("    →    ", key="shift_right"),
+        sg.Text("Colours:"),
+        sg.Text(" MAP1 ", text_color="black", background_color="yellow"),
+        sg.Text(" MAP2 ", text_color="white", background_color="green"),
+        sg.Text(" BOTH MAPS ", text_color="white", background_color="red")],
+    [sg.HorizontalSeparator(),],
+    [sg.Checkbox("Keep original main ground texture on tiles of Map 2 if are not same", key="keep_map2_groundtex"),],
+    [sg.Text("New map directory"),sg.In(key="new_map_directory"), sg.FolderBrowse()],
+    [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
+]
+layout = [[sg.Column(layout_left), sg.VSep(), sg.Column(layout_right)]]
 _global_config_parser = global_config_parser.GlobalConfigParser()
 map1_last_directory = None
 map2_last_directory = None
@@ -152,8 +255,23 @@ def draw_scheme():
 window = sg.Window("OMSI Map Merger", layout)
 while True:
     event, values = window.read()
+    
     if event == sg.WIN_CLOSED or event == "cancel":
         break
+    elif event == 'maps_directories':
+        maps_list_manager.handle_listbox()
+    elif event == 'maps_directories_add_input':
+        maps_list_manager.handle_add()#moze to jakos upakowac z ponizszym
+    elif event == 'maps_directories_remove':
+        maps_list_manager.handle_remove()
+    elif event == "maps_directories_confirm":
+        maps_list_manager.handle_confirm()
+    
+    elif event == "maps_tree":
+        file_details.update(value="default_text")
+    
+    print(f"GUI event occured: {event}, values: {values}")
+    """
     elif not os.path.isdir(values["map1_directory"]):
         sg.popup('"'+values["map1_directory"]+'" is not directory!', 'In "Map 1 directory" you must insert directory.')
     elif not os.path.isfile(os.path.join(values["map1_directory"], "global.cfg")):
@@ -195,4 +313,5 @@ while True:
                 sg.popup("Done.")
             else:
                 sg.popup("Maps can't overlap!")
+    """
 window.close()
