@@ -30,22 +30,11 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
-class MapToMerge:
-    def __init__(self,
-                 directory,
-                 shift_x,
-                 shift_y,
-                 ):
-        self.directory = directory
-        self.shift_x = shift_x
-        self.shift_y = shift_y
-    
-    def __str__(self):
-        return self.directory
+omm = omsi_map_merger.OmsiMapMerger()
 
 class MapsListManager:
     def __init__(self,
-                 maps_list: list[MapToMerge],
+                 omsi_map_merger: omsi_map_merger.OmsiMapMerger,
                  key_listbox: str,
                  key_add_input: str,
                  key_add_button: str,
@@ -53,7 +42,7 @@ class MapsListManager:
                  key_confirm: str,
                  key_status: str,
                  ):
-        self.__maps_list: list[MapToMerge] = maps_list
+        self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
         self.__key_listbox: str = key_listbox
         self.__key_add_input: str = key_add_input
         self.__key_add_button: str = key_add_button
@@ -61,28 +50,29 @@ class MapsListManager:
         self.__key_confirm: str = key_confirm
         self.__key_status: str = key_status
     
+    def __refresh_maps_list(self):
+        window[self.__key_listbox].update(values=self.__omsi_map_merger.get_maps())
+    
     def __refresh_confirm(self):
-        window[self.__key_confirm].update(disabled = len(self.__maps_list) < 2)
+        window[self.__key_confirm].update(disabled = len(self.__omsi_map_merger.get_maps()) < 2)
 
     def handle_listbox(self):
         window[self.__key_remove].update(disabled=False)
 
     def handle_add(self):#write 'void'
-        if not os.path.isdir(values[self.__key_add_input]):
-            sg.popup(f"\"{values['maps_directories_add_input']}\" is not directory")
-        else:
-            add_norm: str = os.path.abspath(values[self.__key_add_input])
-            if add_norm in map(lambda x: x.directory, self.__maps_list):
-                sg.popup("This map has been added to merge before.\nMerging map with iself is not allowed.")
-            else:
-                self.__maps_list.append(MapToMerge(add_norm, 0, 0))
-                window[self.__key_listbox].update(values=self.__maps_list)#tu dac self.__maps_list i dalej tez
-                window[self.__key_remove].update(disabled=True)
-                self.__refresh_confirm()
+        try:
+            self.__omsi_map_merger.append_map(values[self.__key_add_input])
+            self.__refresh_maps_list()
+            window[self.__key_remove].update(disabled=True)
+            self.__refresh_confirm()
+        except ValueError as e:
+            sg.popup(e)
+        except omsi_map_merger.MapRepetitionError as e:
+            sg.popup(e)
     
     def handle_remove(self):
-        del self.__maps_list[window[self.__key_listbox].get_indexes()[0]]
-        window[self.__key_listbox].update(values=self.__maps_list)
+        self.__omsi_map_merger.remove_map(window[self.__key_listbox].get_indexes()[0])
+        self.__refresh_maps_list()
         window[self.__key_remove].update(disabled=True)
         self.__refresh_confirm()
     
@@ -92,8 +82,7 @@ class MapsListManager:
         window[self.__key_status].update(value="CONFIRMED", background_color='green')
         #now enable map reading section
 
-maps_to_merge: list[MapToMerge] = []
-maps_list_manager = MapsListManager(maps_to_merge,
+maps_list_manager = MapsListManager(omm,
                                     'maps_directories',
                                     'maps_directories_add_input',
                                     'maps_directories_add_button',

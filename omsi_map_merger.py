@@ -22,6 +22,39 @@ import global_config
 import tile
 import os
 
+class MapRepetitionError(Exception):
+    pass
+
+class MapToMerge:
+    def __init__(self,
+                 directory,
+                 shift_x,
+                 shift_y,
+                 ):
+        if not os.path.isdir(directory):
+            raise ValueError(f"\"{directory}\" is not directory")
+        self.omsi_map = omsi_map.OmsiMap(directory)
+        self.shift_x = shift_x
+        self.shift_y = shift_y
+    
+    def __str__(self):
+        return self.omsi_map.directory
+
+class OmsiMapMerger:
+    def __init__(self):
+        self.__maps: list[MapToMerge] = []
+    
+    def get_maps(self):
+        return self.__maps
+    
+    def append_map(self, directory: str):
+        if os.path.normpath(directory) in map(lambda x: x.omsi_map.directory, self.__maps):
+            raise MapRepetitionError(f"This map (\"{directory}\") has been added to merge before.\nMerging map with iself is not allowed.")
+        self.__maps.append(MapToMerge(os.path.normpath(directory), 0, 0))# tu ma byc normpath czy w OmsiMap??
+    
+    def remove_map(self, index: int):
+        del self.__maps[index]# tu handle exception??
+
 def merge(map1_directory,
           map2_directory,
           map2_shift_x,
