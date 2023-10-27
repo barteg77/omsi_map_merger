@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -40,11 +40,54 @@ _tile_serializer = tile_serializer.TileSerializer()
 _ailists_parser = ailists_parser.AIListsParser()
 _ailists_serializer = ailists_serializer.AIListsSerializer()
 
+class NoDataError(Exception):
+    pass
+
+class FileParsingStatus(Enum):
+    NOT_READ = 1
+    READ_SUCCESS = 2
+    ERROR = 3
+
+class GloalConfigOrError:
+    def __init__(self):
+        self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
+        self.__exception = None
+        self.__data: global_config.GlobalConfig = None
+    
+    def get_status(self):
+        return self.__status
+    
+    def get_data(self):
+        if self.__status == FileParsingStatus.READ_SUCCESS:
+            return self.__data
+        else:
+            raise NoDataError(f"Unable to return data, file parsing status is {self.__status}."
+    
+    def load(self, path):
+        try:
+            self.__data = _global_config_parser.parse(path)
+        except as exception:
+            self.__status = FileParsingStatus.ERROR
+            self.__exception = exception
+    
+    def info_short(self):
+        match self.__status:
+            case FileParsingStatus.NOT_READ:
+                return "NOT READ"
+            case FileParsingStatus.READ_SUCCESS:
+                return "READ SUCCESSFULLY"
+            case FileParsingStatus.ERROR:
+                return f"ERROR: {type(self.__exception).__name__}"
+    
+    def info_detailed(self):
+        return str(self.__exception)
+
+
 class OmsiMap:
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config = None
+        self._global_config: GlobalConfigOrError = GlobalConfigOrError()
         self._tiles = {}
         self._files = omsi_files.OmsiFiles()
         self._standard_timetable = None
