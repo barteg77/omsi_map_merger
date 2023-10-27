@@ -35,6 +35,8 @@ omm = omsi_map_merger.OmsiMapMerger()
 class MapsListManager:
     def __init__(self,
                  omsi_map_merger: omsi_map_merger.OmsiMapMerger,
+                 window,
+                 gui,
                  key_listbox: str,
                  key_add_input: str,
                  key_add_button: str,
@@ -43,52 +45,57 @@ class MapsListManager:
                  key_status: str,
                  ):
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
-        self.__key_listbox: str = key_listbox
-        self.__key_add_input: str = key_add_input
-        self.__key_add_button: str = key_add_button
-        self.__key_remove: str = key_remove
-        self.__key_confirm: str = key_confirm
-        self.__key_status: str = key_status
+        self.__gui = gui
+        self.__listbox = window[key_listbox]
+        self.__input_add = window[key_add_input]
+        self.__button_add = window[key_add_button]
+        self.__button_remove = window[key_remove]
+        self.__button_confirm = window[key_confirm]
+        self.__status_bar = window[key_status]
     
     def __refresh_maps_list(self):
-        window[self.__key_listbox].update(values=self.__omsi_map_merger.get_maps())
+        self.__listbox.update(values=self.__omsi_map_merger.get_maps())
     
     def __refresh_confirm(self):
-        window[self.__key_confirm].update(disabled = len(self.__omsi_map_merger.get_maps()) < 2)
+        self.__button_confirm.update(disabled = len(self.__omsi_map_merger.get_maps()) < 2)
 
-    def handle_listbox(self):
-        window[self.__key_remove].update(disabled=False)
+    def __handle_listbox(self):
+        self.__button_remove.update(disabled=False)
 
-    def handle_add(self):#write 'void'
+    def __handle_add(self):#write 'void'
         try:
-            self.__omsi_map_merger.append_map(values[self.__key_add_input])
+            self.__omsi_map_merger.append_map(self.__input_add.get())
             self.__refresh_maps_list()
-            window[self.__key_remove].update(disabled=True)
+            self.__button_remove.update(disabled=True)
             self.__refresh_confirm()
         except ValueError as e:
-            sg.popup(e)
+            self.__gui.popup(e)
         except omsi_map_merger.MapRepetitionError as e:
-            sg.popup(e)
+            self.__gui.popup(e)
     
-    def handle_remove(self):
-        self.__omsi_map_merger.remove_map(window[self.__key_listbox].get_indexes()[0])
+    def __handle_remove(self):
+        self.__omsi_map_merger.remove_map(self.__listbox.get_indexes()[0])
         self.__refresh_maps_list()
-        window[self.__key_remove].update(disabled=True)
+        self.__button_remove.update(disabled=True)
         self.__refresh_confirm()
     
-    def handle_confirm(self):
-        for key in [self.__key_listbox, self.__key_add_input, self.__key_add_button, self.__key_remove, self.__key_confirm]:
-            window[key].update(disabled=True)
-        window[self.__key_status].update(value="CONFIRMED", background_color='green')
+    def __handle_confirm(self):
+        for gui_element in [self.__listbox, self.__input_add, self.__button_add, self.__button_remove, self.__button_confirm]:
+            gui_element.update(disabled=True)
+        self.__status_bar.update(value="CONFIRMED", background_color='green')
         #now enable map reading section
-
-maps_list_manager = MapsListManager(omm,
-                                    'maps_directories',
-                                    'maps_directories_add_input',
-                                    'maps_directories_add_button',
-                                    'maps_directories_remove',
-                                    'maps_directories_confirm',
-                                    'maps_directories_status')
+    
+    def handle_event(self, event):
+        for gui_element, handler in [
+            (self.__listbox, self.__handle_listbox),
+            (self.__input_add, self.__handle_add),
+            (self.__button_remove, self.__handle_remove),
+            (self.__button_confirm, self.__handle_confirm),
+        ]:
+            if gui_element.key == event:
+                handler()
+                return True
+        return False
 
 treedata = sg.TreeData()
 treedata.Insert("", '_A_', 'Tree Item 1', [1234], )
@@ -242,20 +249,22 @@ def draw_scheme():
                                 fill_color="green")
 
 window = sg.Window("OMSI Map Merger", layout)
+maps_list_manager = MapsListManager(omm,
+                                    window,
+                                    sg,
+                                    'maps_directories',
+                                    'maps_directories_add_input',
+                                    'maps_directories_add_button',
+                                    'maps_directories_remove',
+                                    'maps_directories_confirm',
+                                    'maps_directories_status')
 while True:
     event, values = window.read()
     
     if event == sg.WIN_CLOSED or event == "cancel":
         break
-    elif event == 'maps_directories':
-        maps_list_manager.handle_listbox()
-    elif event == 'maps_directories_add_input':
-        maps_list_manager.handle_add()#moze to jakos upakowac z ponizszym
-    elif event == 'maps_directories_remove':
-        maps_list_manager.handle_remove()
-    elif event == "maps_directories_confirm":
-        maps_list_manager.handle_confirm()
-    
+    elif maps_list_manager.handle_event(event):
+        pass    
     elif event == "maps_tree":
         file_details.update(value="default_text")
     
