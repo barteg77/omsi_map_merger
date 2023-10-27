@@ -30,8 +30,6 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
-omm = omsi_map_merger.OmsiMapMerger()
-
 class MapsListManager:
     def __init__(self,
                  omsi_map_merger: omsi_map_merger.OmsiMapMerger,
@@ -248,6 +246,7 @@ def draw_scheme():
                                 line_color="black",
                                 fill_color="green")
 
+omm = omsi_map_merger.OmsiMapMerger()
 window = sg.Window("OMSI Map Merger", layout)
 maps_list_manager = MapsListManager(omm,
                                     window,
