@@ -263,7 +263,7 @@ while True:
     if event == sg.WIN_CLOSED or event == "cancel":
         break
     elif maps_list_manager.handle_event(event):
-        pass    
+        pass
     elif event == "maps_tree":
         file_details.update(value="default_text")
     
