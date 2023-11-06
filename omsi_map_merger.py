@@ -25,35 +25,47 @@ import os
 class MapRepetitionError(Exception):
     pass
 
+class LoadingMapNotInListToMergeError(Exception):
+    pass
+
 class MapToMerge:
     def __init__(self,
-                 directory,
-                 shift_x,
-                 shift_y,
-                 ):
+                 directory: str,
+                 shift_x: int,
+                 shift_y: int,
+                 ) -> None:
         if not os.path.isdir(directory):
             raise ValueError(f"\"{directory}\" is not directory")
-        self.omsi_map = omsi_map.OmsiMap(directory)
-        self.shift_x = shift_x
-        self.shift_y = shift_y
+        self.omsi_map: omsi_map.OmsiMap = omsi_map.OmsiMap(directory)
+        self.shift_x: int = shift_x
+        self.shift_y: int = shift_y
     
-    def __str__(self):
+    def __str__(self) -> str:
         return self.omsi_map.directory
 
 class OmsiMapMerger:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__maps: list[MapToMerge] = []
     
-    def get_maps(self):
+    def get_maps(self) -> list[MapToMerge]:
         return self.__maps
     
-    def append_map(self, directory: str):
+    def append_map(self, directory: str) -> None:
         if os.path.normpath(directory) in map(lambda x: x.omsi_map.directory, self.__maps):
             raise MapRepetitionError(f"This map (\"{directory}\") has been added to merge before.\nMerging map with iself is not allowed.")
         self.__maps.append(MapToMerge(os.path.normpath(directory), 0, 0))# tu ma byc normpath czy w OmsiMap??
     
-    def remove_map(self, index: int):
+    def remove_map(self, index: int) -> None:
         del self.__maps[index]# tu handle exception??
+    
+    """def load_map(self, map_to_load: MapToMerge) -> None:
+        if map_to_load not in self.__maps:
+            raise LoadingMapNotInListToMergeError(f"\"{str(mapToLoad)}\" not in maps to merge list!\nYou can load only map contained in OmsiMapMerger.__maps (list of maps to merge).")
+        map_to_load.load()"""
+    
+    def load_maps(self)-> None:
+        for map_to_load in self.__maps:
+            map_to_load.load()
 
 def merge(map1_directory,
           map2_directory,
