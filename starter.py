@@ -30,11 +30,14 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
-class MapsListManager:
+class GuiGroupManager:
+    pass
+
+class MapsListManager(GuiGroupManager):
     def __init__(self,
                  omsi_map_merger: omsi_map_merger.OmsiMapMerger,
-                 window,
                  gui,
+                 window,
                  key_listbox: str,
                  key_add_input: str,
                  key_add_button: str,
@@ -82,6 +85,7 @@ class MapsListManager:
             gui_element.update(disabled=True)
         self.__status_bar.update(value="CONFIRMED", background_color='green')
         #now enable map reading section
+        self.__next_gui_group_manager.enable()
     
     def handle_event(self, event):
         for gui_element, handler in [
@@ -95,6 +99,43 @@ class MapsListManager:
                 return True
         return False
 
+class MapLoadingInteractionManager(GuiGroupManager):
+    def __init__(self,
+                 omsi_map_merger: omsi_map_merger.OmsiMapMerger,
+                 gui,
+                 window: sg.Window,
+                 key_tree: str,
+                 key_load_whole_maps: str,
+                 key_load_single_file: str,
+                 ) -> None:
+        self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
+        self.__gui = gui
+        self.__tree: gui.Tree = window[key_tree]
+        self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
+        self.__button_load_single_file: gui.Button = window[key_load_single_file]
+    
+    def enable(self) -> None:
+        for gui_element in [
+            #self.__tree,# can't be disabled
+            self.__button_load_whole_map,
+            self.__button_load_single_file,
+        ]:
+            gui_element.update(disabled=False)
+    
+    def handle_load_whole_map(self) -> None:
+        self.__omsi_map_merger.load_maps()
+
+class GuiGroupToManage:
+    def __init__(self,
+                 window,
+                 gui_group_manager: GuiGroupManager,
+                 key_button_next_group: str,
+        ) -> None:
+        self.gui_group_manager: GuiGroupManager = gui_group_manager
+        self.button_next_group = window[key_button_next_group]
+
+class GuiGroupsManager:
+    def __init__
 treedata = sg.TreeData()
 treedata.Insert("", '_A_', 'Tree Item 1', [1234], )
 treedata.Insert("", '_B_', 'B', [])
@@ -116,11 +157,11 @@ directories_layout = [
 
 file_details = sg.Multiline(s=(15,10), disabled=True, default_text="det")
 map_reading_panel = [
-    [sg.Button("Read whole maps", key="read_whole_maps", disabled=True), sg.Text("Maps reading status: "), sg.StatusBar("trudno powiedzieć")],
-    [sg.Tree(treedata, ["Type", "Path", "Status"], num_rows=20, enable_events=True, key="maps_tree")],
+    [sg.Button("Read whole maps", key="load_whole_maps", disabled=True), sg.Text("Maps reading status: "), sg.StatusBar("trudno powiedzieć")],
+    [sg.Tree(treedata, ["Type", "Path", "Status"], num_rows=20, enable_events=True, key="load_tree")],
     [
-        sg.Button("Parse file", key="parse_file"),
-        sg.Button("Open text editor", key="open_text_editor"),
+        sg.Button("Parse file", key="load_single_file", disabled=True),
+        sg.Button("Open text editor", key="open_text_editor", disabled=True),
     ],
     [file_details],
 ]
@@ -248,15 +289,26 @@ def draw_scheme():
 
 omm = omsi_map_merger.OmsiMapMerger()
 window = sg.Window("OMSI Map Merger", layout)
+
+maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInteractionManager(
+    omm,
+    sg,
+    window,
+    'load_tree',
+    'load_whole_maps',
+    'load_single_file')
+
 maps_list_manager = MapsListManager(omm,
-                                    window,
                                     sg,
+                                    window,
                                     'maps_directories',
                                     'maps_directories_add_input',
                                     'maps_directories_add_button',
                                     'maps_directories_remove',
                                     'maps_directories_confirm',
-                                    'maps_directories_status')
+                                    'maps_directories_status',
+                                    maps_loading_interaction_manager)
+
 while True:
     event, values = window.read()
     
