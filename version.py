@@ -1,4 +1,4 @@
-# Copyright 2021 Bartosz Gajewski
+# Copyright 2021, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-version = "1.0"
+version = "1.wip.1"

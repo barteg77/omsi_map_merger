@@ -65,7 +65,7 @@ class OmsiMapMerger:
     
     def load_maps(self)-> None:
         for map_to_load in self.__maps:
-            map_to_load.load()
+            map_to_load.omsi_map.load()
 
 def merge(map1_directory,
           map2_directory,

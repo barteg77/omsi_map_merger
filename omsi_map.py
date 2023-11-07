@@ -142,7 +142,7 @@ class OmsiMap:
         self._chronos = []
     
     def load_global_config(self):
-        self._global_config.load()
+        self._global_config.load(os.path.join(self.directory, "global.cfg"))
 
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, "global.cfg"))
@@ -155,7 +155,7 @@ class OmsiMap:
         self._tiles[index].load(os.path.join(self.directory, file_name))
     
     def load_tiles(self):
-        for tile_index in range(len(self._global_config._map)):
+        for tile_index in range(len(self._global_config._map.get_data())):
             self.load_tile(tile_index)
     
     def save_tile(self, index):
