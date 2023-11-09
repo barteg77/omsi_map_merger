@@ -83,7 +83,7 @@ class AilistsLoader(Loader):
         self.__path: str = path
     
     def load(self) -> None:
-        self.__data = ailists_parser.parse(self.__path)
+        self.__data = _ailists_parser.parse(self.__path)
 
 class ChronoLoader(Loader):
     def __init__(self, directory: str, gc_map: list[global_config.Map]) -> None:
@@ -110,9 +110,10 @@ class SafeLoader:
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
-    def load(self, path: str) -> None:
+    def load(self) -> None:
         try:
-            self.real_loader.load(path)
+            self.__real_loader.load()
+            self.__status = FileParsingStatus.READ_SUCCESS
         except Exception as exception:
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
@@ -140,6 +141,24 @@ class OmsiMap:
         self._standard_timetable = SafeLoader(TimetableLoader(self.directory))
         self._ailists = SafeLoader(AilistsLoader(os.path.join(self.directory, "ailists.cfg")))
         self._chronos = []
+    
+    def get_directory(self):
+        return self.directory
+    
+    def fully_loaded(self):
+        return False#może kiedyś bedzie lepiej
+    
+    def get_global_config(self):
+        return self._global_config
+    
+    def get_standard_timetable(self):
+        return self._global_config
+    
+    def get_ailists(self):
+        return self._ailists
+    
+    def get_tiles(self):
+        return self._tiles
     
     def load_global_config(self):
         self._global_config.load(os.path.join(self.directory, "global.cfg"))
@@ -194,7 +213,7 @@ class OmsiMap:
         self._files.save(self.directory)
     
     def load_standard_timetable(self):
-        self._standard_timetable.load()
+        self._standard_timetable.load(self.directory)
     
     def save_standard_timetable(self):
         self._standard_timetable.save(self.directory)
@@ -218,7 +237,8 @@ class OmsiMap:
     
     def load(self):
         self.load_global_config()
-        self.load_tiles()
+        if self._global_config.get_status() == FileParsingStatus.READ_SUCCESS:
+            self.load_tiles()
         self.load_files()
         self.load_standard_timetable()
         self.load_ailists()

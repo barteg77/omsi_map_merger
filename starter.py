@@ -21,6 +21,8 @@ import omsi_map_merger
 import global_config_parser
 import version
 
+EMPTY_STR = ''
+
 print("OMSI Map Merger "+version.version)
 
 def RepresentsInt(s):
@@ -108,36 +110,68 @@ class MapLoadingInteractionManager(GuiGroupManager):
                  gui,
                  window: sg.Window,
                  key_tree: str,
+                 key_details: str,
                  key_load_whole_maps: str,
-                 key_load_single_file: str,
+                 key_load_selected: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
         self.__gui = gui
         self.__tree: gui.Tree = window[key_tree]
+        self.__multiline_details: gui.Multiline = window[key_details]
         self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
-        self.__button_load_single_file: gui.Button = window[key_load_single_file]
+        self.__button_load_selected: gui.Button = window[key_load_selected]
+    
+    def ready_to_confirm(self) -> bool:
+        return False
+
+    def __update_tree(self):
+        tree_data: sg.TreeData = sg.TreeData()
+        for omsi_map in map(lambda x: x.omsi_map, self.__omsi_map_merger.get_maps()):
+            tree_data.insert(EMPTY_STR, omsi_map, str(omsi_map.get_directory()), ["MAP", str(omsi_map.fully_loaded())])
+            for tree_row in [
+                # Name, Type, SafeParser
+                ("global.cfg", "GC", omsi_map.get_global_config()),
+                ("timetable/", "TT", omsi_map.get_standard_timetable()),
+                ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
+            ]:
+                tree_data.insert(omsi_map, tree_row[2], tree_row[0], [tree_row[1], tree_row[2].info_short()])
+            
+            tree_data.insert(omsi_map, omsi_map.get_tiles(), "Tiles", [EMPTY_STR, EMPTY_STR])
+            for tile in omsi_map._map:
+                tree_data.insert(omsi_map.get_tiles(), tile, "some tile", ["TILE", tile.info_short()])
+        self.__tree.update(values = tree_data)
     
     def enable(self) -> None:
         for gui_element in [
             #self.__tree,# can't be disabled
             self.__button_load_whole_map,
-            self.__button_load_single_file,
+            self.__button_load_selected,
         ]:
             gui_element.update(disabled=False)
+        self.__update_tree()
     
     def disable(self) -> None:
         pass
+
+    def __handle_tree(self) -> None:
+        try:
+            self.__multiline_details.update(value=self.__tree.SelectedRows[0].info_detailed())
+        except:
+            self.__multiline_details.update(value="wybierz tam, gdzie jest info")
     
     def __handle_load_whole_map(self) -> None:
         self.__omsi_map_merger.load_maps()
     
-    def __handle_load_single_file(self) -> None:
-        pass
+    def __handle_load_selected(self) -> None:
+        print(self.__tree.SelectedRows)#pass#if isinstance(,
+        self.__tree.SelectedRows[0].load()
+        self.__update_tree()
     
     def handle_event(self, event) -> bool:
         for gui_element, handler in [
+            (self.__tree, self.__handle_tree),
             (self.__button_load_whole_map, self.__handle_load_whole_map),
-            (self.__button_load_single_file, self.__handle_load_single_file),
+            (self.__button_load_selected, self.__handle_load_selected),
         ]:
             if gui_element.key == event:
                 handler()
@@ -184,12 +218,6 @@ class GuiGroupsManager:
             return True
         return False
 
-
-treedata = sg.TreeData()
-treedata.Insert("", '_A_', 'Tree Item 1', [1234], )
-treedata.Insert("", '_B_', 'B', [])
-treedata.Insert("_A_", '_A1_', '✅Sb I\ntem 1', ['can', 'be', 'anything'], )
-
 directories_layout = [
     [sg.Text("Select directories of maps you want to merge. (at least 2)")],
     [sg.Listbox([], size=(70,5), disabled=True, key='maps_directories', enable_events=True)],
@@ -204,15 +232,25 @@ directories_layout = [
         sg.StatusBar("NOT COMPLETED", key='maps_directories_status')],
     ]
 
-file_details = sg.Multiline(s=(15,10), disabled=True, default_text="det")
 map_reading_panel = [
     [sg.Button("Read whole maps", key="load_whole_maps", disabled=True), sg.Text("Maps reading status: "), sg.StatusBar("trudno powiedzieć")],
-    [sg.Tree(treedata, ["Type", "Path", "Status"], num_rows=20, enable_events=True, key="load_tree")],
+    [sg.Tree(sg.TreeData(),
+             ["Type", "Status"],
+             col0_heading="Name",
+             num_rows=20,
+             enable_events=True,
+             key="load_tree",
+             select_mode=sg.TABLE_SELECT_MODE_BROWSE,
+             col0_width=40,
+             auto_size_columns=False,
+             col_widths=[10,20],
+             )
+    ],
     [
-        sg.Button("Parse file", key="load_single_file", disabled=True),
+        sg.Button("Load_selected", key="load_selected", disabled=True),
         sg.Button("Open text editor", key="open_text_editor", disabled=True),
     ],
-    [file_details],
+    [sg.Multiline(key='load_details', s=(90,10), disabled=True, default_text="det")],
     [sg.Button("Confirm load", key="load_confirm", disabled=True)]
 ]
 
@@ -355,8 +393,9 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     sg,
     window,
     'load_tree',
+    'load_details',
     'load_whole_maps',
-    'load_single_file')
+    'load_selected')
 
 gui_groups_manager: GuiGroupsManager = GuiGroupsManager(
     [
@@ -376,47 +415,4 @@ while True:
     #trzeba kiedyś ustawić raise exception jak jest event nieobsłużony
     
     print(f"GUI event occured: {event}, values: {values}")
-    """
-    elif not os.path.isdir(values["map1_directory"]):
-        sg.popup('"'+values["map1_directory"]+'" is not directory!', 'In "Map 1 directory" you must insert directory.')
-    elif not os.path.isfile(os.path.join(values["map1_directory"], "global.cfg")):
-        sg.popup('There is no flie "global.cfg" in Map 1 directory: "'+values["map1_directory"]+'".')
-    elif not os.path.isdir(values["map2_directory"]):
-        sg.popup('"'+values["map2_directory"]+'" is not directory!', 'In "Map 2 directory" you must insert directory.')
-    elif not os.path.isfile(os.path.join(values["map2_directory"], "global.cfg")):
-        sg.popup('There is no flie "global.cfg" in Map 2 directory: "'+values["map2_directory"]+'".')
-    elif event == "shift_left":
-        shift_x -= 1
-        draw_scheme()
-    elif event == "shift_up":
-        shift_y += 1
-        draw_scheme()
-    elif event == "shift_down":
-        shift_y -= 1
-        draw_scheme()
-    elif event == "shift_right":
-        shift_x += 1
-        draw_scheme()
-    elif map1_last_directory != values["map1_directory"] or map2_last_directory != values["map2_directory"]:
-        draw_scheme()
-    elif event == "merge":
-        if gc2_set is None:
-            sg.popup("You must set map 2 shift.")
-        else:
-            overlap = False
-            for tile_x, tile_y in gc2_set:
-                if (tile_x, tile_y) in gc1_set:
-                    overlap = True
-                    break
-            if not overlap:
-                omsi_map_merger.merge(values["map1_directory"],
-                                      values["map2_directory"],
-                                      shift_x,
-                                      shift_y,
-                                      values["new_map_directory"],
-                                      values["keep_map2_groundtex"])
-                sg.popup("Done.")
-            else:
-                sg.popup("Maps can't overlap!")
-    """
 window.close()
