@@ -155,7 +155,7 @@ class OmsiMap:
         self._tiles[index].load(os.path.join(self.directory, file_name))
     
     def load_tiles(self):
-        for tile_index in range(len(self._global_config._map.get_data())):
+        for tile_index in range(len(self._global_config.get_data()._map)):
             self.load_tile(tile_index)
     
     def save_tile(self, index):
