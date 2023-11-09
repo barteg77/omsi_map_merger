@@ -83,6 +83,8 @@ class MapsListManager(GuiGroupManager):
         for gui_element in [self.__listbox, self.__input_add, self.__button_add]:
             gui_element.update(disabled=False)
         self.__status_bar.update(value="NOT COMPLETED", background_color=None)
+        
+        self.__refresh_maps_list()# TO JEST DO USUNIECIA RAZEM Z MAPAMI DO TESTOWANIA W OmsiMap.__init__ ALBO CO NAJMNIEJ DO PRZEMYŚLENIA
     
     def disable(self) -> None:
         for gui_element in [self.__listbox, self.__input_add, self.__button_add, self.__button_remove]:
@@ -169,6 +171,9 @@ class GuiGroupsManager:
         self.__current_group = next(self.__groups_iter)
         self.__current_group.button_next_group.update(disabled=False)
         self.__current_group.gui_group_manager.enable()
+    
+    def dalej(self):
+        self.__switch_to_next_group()# to jest nie do używania i do skasowania
 
     def handle_event(self, key: str) -> bool:
         if key == self.__current_group.button_next_group.key:
@@ -359,7 +364,7 @@ gui_groups_manager: GuiGroupsManager = GuiGroupsManager(
         GuiGroupToManage(maps_loading_interaction_manager, window, 'load_confirm'),
     ]
 )
-
+gui_groups_manager.dalej()###
 
 while True:
     event, values = window.read()

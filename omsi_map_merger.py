@@ -46,6 +46,11 @@ class MapToMerge:
 class OmsiMapMerger:
     def __init__(self) -> None:
         self.__maps: list[MapToMerge] = []
+        for test_map in [
+            "/home/bartek/OMSI 2/maps/Podmiejska/",
+            "/home/bartek/OMSI 2/maps/MZK Kydczice/",#;)
+        ]:
+            self.append_map(test_map)
     
     def get_maps(self) -> list[MapToMerge]:
         return self.__maps
