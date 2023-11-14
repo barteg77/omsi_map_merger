@@ -63,11 +63,6 @@ class OmsiMapMerger:
     def remove_map(self, index: int) -> None:
         del self.__maps[index]# tu handle exception??
     
-    """def load_map(self, map_to_load: MapToMerge) -> None:
-        if map_to_load not in self.__maps:
-            raise LoadingMapNotInListToMergeError(f"\"{str(mapToLoad)}\" not in maps to merge list!\nYou can load only map contained in OmsiMapMerger.__maps (list of maps to merge).")
-        map_to_load.load()"""
-    
     def load_maps(self)-> None:
         for map_to_load in self.__maps:
             map_to_load.omsi_map.load()

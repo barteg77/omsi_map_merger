@@ -50,50 +50,58 @@ class FileParsingStatus(Enum):
     ERROR = 3
 
 class Loader:
-    pass
+    def __init__(self):
+        self.__data = None
+    def get_data(self):
+        return self.__data
 
 class GlobalConfigLoader(Loader):
     def __init__(self, path: str) -> None:
-        self.__data: global_config.GlobalConfig = None
+        super().__init__() 
+        self._Loader__data: global_config.GlobalConfig = None
         self.__path: str = path
 
     def load(self) -> None:
-        self.__data = _global_config_parser.parse(self.__path)
+        self._Loader__data = _global_config_parser.parse(self.__path)
 
 class TileLoader(Loader):
     def __init__(self, path: str) -> None:
-        self.__data: tile.Tile = None
+        super().__init__() 
+        self._Loader__data: tile.Tile = None
         self.__path: str = path
     
     def load(self) -> None:
-        self.__data: tile.Tile = _tile_parser.parse(self.__path)
+        self._Loader__data: tile.Tile = _tile_parser.parse(self.__path)
 
 class TimetableLoader(Loader):
     def __init__(self, parent_directory: str) -> None:
-        self.__data: timetable.Timetable = None
+        super().__init__() 
+        self._Loader__data: timetable.Timetable = None
         self.__path: str = parent_directory
     
     def load(self) -> None:
-        self.__data = timetable.Timetable()
+        self._Loader__data = timetable.Timetable()
         self.__data.load(self.__path)
 
 class AilistsLoader(Loader):
     def __init__(self, path: str) -> None:
-        self.__data: ailists.AILists = None
+        super().__init__() 
+        self._Loader__data: ailists.AILists = None
         self.__path: str = path
     
     def load(self) -> None:
-        self.__data = _ailists_parser.parse(self.__path)
+        self._Loader__data = _ailists_parser.parse(self.__path)
 
 class ChronoLoader(Loader):
     def __init__(self, directory: str, gc_map: list[global_config.Map]) -> None:
-        self.__data: chrono.Chrono()
+        super().__init__() 
+        self._Loader__data: chrono.Chrono()
         self.__directory: str = directory
         self.__gc_map: list[global_config.Map] = gc_map
     
-    def load(self,) -> None:
-        self.__data = chrono.Chrono()
-        self.__data.load(self.__directory, self.__gc_map)
+    def load(self) -> None:
+        self._Loader__data = chrono.Chrono()
+        self._Loader__data.load(self.__directory, self.__gc_map)
 
 class SafeLoader:
     def __init__(self, real_loader) -> None:
@@ -106,11 +114,12 @@ class SafeLoader:
     
     def get_data(self) -> None:
         if self.__status == FileParsingStatus.READ_SUCCESS:
-            return self.real_loader.__data
+            return self.__real_loader.get_data()
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
+        print(type(self.__real_loader).__name__, "loading file...")
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
@@ -135,12 +144,12 @@ class OmsiMap:
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: GlobalConfigOrError = SafeLoader(GlobalConfigLoader(os.path.join(self.directory, "global.cfg")))
-        self._tiles = {}
-        self._files = omsi_files.OmsiFiles()
-        self._standard_timetable = SafeLoader(TimetableLoader(self.directory))
-        self._ailists = SafeLoader(AilistsLoader(os.path.join(self.directory, "ailists.cfg")))
-        self._chronos = []
+        self._global_config: SafeLoader = SafeLoader(GlobalConfigLoader(os.path.join(self.directory, "global.cfg")))
+        self._tiles: list[SafeLoader] = []
+        self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
+        self._standard_timetable: SafeLoader = SafeLoader(TimetableLoader(self.directory))
+        self._ailists: SafeLoader = SafeLoader(AilistsLoader(os.path.join(self.directory, "ailists.cfg")))
+        self._chronos: list[SafeLoader] = []
     
     def get_directory(self):
         return self.directory
@@ -152,7 +161,7 @@ class OmsiMap:
         return self._global_config
     
     def get_standard_timetable(self):
-        return self._global_config
+        return self._standard_timetable
     
     def get_ailists(self):
         return self._ailists
@@ -160,22 +169,27 @@ class OmsiMap:
     def get_tiles(self):
         return self._tiles
     
-    def load_global_config(self):
-        self._global_config.load(os.path.join(self.directory, "global.cfg"))
+    def load_global_config(self):# affects self._tiles too
+        self._global_config.load()
+        # set tiles' safe parsers
+        if self._global_config.get_status() == FileParsingStatus.READ_SUCCESS:
+            for gc_tile in self._global_config.get_data()._map:
+                self._tiles.append(SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))#### to w innym miejscu musi być bo się 
+                #                                                                               global config przeladowuje SafeLoaderem a nie tym
 
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, "global.cfg"))
     
-    def load_tile(self, index):
-        gc_tile = self._global_config._map[index]
+    """def load_tile(self, tile_sl_reference):
+        gc_tile = self._global_config.get_data()._map[index]
         file_name = gc_tile.map_file
         print("Parsing tile file " + os.path.join(self.directory, file_name))
-        self._tiles[index] = SafeLoader(TileLoader())
-        self._tiles[index].load(os.path.join(self.directory, file_name))
+        self._tiles[index] = SafeLoader(TileLoader(os.path.join(self.directory, file_name)))
+        self._tiles[index].load()"""
     
     def load_tiles(self):
-        for tile_index in range(len(self._global_config.get_data()._map)):
-            self.load_tile(tile_index)
+        for tile in self._tiles:
+            tile.load()
     
     def save_tile(self, index):
         gc_tile = self._global_config._map[index]
@@ -213,13 +227,13 @@ class OmsiMap:
         self._files.save(self.directory)
     
     def load_standard_timetable(self):
-        self._standard_timetable.load(self.directory)
+        self._standard_timetable.load()
     
     def save_standard_timetable(self):
         self._standard_timetable.save(self.directory)
     
     def load_ailists(self):
-        self._ailists.load(os.path.join(self.directory, "ailists.cfg"))
+        self._ailists.load()
     
     def save_ailists(self):
         print("Serializing ailists file " + os.path.join(self.directory, "ailists.cfg"))
@@ -228,7 +242,7 @@ class OmsiMap:
     def load_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         for chrono_directory in chrono_directory_list:
-            self._chronos.append(SafeLoader(ChronoLoader(os.path.join(self.directory, self._global_config._map))))
+            self._chronos.append(SafeLoader(ChronoLoader(os.path.join(self.directory, chrono_directory), self._global_config.get_data()._map)))
             self._chronos[-1].load()
     
     def save_chrono(self):

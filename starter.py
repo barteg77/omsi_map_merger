@@ -120,25 +120,39 @@ class MapLoadingInteractionManager(GuiGroupManager):
         self.__multiline_details: gui.Multiline = window[key_details]
         self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
         self.__button_load_selected: gui.Button = window[key_load_selected]
+        self.__maps_components_by_id = dict() #add type hint (int, anything)
     
     def ready_to_confirm(self) -> bool:
         return False
 
     def __update_tree(self):
         tree_data: sg.TreeData = sg.TreeData()
+        self.__maps_components_by_id = dict()
+        def add_to_tree(parent_map_component, element_map_component, name: str, component_type: str, status: str) -> None:
+            self.__maps_components_by_id[id(element_map_component)] = element_map_component
+            tree_data.insert(EMPTY_STR if parent_map_component == EMPTY_STR  else id(parent_map_component),
+                             id(element_map_component),
+                             name,
+                             [component_type, status],
+            )
+        
         for omsi_map in map(lambda x: x.omsi_map, self.__omsi_map_merger.get_maps()):
-            tree_data.insert(EMPTY_STR, omsi_map, str(omsi_map.get_directory()), ["MAP", str(omsi_map.fully_loaded())])
+            add_to_tree(EMPTY_STR, omsi_map, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
             for tree_row in [
                 # Name, Type, SafeParser
                 ("global.cfg", "GC", omsi_map.get_global_config()),
                 ("timetable/", "TT", omsi_map.get_standard_timetable()),
                 ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
             ]:
-                tree_data.insert(omsi_map, tree_row[2], tree_row[0], [tree_row[1], tree_row[2].info_short()])
+                add_to_tree(omsi_map, tree_row[2], tree_row[0], tree_row[1], tree_row[2].info_short())
             
-            tree_data.insert(omsi_map, omsi_map.get_tiles(), "Tiles", [EMPTY_STR, EMPTY_STR])
-            for tile in omsi_map._map:
-                tree_data.insert(omsi_map.get_tiles(), tile, "some tile", ["TILE", tile.info_short()])
+            tiles = omsi_map.get_tiles()
+            add_to_tree(omsi_map, tiles, "Tiles", EMPTY_STR, EMPTY_STR)
+            try:
+                for tile_index, [gc_map, omsi_map_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, tiles)):
+                    add_to_tree(tiles, omsi_map_tile, f"Tile n.{tile_index}, \"{gc_map.map_file}\"", "TILE", omsi_map_tile.info_short())
+            except:
+                print('nie ma nic')
         self.__tree.update(values = tree_data)
     
     def enable(self) -> None:
@@ -153,18 +167,25 @@ class MapLoadingInteractionManager(GuiGroupManager):
     def disable(self) -> None:
         pass
 
+    def __get_selected_map_component(self):
+        try:
+            return self.__maps_components_by_id[self.__tree.SelectedRows[0]]
+        except IndexError:
+            raise Exception("there is no selected map component")
+
     def __handle_tree(self) -> None:
         try:
-            self.__multiline_details.update(value=self.__tree.SelectedRows[0].info_detailed())
+            self.__multiline_details.update(value=self.__get_selected_map_component.info_detailed())
         except:
             self.__multiline_details.update(value="wybierz tam, gdzie jest info")
     
     def __handle_load_whole_map(self) -> None:
         self.__omsi_map_merger.load_maps()
+        self.__update_tree()
     
     def __handle_load_selected(self) -> None:
         print(self.__tree.SelectedRows)#pass#if isinstance(,
-        self.__tree.SelectedRows[0].load()
+        self.__get_selected_map_component().load()
         self.__update_tree()
     
     def handle_event(self, event) -> bool:
@@ -176,7 +197,6 @@ class MapLoadingInteractionManager(GuiGroupManager):
             if gui_element.key == event:
                 handler()
                 return True
-        return False
         return False
 
 class GuiGroupToManage:
