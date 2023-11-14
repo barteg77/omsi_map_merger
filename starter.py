@@ -175,8 +175,8 @@ class MapLoadingInteractionManager(GuiGroupManager):
 
     def __handle_tree(self) -> None:
         try:
-            self.__multiline_details.update(value=self.__get_selected_map_component.info_detailed())
-        except:
+            self.__multiline_details.update(value=self.__get_selected_map_component().info_detailed())
+        except AttributeError as e:
             self.__multiline_details.update(value="wybierz tam, gdzie jest info")
     
     def __handle_load_whole_map(self) -> None:
