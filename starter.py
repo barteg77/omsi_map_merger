@@ -138,13 +138,12 @@ class MapLoadingInteractionManager(GuiGroupManager):
         
         for omsi_map in map(lambda x: x.omsi_map, self.__omsi_map_merger.get_maps()):
             add_to_tree(EMPTY_STR, omsi_map, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
-            for tree_row in [
-                # Name, Type, SafeParser
+            for name, component_type, safe_loader in [
                 ("global.cfg", "GC", omsi_map.get_global_config()),
                 ("timetable/", "TT", omsi_map.get_standard_timetable()),
                 ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
             ]:
-                add_to_tree(omsi_map, tree_row[2], tree_row[0], tree_row[1], tree_row[2].info_short())
+                add_to_tree(omsi_map, safe_loader, name, component_type, safe_loader.info_short())
             
             tiles = omsi_map.get_tiles()
             add_to_tree(omsi_map, tiles, "Tiles", EMPTY_STR, EMPTY_STR)
