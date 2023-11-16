@@ -32,6 +32,9 @@ import ailists_serializer
 import chrono
 from enum import Enum
 
+GLOBAL_CONFIG_FILENAME = "global.cfg"
+AILISTS_FILENAME = "ailists.cfg"
+
 _global_config_parser = global_config_parser.GlobalConfigParser()
 _global_config_serializer = global_config_serializer.GlobalConfigSerializer()
 
@@ -150,11 +153,11 @@ class OmsiMap:
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: SafeLoader = SafeLoader(GlobalConfigLoader(os.path.join(self.directory, "global.cfg")))
+        self._global_config: SafeLoader = SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)))
         self._tiles: list[SafeLoader] = []
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: SafeLoader = SafeLoader(TimetableLoader(self.directory))
-        self._ailists: SafeLoader = SafeLoader(AilistsLoader(os.path.join(self.directory, "ailists.cfg")))
+        self._ailists: SafeLoader = SafeLoader(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
         self._chronos: list[SafeLoader] = []
     
     def get_directory(self):
@@ -184,7 +187,7 @@ class OmsiMap:
                 #                                                                               global config przeladowuje SafeLoaderem a nie tym
 
     def save_global_config(self):
-        _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, "global.cfg"))
+        _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, GLOBAL_CONFIG_FILENAME))
     
     def load_tiles(self):
         for tile in self._tiles:
@@ -235,8 +238,8 @@ class OmsiMap:
         self._ailists.load()
     
     def save_ailists(self):
-        print("Serializing ailists file " + os.path.join(self.directory, "ailists.cfg"))
-        _ailists_serializer.serialize(self._ailists, os.path.join(self.directory, "ailists.cfg"))
+        print("Serializing ailists file " + os.path.join(self.directory, AILISTS_FILENAME))
+        _ailists_serializer.serialize(self._ailists, os.path.join(self.directory, AILISTS_FILENAME))
     
     def load_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
