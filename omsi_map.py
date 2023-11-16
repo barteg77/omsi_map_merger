@@ -123,6 +123,7 @@ class SafeLoader:
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
+            self.__exception  = None
         except Exception as exception:
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
@@ -137,8 +138,13 @@ class SafeLoader:
                 return f"ERROR: {type(self.__exception).__name__}"
     
     def info_detailed(self) -> str:
-        return str(self.__exception)
-
+        match self.__status:
+            case FileParsingStatus.NOT_READ:
+                return "File not read yet."
+            case FileParsingStatus.READ_SUCCESS:
+                return "Loaded successfully."
+            case FileParsingStatus.ERROR:
+                return str(self.__exception)
 
 class OmsiMap:
     def __init__(self,
