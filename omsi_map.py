@@ -180,13 +180,6 @@ class OmsiMap:
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, "global.cfg"))
     
-    """def load_tile(self, tile_sl_reference):
-        gc_tile = self._global_config.get_data()._map[index]
-        file_name = gc_tile.map_file
-        print("Parsing tile file " + os.path.join(self.directory, file_name))
-        self._tiles[index] = SafeLoader(TileLoader(os.path.join(self.directory, file_name)))
-        self._tiles[index].load()"""
-    
     def load_tiles(self):
         for tile in self._tiles:
             tile.load()
