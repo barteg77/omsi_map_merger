@@ -30,6 +30,7 @@ import ailists
 import ailists_parser
 import ailists_serializer
 import chrono
+import loader
 from enum import Enum
 
 GLOBAL_CONFIG_FILENAME = "global.cfg"
@@ -52,59 +53,54 @@ class FileParsingStatus(Enum):
     READ_SUCCESS = 2
     ERROR = 3
 
-class Loader:
-    def __init__(self):
-        self.__data = None
-    def get_data(self):
-        return self.__data
 
-class GlobalConfigLoader(Loader):
+class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__() 
-        self._Loader__data: global_config.GlobalConfig = None
+        self.data: global_config.GlobalConfig = None
         self.__path: str = path
 
     def load(self) -> None:
-        self._Loader__data = _global_config_parser.parse(self.__path)
+        self.data = _global_config_parser.parse(self.__path)
 
-class TileLoader(Loader):
+class TileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__() 
-        self._Loader__data: tile.Tile = None
+        self.data: tile.Tile = None
         self.__path: str = path
     
     def load(self) -> None:
-        self._Loader__data: tile.Tile = _tile_parser.parse(self.__path)
+        self.data: tile.Tile = _tile_parser.parse(self.__path)
 
-class TimetableLoader(Loader):
+class TimetableLoader(loader.Loader):
     def __init__(self, parent_directory: str) -> None:
         super().__init__() 
-        self._Loader__data: timetable.Timetable = None
+        self.data: timetable.Timetable = None
         self.__path: str = parent_directory
     
     def load(self) -> None:
-        self._Loader__data = timetable.Timetable()
+        self.data = timetable.Timetable()
         self.__data.load(self.__path)
 
-class AilistsLoader(Loader):
+class AilistsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__() 
-        self._Loader__data: ailists.AILists = None
+        self.data: ailists.AILists = None
         self.__path: str = path
     
     def load(self) -> None:
-        self._Loader__data = _ailists_parser.parse(self.__path)
+        self.data = _ailists_parser.parse(self.__path)
 
-class ChronoLoader(Loader):
+class ChronoLoader(loader.Loader):
     def __init__(self, directory: str, gc_map: list[global_config.Map]) -> None:
         super().__init__() 
-        self._Loader__data: chrono.Chrono()
+        self.data: chrono.Chrono()
         self.__directory: str = directory
         self.__gc_map: list[global_config.Map] = gc_map
     
     def load(self) -> None:
-        self._Loader__data = chrono.Chrono()
-        self._Loader__data.load(self.__directory, self.__gc_map)
+        self.data = chrono.Chrono()
+        self.data.load(self.__directory, self.__gc_map)
 
 class SafeLoader:
     def __init__(self, real_loader) -> None:
@@ -117,7 +113,7 @@ class SafeLoader:
     
     def get_data(self) -> None:
         if self.__status == FileParsingStatus.READ_SUCCESS:
-            return self.__real_loader.get_data()
+            return self.__real_loader.data
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     

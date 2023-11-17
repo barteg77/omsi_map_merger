@@ -17,13 +17,14 @@
 
 import PySimpleGUI as sg
 import os
+import omsi_map
 import omsi_map_merger
 import global_config_parser
 import version
 
 EMPTY_STR = ''
 
-print("OMSI Map Merger "+version.version)
+print("OMSI Map Merger", version.version)
 
 def RepresentsInt(s):
     try: 
@@ -32,85 +33,19 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
-class GuiGroupManager:
-    pass
+class MapLoadingInteractionManager:
+    class NoSelectedMapComponentError(Exception):
+        pass
 
-class MapsListManager(GuiGroupManager):
-    def __init__(self,
-                 omsi_map_merger: omsi_map_merger.OmsiMapMerger,
-                 gui,
-                 window,
-                 key_listbox: str,
-                 key_add_input: str,
-                 key_add_button: str,
-                 key_remove: str,
-                 key_status: str,
-                 ):
-        self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
-        self.__gui = gui
-        self.__listbox = window[key_listbox]
-        self.__input_add = window[key_add_input]
-        self.__button_add = window[key_add_button]
-        self.__button_remove = window[key_remove]
-        self.__status_bar = window[key_status]
-        self.__ready_to_confirm = False
-    
-    def ready_to_confirm(self) -> bool:
-        return len(self.__omsi_map_merger.get_maps()) >= 2
-    
-    def __refresh_maps_list(self) -> None:
-        self.__listbox.update(values=self.__omsi_map_merger.get_maps())
-
-    def __handle_listbox(self) -> None:
-        self.__button_remove.update(disabled=False)
-
-    def __handle_add(self) -> None:
-        try:
-            self.__omsi_map_merger.append_map(self.__input_add.get())
-            self.__refresh_maps_list()
-            self.__button_remove.update(disabled=True)
-            #self.__refresh_confirm()
-        except ValueError as e:
-            self.__gui.popup(e)
-        except omsi_map_merger.MapRepetitionError as e:
-            self.__gui.popup(e)
-    
-    def __handle_remove(self) -> None:
-        self.__omsi_map_merger.remove_map(self.__listbox.get_indexes()[0])
-        self.__refresh_maps_list()
-        self.__button_remove.update(disabled=True)
-        #self.__refresh_confirm()
-    
-    def enable(self) -> None:
-        for gui_element in [self.__listbox, self.__input_add, self.__button_add]:
-            gui_element.update(disabled=False)
-        self.__status_bar.update(value="NOT COMPLETED", background_color=None)
-        
-        self.__refresh_maps_list()# TO JEST DO USUNIECIA RAZEM Z MAPAMI DO TESTOWANIA W OmsiMap.__init__ ALBO CO NAJMNIEJ DO PRZEMYŚLENIA
-    
-    def disable(self) -> None:
-        for gui_element in [self.__listbox, self.__input_add, self.__button_add, self.__button_remove]:
-            gui_element.update(disabled=True)
-        self.__status_bar.update(value="CONFIRMED", background_color='green')
-    
-    def handle_event(self, event) -> None:
-        for gui_element, handler in [
-            (self.__listbox, self.__handle_listbox),
-            (self.__input_add, self.__handle_add),
-            (self.__button_remove, self.__handle_remove),
-        ]:
-            if gui_element.key == event:
-                handler()
-                return True
-        return False
-
-class MapLoadingInteractionManager(GuiGroupManager):
     def __init__(self,
                  omsi_map_merger: omsi_map_merger.OmsiMapMerger,
                  gui,
                  window: sg.Window,
                  key_tree: str,
                  key_details: str,
+                 key_add_input: str,
+                 key_add_button: str,
+                 key_remove: str,
                  key_load_whole_maps: str,
                  key_load_selected: str,
                  ) -> None:
@@ -118,9 +53,15 @@ class MapLoadingInteractionManager(GuiGroupManager):
         self.__gui = gui
         self.__tree: gui.Tree = window[key_tree]
         self.__multiline_details: gui.Multiline = window[key_details]
+        self.__input_add: gui.Button = window[key_add_input]
+        self.__button_add: gui.Button = window[key_add_button]
+        self.__button_remove: gui.Button = window[key_remove]
         self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
         self.__button_load_selected: gui.Button = window[key_load_selected]
         self.__maps_components_by_id = dict() #add type hint (int, anything)
+
+        self.__update_tree()
+        self.__update_disability()
     
     def ready_to_confirm(self) -> bool:
         return False
@@ -136,47 +77,54 @@ class MapLoadingInteractionManager(GuiGroupManager):
                              [component_type, status],
             )
         
-        for omsi_map in map(lambda x: x.omsi_map, self.__omsi_map_merger.get_maps()):
-            add_to_tree(EMPTY_STR, omsi_map, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
+        for map_to_merge in self.__omsi_map_merger.get_maps():
+            omsi_map = map_to_merge.omsi_map
+            add_to_tree(EMPTY_STR, map_to_merge, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
             for name, component_type, safe_loader in [
                 ("global.cfg", "GC", omsi_map.get_global_config()),
                 ("timetable/", "TT", omsi_map.get_standard_timetable()),
                 ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
             ]:
-                add_to_tree(omsi_map, safe_loader, name, component_type, safe_loader.info_short())
+                add_to_tree(map_to_merge, safe_loader, name, component_type, safe_loader.info_short())
             
             tiles = omsi_map.get_tiles()
-            add_to_tree(omsi_map, tiles, "Tiles", EMPTY_STR, EMPTY_STR)
+            add_to_tree(map_to_merge, tiles, "Tiles", EMPTY_STR, EMPTY_STR)
             try:
                 for tile_index, [gc_map, omsi_map_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, tiles)):
                     add_to_tree(tiles, omsi_map_tile, f"Tile n.{tile_index}, \"{gc_map.map_file}\"", "TILE", omsi_map_tile.info_short())
             except:
-                print('nie ma nic')
+                print('nie ma nic')# to jest złe i do przerobienia
         self.__tree.update(values = tree_data)
-    
-    def enable(self) -> None:
-        for gui_element in [
-            #self.__tree,# can't be disabled
-            self.__button_load_whole_map,
-            self.__button_load_selected,
-        ]:
-            gui_element.update(disabled=False)
-        self.__update_tree()
-    
-    def disable(self) -> None:
-        pass
 
     def __get_selected_map_component(self):
         try:
             return self.__maps_components_by_id[self.__tree.SelectedRows[0]]
         except IndexError:
-            raise Exception("there is no selected map component")
+            raise self.NoSelectedMapComponentError()
 
     def __handle_tree(self) -> None:
         try:
             self.__multiline_details.update(value=self.__get_selected_map_component().info_detailed())
-        except AttributeError as e:
+        except (AttributeError,
+                self.NoSelectedMapComponentError,# After removal of map to merge, 'load_tree' event occurs,
+                #but there is no selected map component. (Tree data was updated.)
+                ):
             self.__multiline_details.update(value="wybierz tam, gdzie jest info")
+    
+    def __handle_add(self) -> None:
+        try:
+            self.__omsi_map_merger.append_map(self.__input_add.get())
+            self.__update_tree()
+            #self.__button_remove.update(disabled=True)
+        except ValueError as e:
+            self.__gui.popup(e)# "x" is not directory
+        except omsi_map_merger.MapRepetitionError as e:
+            self.__gui.popup(e)
+    
+    def __handle_remove(self) -> None:
+        self.__omsi_map_merger.remove_map(self.__omsi_map_merger.get_maps().index(self.__get_selected_map_component()))
+        self.__update_tree()
+        #self.__button_remove.update(disabled=True)
     
     def __handle_load_whole_map(self) -> None:
         self.__omsi_map_merger.load_maps()
@@ -187,72 +135,38 @@ class MapLoadingInteractionManager(GuiGroupManager):
         self.__get_selected_map_component().load()
         self.__update_tree()
     
+    def __is_selected_component_instance(self, component_type):
+        try:
+            return isinstance(self.__get_selected_map_component(), component_type)
+        except self.NoSelectedMapComponentError:
+            return False
+    
+    def __update_disability(self):
+        self.__button_remove.update(disabled = not self.__is_selected_component_instance(omsi_map_merger.MapToMerge))
+        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(omsi_map.SafeLoader))
+        self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
+    
     def handle_event(self, event) -> bool:
         for gui_element, handler in [
             (self.__tree, self.__handle_tree),
+            (self.__input_add, self.__handle_add),
+            (self.__button_remove, self.__handle_remove),
             (self.__button_load_whole_map, self.__handle_load_whole_map),
             (self.__button_load_selected, self.__handle_load_selected),
         ]:
             if gui_element.key == event:
                 handler()
+                self.__update_disability()
                 return True
         return False
 
-class GuiGroupToManage:
-    def __init__(self,
-                 gui_group_manager: GuiGroupManager,
-                 window,
-                 key_button_next_group: str,
-        ) -> None:
-        self.gui_group_manager: GuiGroupManager = gui_group_manager
-        self.button_next_group = window[key_button_next_group]
-
-class GuiGroupsManager:
-    def __init__(self,
-                 groups_to_manage: list[GuiGroupToManage],
-                 ) -> None:
-        if len(groups_to_manage) == 0:
-            raise ValueError(f"At least one GuiGroupToManage  is required (provided 0).")
-        self.__groups_to_manage: list[GuiGroupToManage] = groups_to_manage
-        self.__groups_iter: list_iterator = iter(self.__groups_to_manage)
-        self.__current_group = next(self.__groups_iter)
-        self.__current_group.gui_group_manager.enable()
-    
-    def __switch_to_next_group(self):
-        self.__current_group.button_next_group.update(disabled=True)
-        self.__current_group.gui_group_manager.disable()
-        self.__current_group = next(self.__groups_iter)
-        self.__current_group.button_next_group.update(disabled=False)
-        self.__current_group.gui_group_manager.enable()
-    
-    def dalej(self):
-        self.__switch_to_next_group()# to jest nie do używania i do skasowania
-
-    def handle_event(self, key: str) -> bool:
-        if key == self.__current_group.button_next_group.key:
-            self.__switch_to_next_group()
-            return True
-        elif self.__current_group.gui_group_manager.handle_event(key):
-            self.__current_group.button_next_group.update(disabled = not self.__current_group.gui_group_manager.ready_to_confirm())
-            return True
-        return False
-
-directories_layout = [
-    [sg.Text("Select directories of maps you want to merge. (at least 2)")],
-    [sg.Listbox([], size=(70,5), disabled=True, key='maps_directories', enable_events=True)],
-    [
-        sg.Input(visible=False, enable_events=True, key='maps_directories_add_input', disabled=True),
-        sg.FolderBrowse("Add", key='maps_directories_add_button', disabled=True),
-        sg.Button("Remove", key='maps_directories_remove', disabled=True),
-    ],
-    [
-        sg.Button("Confirm selected maps directories", key="maps_directories_confirm", disabled=True),
-        sg.Text("Directory selection status: "),
-        sg.StatusBar("NOT COMPLETED", key='maps_directories_status')],
-    ]
-
 map_reading_panel = [
-    [sg.Button("Read whole maps", key="load_whole_maps", disabled=True), sg.Text("Maps reading status: "), sg.StatusBar("trudno powiedzieć")],
+    [
+        sg.Input(visible=False, enable_events=True, key='load_add_input', disabled=True),
+        sg.FolderBrowse("Add", key='load_add_button'),
+        sg.Button("Remove", key='load_remove'),
+        sg.Button("Read whole maps", key='load_whole_maps', disabled=True),
+    ],
     [sg.Tree(sg.TreeData(),
              ["Type", "Status"],
              col0_heading="Name",
@@ -270,11 +184,9 @@ map_reading_panel = [
         sg.Button("Open text editor", key="open_text_editor", disabled=True),
     ],
     [sg.Multiline(key='load_details', s=(90,10), disabled=True, default_text="det")],
-    [sg.Button("Confirm load", key="load_confirm", disabled=True)]
 ]
 
 layout_left = [
-    [sg.Frame("Select maps to merge", directories_layout)],
     [sg.Frame("Reading maps files", map_reading_panel)],
 ]
 
@@ -397,39 +309,24 @@ def draw_scheme():
 omm = omsi_map_merger.OmsiMapMerger()
 window = sg.Window("OMSI Map Merger", layout, finalize=True)
 
-maps_list_manager = MapsListManager(omm,
-                                    sg,
-                                    window,
-                                    'maps_directories',
-                                    'maps_directories_add_input',
-                                    'maps_directories_add_button',
-                                    'maps_directories_remove',
-                                    'maps_directories_status',
-                                    )
-
 maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInteractionManager(
     omm,
     sg,
     window,
     'load_tree',
     'load_details',
+    'load_add_input',
+    'load_add_button',
+    'load_remove',
     'load_whole_maps',
     'load_selected')
-
-gui_groups_manager: GuiGroupsManager = GuiGroupsManager(
-    [
-        GuiGroupToManage(maps_list_manager, window, 'maps_directories_confirm'),
-        GuiGroupToManage(maps_loading_interaction_manager, window, 'load_confirm'),
-    ]
-)
-gui_groups_manager.dalej()###
 
 while True:
     event, values = window.read()
     
     if event == sg.WIN_CLOSED or event == "cancel":
         break
-    elif gui_groups_manager.handle_event(event):
+    elif maps_loading_interaction_manager.handle_event(event):
         pass
     #trzeba kiedyś ustawić raise exception jak jest event nieobsłużony
     
