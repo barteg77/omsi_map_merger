@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -30,6 +30,7 @@ import busstops_serializer
 import station_links
 import station_links_parser
 import station_links_serializer
+import loader
 import glob
 import os
 
@@ -48,67 +49,104 @@ _busstops_serializer = busstops_serializer.BusstopsSerializer()
 _station_links_parser = station_links_parser.StationLinksParser()
 _station_links_serializer = station_links_serializer.StationLinksSerializer()
 
+class TimetableLineLoader(loader.Loader):
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.data = None
+        self.__path: str = path
+    
+    def load(self) -> None:
+        self.data: time_table_line.TimeTableLine = _time_table_line_parser.parse(self.__path)
+
+class TrackLoader(loader.Loader):
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.data = None
+        self.__path: str = path
+    
+    def load(self) -> None:
+        self.data: track.Track = _track_parser.parse(self.__path)
+
+class TripLoader(loader.Loader):
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.data = None
+        self.__path: str = path
+    
+    def load(self) -> None:
+        self.data: trip.Trip = _trip_parser.parse(self.__path)
+
+class BusstopsLoader(loader.Loader):
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.data = None
+        self.__path: str = path
+    
+    def load(self) -> None:
+        self.data: busstops.Busstops = _busstops_parser.parse(self.__path)
+
+class StationLinksLoader(loader.Loader):
+    def __init__(self, path: str) -> None:
+        super().__init__()
+        self.data = None
+        self.__path: str = path
+    
+    def load(self) -> None:
+        self.data: station_links.StationLinks = _station_links_parser.parse(self.__path)
+
 class Timetable:
     def __init__(self,
-                 chrono_directory=""
+                 map_directory: str,
+                 chrono_directory: str = "",
                  ):
+        self.map_directory = map_directory
         self.chrono_directory = chrono_directory
-        self.busstops = None
-        self.station_links = None
+        self.busstops = loader.SafeLoader(BusstopsLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg")))
+        self.station_links = loader.SafeLoader(StationLinksLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg")))
         self.time_table_line_files = []
-        self.time_table_lines = []
+        self.time_table_lines: list[time_table_line.TimeTableLine] = []
         self.track_files = []
-        self.tracks = []
+        self.tracks: list[track.Track] = []
         self.trip_files = []
-        self.trips = []
+        self.trips: list[trip.Trip] = []
 
-    def load(self,
-             map_directory
-             ):
-        self.time_table_line_files = [os.path.relpath(x, os.path.join(map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(map_directory, self.chrono_directory, "TTData", "*.ttl"))]
+    def load(self):
+        self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
         self.time_table_lines = []
         for time_table_line_file in self.time_table_line_files:
-            print("Parsing time table line file " + os.path.join(map_directory, self.chrono_directory, "TTData", time_table_line_file))
-            self.time_table_lines.append(_time_table_line_parser.parse(os.path.join(map_directory, self.chrono_directory, "TTData", time_table_line_file)))
+            self.time_table_lines.append(loader.SafeLoader(TimetableLineLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))))
         
-        self.track_files = [os.path.relpath(x, os.path.join(map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(map_directory, self.chrono_directory, "TTData", "*.ttr"))]
+        self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttr"))]
         self.tracks = []
         for track_file in self.track_files:
-            print("Parsing track file " + os.path.join(map_directory, self.chrono_directory, "TTData", track_file))
-            self.tracks.append(_track_parser.parse(os.path.join(map_directory, self.chrono_directory, "TTData", track_file)))
+            self.tracks.append(loader.SafeLoader(TrackLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))))
         
-        self.trip_files = [os.path.relpath(x, os.path.join(map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(map_directory, self.chrono_directory, "TTData", "*.ttp"))]
+        self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttp"))]
         self.trips = []
         for trip_file in self.trip_files:
-            print("Parsing trip file " + os.path.join(map_directory, self.chrono_directory, "TTData", trip_file))
-            self.trips.append(_trip_parser.parse(os.path.join(map_directory, self.chrono_directory, "TTData", trip_file)))
+            self.trips.append(loader.SafeLoader(TripLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))))
         
-        print("Parsing busstops file " + os.path.join(map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
-        self.busstops = _busstops_parser.parse(os.path.join(map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
-        
-        print("Parsing station links file " + os.path.join(map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
-        self.station_links = _station_links_parser.parse(os.path.join(map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
+        for safe_loader in self.time_table_lines + self.tracks + self.trips + [self.busstops, self.station_links]:
+            safe_loader.load()
     
-    def save(self,
-             map_directory
-             ):
+    def save(self):
         for time_table_line, time_table_line_file in zip(self.time_table_lines, self.time_table_line_files):
-            print("Serializing time table file " + os.path.join(map_directory, self.chrono_directory, "TTData", time_table_line_file))
-            _time_table_line_serializer.serialize(time_table_line, os.path.join(map_directory, self.chrono_directory, "TTData", time_table_line_file))
+            print("Serializing time table file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))
+            _time_table_line_serializer.serialize(time_table_line, os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))
         
         for track, track_file in zip(self.tracks, self.track_files):
-            print("Serializing track file " + os.path.join(map_directory, self.chrono_directory, "TTData", track_file))
-            _track_serializer.serialize(track, os.path.join(map_directory, self.chrono_directory, "TTData", track_file))
+            print("Serializing track file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))
+            _track_serializer.serialize(track, os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))
         
         for trip, trip_file in zip(self.trips, self.trip_files):
-            print("Serializing trip file " + os.path.join(map_directory, self.chrono_directory, "TTData", trip_file))
-            _trip_serializer.serialize(trip, os.path.join(map_directory, self.chrono_directory, "TTData", trip_file))
+            print("Serializing trip file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))
+            _trip_serializer.serialize(trip, os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))
         
-        print("Serializing busstops file " + os.path.join(map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
-        _busstops_serializer.serialize(self.busstops, os.path.join(map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
+        print("Serializing busstops file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
+        _busstops_serializer.serialize(self.busstops, os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
         
-        print("Serializing station links file " + os.path.join(map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
-        _station_links_serializer.serialize(self.station_links, os.path.join(map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
+        print("Serializing station links file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
+        _station_links_serializer.serialize(self.station_links, os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
     
     def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
         print("Changing objects' IDs and tiles' indexes in tracks.")

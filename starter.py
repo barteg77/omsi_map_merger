@@ -21,6 +21,7 @@ import omsi_map
 import omsi_map_merger
 import global_config_parser
 import version
+import loader
 
 EMPTY_STR = ''
 
@@ -82,7 +83,6 @@ class MapLoadingInteractionManager:
             add_to_tree(EMPTY_STR, map_to_merge, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
             for name, component_type, safe_loader in [
                 ("global.cfg", "GC", omsi_map.get_global_config()),
-                ("timetable/", "TT", omsi_map.get_standard_timetable()),
                 ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
             ]:
                 add_to_tree(map_to_merge, safe_loader, name, component_type, safe_loader.info_short())
@@ -94,6 +94,21 @@ class MapLoadingInteractionManager:
                     add_to_tree(tiles, omsi_map_tile, f"Tile n.{tile_index}, \"{gc_map.map_file}\"", "TILE", omsi_map_tile.info_short())
             except:
                 print('nie ma nic')# to jest złe i do przerobienia
+            
+            def add_timetable(tt, parent_component):
+                add_to_tree(parent_component, tt, "Timetable", EMPTY_STR, "n/a")
+                for type_name, type_short, components_filenames_list, components_list in [
+                    ("Timetable lines", "TTL", tt.time_table_line_files, tt.time_table_lines),
+                    ("Tracks", "TTR", tt.track_files, tt.tracks),
+                    ("Trips", "TTP", tt.trip_files, tt.trips),
+                ]:
+                    add_to_tree(tt, components_list, type_name, EMPTY_STR, "n/a")
+                    for component_filename, component in zip(components_filenames_list, components_list):
+                        add_to_tree(components_list, component, component_filename, type_short, component.info_short())
+                add_to_tree(tt, tt.busstops, "busstops.cfg", "BUSSTOPS", tt.busstops.info_short())
+                add_to_tree(tt, tt.station_links, "stnlinks.cfg", "STNLINKS", tt.station_links.info_short())
+            
+            add_timetable(omsi_map.get_standard_timetable(), map_to_merge) 
         self.__tree.update(values = tree_data)
 
     def __get_selected_map_component(self):
@@ -143,7 +158,7 @@ class MapLoadingInteractionManager:
     
     def __update_disability(self):
         self.__button_remove.update(disabled = not self.__is_selected_component_instance(omsi_map_merger.MapToMerge))
-        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(omsi_map.SafeLoader))
+        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
     
     def handle_event(self, event) -> bool:

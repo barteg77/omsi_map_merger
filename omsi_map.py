@@ -31,7 +31,6 @@ import ailists_parser
 import ailists_serializer
 import chrono
 import loader
-from enum import Enum
 
 GLOBAL_CONFIG_FILENAME = "global.cfg"
 AILISTS_FILENAME = "ailists.cfg"
@@ -47,12 +46,6 @@ _ailists_serializer = ailists_serializer.AIListsSerializer()
 
 class NoDataError(Exception):
     pass
-
-class FileParsingStatus(Enum):
-    NOT_READ = 1
-    READ_SUCCESS = 2
-    ERROR = 3
-
 
 class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
@@ -71,16 +64,6 @@ class TileLoader(loader.Loader):
     
     def load(self) -> None:
         self.data: tile.Tile = _tile_parser.parse(self.__path)
-
-class TimetableLoader(loader.Loader):
-    def __init__(self, parent_directory: str) -> None:
-        super().__init__() 
-        self.data: timetable.Timetable = None
-        self.__path: str = parent_directory
-    
-    def load(self) -> None:
-        self.data = timetable.Timetable()
-        self.__data.load(self.__path)
 
 class AilistsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
@@ -102,59 +85,16 @@ class ChronoLoader(loader.Loader):
         self.data = chrono.Chrono()
         self.data.load(self.__directory, self.__gc_map)
 
-class SafeLoader:
-    def __init__(self, real_loader) -> None:
-        self.__real_loader: Loader = real_loader
-        self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
-        self.__exception: Exception = None
-    
-    def get_status(self) -> FileParsingStatus:
-        return self.__status
-    
-    def get_data(self) -> None:
-        if self.__status == FileParsingStatus.READ_SUCCESS:
-            return self.__real_loader.data
-        else:
-            raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
-    
-    def load(self) -> None:
-        print(type(self.__real_loader).__name__, "loading file...")
-        try:
-            self.__real_loader.load()
-            self.__status = FileParsingStatus.READ_SUCCESS
-            self.__exception  = None
-        except Exception as exception:
-            self.__status = FileParsingStatus.ERROR
-            self.__exception = exception
-    
-    def info_short(self) -> str:
-        match self.__status:
-            case FileParsingStatus.NOT_READ:
-                return "NOT READ"
-            case FileParsingStatus.READ_SUCCESS:
-                return "READ SUCCESSFULLY"
-            case FileParsingStatus.ERROR:
-                return f"ERROR: {type(self.__exception).__name__}"
-    
-    def info_detailed(self) -> str:
-        match self.__status:
-            case FileParsingStatus.NOT_READ:
-                return "File not read yet."
-            case FileParsingStatus.READ_SUCCESS:
-                return "Loaded successfully."
-            case FileParsingStatus.ERROR:
-                return str(self.__exception)
-
 class OmsiMap:
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: SafeLoader = SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)))
-        self._tiles: list[SafeLoader] = []
+        self._global_config: loader.SafeLoader = loader.SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)))
+        self._tiles: list[loader.SafeLoader] = []
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
-        self._standard_timetable: SafeLoader = SafeLoader(TimetableLoader(self.directory))
-        self._ailists: SafeLoader = SafeLoader(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
-        self._chronos: list[SafeLoader] = []
+        self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
+        self._ailists: loader.SafeLoader = loader.SafeLoader(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
+        self._chronos: list[loader.SafeLoader] = []
     
     def get_directory(self):
         return self.directory
@@ -177,9 +117,9 @@ class OmsiMap:
     def load_global_config(self):# affects self._tiles too
         self._global_config.load()
         # set tiles' safe parsers
-        if self._global_config.get_status() == FileParsingStatus.READ_SUCCESS:
+        if self._global_config.get_status() == loader.FileParsingStatus.READ_SUCCESS:
             for gc_tile in self._global_config.get_data()._map:
-                self._tiles.append(SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))#### to w innym miejscu musi być bo się 
+                self._tiles.append(loader.SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))#### to w innym miejscu musi być bo się 
                 #                                                                               global config przeladowuje SafeLoaderem a nie tym
 
     def save_global_config(self):
@@ -228,7 +168,7 @@ class OmsiMap:
         self._standard_timetable.load()
     
     def save_standard_timetable(self):
-        self._standard_timetable.save(self.directory)
+        self._standard_timetable.save()
     
     def load_ailists(self):
         self._ailists.load()
@@ -240,7 +180,7 @@ class OmsiMap:
     def load_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         for chrono_directory in chrono_directory_list:
-            self._chronos.append(SafeLoader(ChronoLoader(os.path.join(self.directory, chrono_directory), self._global_config.get_data()._map)))
+            self._chronos.append(loader.SafeLoader(ChronoLoader(os.path.join(self.directory, chrono_directory), self._global_config.get_data()._map)))
             self._chronos[-1].load()
     
     def save_chrono(self):
@@ -249,7 +189,7 @@ class OmsiMap:
     
     def load(self):
         self.load_global_config()
-        if self._global_config.get_status() == FileParsingStatus.READ_SUCCESS:
+        if self._global_config.get_status() == loader.FileParsingStatus.READ_SUCCESS:
             self.load_tiles()
         self.load_files()
         self.load_standard_timetable()
