@@ -17,6 +17,9 @@
 
 from enum import Enum
 
+class NoDataError(Exception):
+    pass
+
 class Loader:
     def __init__(self):
         self.data = None

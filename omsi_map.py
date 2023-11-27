@@ -44,9 +44,6 @@ _tile_serializer = tile_serializer.TileSerializer()
 _ailists_parser = ailists_parser.AIListsParser()
 _ailists_serializer = ailists_serializer.AIListsSerializer()
 
-class NoDataError(Exception):
-    pass
-
 class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__() 

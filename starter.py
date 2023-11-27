@@ -92,8 +92,8 @@ class MapLoadingInteractionManager:
             try:
                 for tile_index, [gc_map, omsi_map_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, tiles)):
                     add_to_tree(tiles, omsi_map_tile, f"Tile n.{tile_index}, \"{gc_map.map_file}\"", "TILE", omsi_map_tile.info_short())
-            except:
-                print('nie ma nic')# to jest złe i do przerobienia
+            except loader.NoDataError:
+                add_to_tree(tiles, None, "Can't get tiles' list.\"global.cfg\" wasn't loaded successfully.", EMPTY_STR, EMPTY_STR)
             
             def add_timetable(tt, parent_component):
                 add_to_tree(parent_component, tt, "Timetable", EMPTY_STR, "n/a")
@@ -146,9 +146,21 @@ class MapLoadingInteractionManager:
         self.__update_tree()
     
     def __handle_load_selected(self) -> None:
-        print(self.__tree.SelectedRows)#pass#if isinstance(,
-        self.__get_selected_map_component().load()
+        try:
+            smc = self.__get_selected_map_component()
+        except self.NoSelectedMapComponentError:
+            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader or its list is selected. There is nothing selected.")
+        
+        if isinstance(smc, loader.SafeLoader):
+            self.__get_selected_map_component().load()
+        elif isinstance(smc, list):# list of SafeLoaders
+            for component in smc:
+                component.load()
+        else:
+            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader or its list is selected. Type of selected: {type(smc)}.")
+            
         self.__update_tree()
+        #self.__update_disability() może to jest potrzebne pomyslec kiedyś
     
     def __is_selected_component_instance(self, component_type):
         try:
@@ -158,7 +170,9 @@ class MapLoadingInteractionManager:
     
     def __update_disability(self):
         self.__button_remove.update(disabled = not self.__is_selected_component_instance(omsi_map_merger.MapToMerge))
-        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
+        self.__button_load_selected.update(disabled = not (   self.__is_selected_component_instance(loader.SafeLoader)
+                                                           or self.__is_selected_component_instance(list)
+                                                           ))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
     
     def handle_event(self, event) -> bool:
