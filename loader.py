@@ -30,10 +30,18 @@ class FileParsingStatus(Enum):
     ERROR = 3
 
 class SafeLoader:
-    def __init__(self, real_loader) -> None:
+    def __init__(self, real_loader,
+                 callback_loaded: callable = None,
+                 callback_failed: callable = None,
+                 ) -> None:
         self.__real_loader: Loader = real_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
         self.__exception: Exception = None
+        self.__callback_loaded: function
+        if bool(callback_loaded is None) ^ bool(callback_failed is None):
+            raise Exception("You have to provide callback_loaded and callback_failed or not to provide any of them.")
+        self.__callback_loaded: callable = callback_loaded if callback_loaded is not None else lambda: None
+        self.__callback_failed: callable = callback_failed if callback_failed is not None else lambda: None
     
     def get_status(self) -> FileParsingStatus:
         return self.__status
@@ -49,10 +57,12 @@ class SafeLoader:
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
-            self.__exception  = None
+            self.__exception = None
+            self.__callback_loaded()
         except Exception as exception:
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
+            self.__callback_failed()
     
     def info_short(self) -> str:
         match self.__status:

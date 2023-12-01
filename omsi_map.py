@@ -83,10 +83,21 @@ class ChronoLoader(loader.Loader):
         self.data.load(self.__directory, self.__gc_map)
 
 class OmsiMap:
+    def set_tiles_gc_consistent(self) -> None:
+        # set tiles' safe parsers
+        for gc_tile in self._global_config.get_data()._map:
+            self._tiles.append(loader.SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))
+    
+    def empty_tiles(self) -> None:
+        self._tiles = []
+
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: loader.SafeLoader = loader.SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)))
+        self._global_config: loader.SafeLoader = loader.SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)),
+                                                                   self.set_tiles_gc_consistent, # on success
+                                                                   self.empty_tiles, # on fail
+                                                                   )
         self._tiles: list[loader.SafeLoader] = []
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
@@ -113,11 +124,6 @@ class OmsiMap:
     
     def load_global_config(self):# affects self._tiles too
         self._global_config.load()
-        # set tiles' safe parsers
-        if self._global_config.get_status() == loader.FileParsingStatus.READ_SUCCESS:
-            for gc_tile in self._global_config.get_data()._map:
-                self._tiles.append(loader.SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))#### to w innym miejscu musi być bo się 
-                #                                                                               global config przeladowuje SafeLoaderem a nie tym
 
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, GLOBAL_CONFIG_FILENAME))
