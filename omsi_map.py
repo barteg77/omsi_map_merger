@@ -177,7 +177,7 @@ class OmsiMap:
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         for chrono_directory in chrono_directory_list:
-            self._chronos.append(loader.SafeLoader(ChronoLoader(os.path.join(self.directory, chrono_directory), self._global_config.get_data()._map)))
+            self._chronos.append(chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map))
     
     def load_chrono(self):
         for chrono in self._chronos:

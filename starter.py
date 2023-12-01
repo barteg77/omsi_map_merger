@@ -124,6 +124,13 @@ class MapLoadingInteractionManager:
             for chrono in chronos:
                 add_to_tree(chronos, chrono, chrono.chrono_directory, "CHRONO", "n/a")
                 add_timetable(chrono.get_timetable(), chrono)
+
+                #CHRONO TILES
+                add_to_tree(chrono, chrono.chrono_tiles, "Chrono tiles", "CT", "n/a")
+                print('chrono', list(enumerate(zip(omsi_map._global_config.get_data()._map, chrono.get_chrono_tiles()))))
+                for tile_index, [gc_map, chrono_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, chrono.get_chrono_tiles())):
+                    add_to_tree(chrono.chrono_tiles, chrono_tile, f"n.{tile_index}, \"{gc_map.map_file}\"", "CT", chrono_tile.info_short())
+        
         self.__tree.update(values = tree_data)
 
     def __get_selected_map_component(self):
