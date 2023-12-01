@@ -109,23 +109,29 @@ class Timetable:
         self.tracks: list[track.Track] = []
         self.trip_files = []
         self.trips: list[trip.Trip] = []
-
-    def load(self):
+    
+    def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
         self.time_table_lines = []
         for time_table_line_file in self.time_table_line_files:
             self.time_table_lines.append(loader.SafeLoader(TimetableLineLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))))
-        
+    
+    def scan_tracks(self) -> None:
         self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttr"))]
         self.tracks = []
         for track_file in self.track_files:
             self.tracks.append(loader.SafeLoader(TrackLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))))
-        
+    
+    def scan_trips(self) -> None:
         self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttp"))]
         self.trips = []
         for trip_file in self.trip_files:
             self.trips.append(loader.SafeLoader(TripLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))))
-        
+    
+    def load(self):
+        self.scan_time_table_lines()
+        self.scan_tracks()
+        self.scan_trips()
         for safe_loader in self.time_table_lines + self.tracks + self.trips + [self.busstops, self.station_links]:
             safe_loader.load()
     

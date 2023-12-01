@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2023 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -41,13 +41,17 @@ class ChronoTileInfo:
 
 class Chrono:
     def __init__(self,
-                 chrono_directory
+                 chrono_directory,
+                 gc_map: global_config.GlobalConfig.
                  ):
         self.chrono_directory = chrono_directory
         self.chrono_config = None
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles_infos = []
-        self.timetable = None
+        self.timetable: timetable.Timetable = timetable.Timetable(self.chrono_directory)
+    
+    def get_timetable(self):
+        return self.timetable
     
     def load(self,
              map_directory,
@@ -65,7 +69,7 @@ class Chrono:
                                                               pos_y=tile.pos_y,
                                                               tile=_chrono_tile_parser.parse(os.path.join(map_directory, self.chrono_directory, tile.map_file))
                                                               ))
-        self.timetable = timetable.Timetable(self.chrono_directory)
+        self.get_timetable().load()
         self.timetable.load(map_directory)
     
     def save(self,

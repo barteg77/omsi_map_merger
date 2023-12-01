@@ -71,38 +71,29 @@ class AilistsLoader(loader.Loader):
     def load(self) -> None:
         self.data = _ailists_parser.parse(self.__path)
 
-class ChronoLoader(loader.Loader):
-    def __init__(self, directory: str, gc_map: list[global_config.Map]) -> None:
-        super().__init__() 
-        self.data: chrono.Chrono()
-        self.__directory: str = directory
-        self.__gc_map: list[global_config.Map] = gc_map
-    
-    def load(self) -> None:
-        self.data = chrono.Chrono()
-        self.data.load(self.__directory, self.__gc_map)
-
 class OmsiMap:
-    def set_tiles_gc_consistent(self) -> None:
+    def set_tiles_and_chronos_gc_consistent(self) -> None:
         # set tiles' safe parsers
         for gc_tile in self._global_config.get_data()._map:
             self._tiles.append(loader.SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))
+        self.scan_chrono()
     
-    def empty_tiles(self) -> None:
+    def empty_tiles_and_chronos(self) -> None:
         self._tiles = []
+        self._chronos = []
 
     def __init__(self,
                  directory=""):
         self.directory = directory
         self._global_config: loader.SafeLoader = loader.SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)),
-                                                                   self.set_tiles_gc_consistent, # on success
-                                                                   self.empty_tiles, # on fail
+                                                                   self.set_tiles_and_chronos_gc_consistent, # on success
+                                                                   self.empty_tiles_and_chronos, # on fail
                                                                    )
         self._tiles: list[loader.SafeLoader] = []
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoader = loader.SafeLoader(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
-        self._chronos: list[loader.SafeLoader] = []
+        self._chronos: list[chrono.Chrono] = []
     
     def get_directory(self):
         return self.directory
@@ -121,6 +112,9 @@ class OmsiMap:
     
     def get_tiles(self):
         return self._tiles
+    
+    def get_chrono(self):
+        return self._chronos
     
     def load_global_config(self):# affects self._tiles too
         self._global_config.load()
@@ -180,11 +174,14 @@ class OmsiMap:
         print("Serializing ailists file " + os.path.join(self.directory, AILISTS_FILENAME))
         _ailists_serializer.serialize(self._ailists, os.path.join(self.directory, AILISTS_FILENAME))
     
-    def load_chrono(self):
+    def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         for chrono_directory in chrono_directory_list:
             self._chronos.append(loader.SafeLoader(ChronoLoader(os.path.join(self.directory, chrono_directory), self._global_config.get_data()._map)))
-            self._chronos[-1].load()
+    
+    def load_chrono(self):
+        for chrono in self._chronos:
+            chrono.load()
     
     def save_chrono(self):
         for chrono in self._chronos:

@@ -27,12 +27,15 @@ class Loader:
 class FileParsingStatus(Enum):
     NOT_READ = 1
     READ_SUCCESS = 2
-    ERROR = 3
+    OPTIONAL_NOT_EXISTS = 3
+    ERROR = 4
 
 class SafeLoader:
-    def __init__(self, real_loader,
+    def __init__(self,
+                 real_loader,
                  callback_loaded: callable = None,
                  callback_failed: callable = None,
+                 optional: bool = False,
                  ) -> None:
         self.__real_loader: Loader = real_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
@@ -42,6 +45,7 @@ class SafeLoader:
             raise Exception("You have to provide callback_loaded and callback_failed or not to provide any of them.")
         self.__callback_loaded: callable = callback_loaded if callback_loaded is not None else lambda: None
         self.__callback_failed: callable = callback_failed if callback_failed is not None else lambda: None
+        self.__optional = optional
     
     def get_status(self) -> FileParsingStatus:
         return self.__status
@@ -60,6 +64,9 @@ class SafeLoader:
             self.__exception = None
             self.__callback_loaded()
         except Exception as exception:
+            if self.__optional and isinstance(exception, FileNotFoundError):
+                self.__status = FileParsingStatus.OPTIONAL_NOT_EXISTS
+                return
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
             self.__callback_failed()
@@ -70,6 +77,8 @@ class SafeLoader:
                 return "NOT READ"
             case FileParsingStatus.READ_SUCCESS:
                 return "READ SUCCESSFULLY"
+            case FileParsingStatus.OPTIONAL_NOT_EXISTS:
+                return "NOT EXISTS (optional)"
             case FileParsingStatus.ERROR:
                 return f"ERROR: {type(self.__exception).__name__}"
     

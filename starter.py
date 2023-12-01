@@ -22,6 +22,7 @@ import omsi_map_merger
 import global_config_parser
 import version
 import loader
+import timetable
 
 EMPTY_STR = ''
 
@@ -49,6 +50,10 @@ class MapLoadingInteractionManager:
                  key_remove: str,
                  key_load_whole_maps: str,
                  key_load_selected: str,
+                 key_load_scan_chronos: str,
+                 key_load_scan_timetable_lines: str,
+                 key_load_scan_tracks: str,
+                 key_load_scan_trips: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
         self.__gui = gui
@@ -59,6 +64,10 @@ class MapLoadingInteractionManager:
         self.__button_remove: gui.Button = window[key_remove]
         self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
         self.__button_load_selected: gui.Button = window[key_load_selected]
+        self.__button_load_scan_chronos: gui.Button = window[key_load_scan_chronos]
+        self.__button_load_scan_timetable_lines = window[key_load_scan_timetable_lines]
+        self.__button_load_scan_tracks = window[key_load_scan_tracks]
+        self.__button_load_scan_trips = window[key_load_scan_trips]
         self.__maps_components_by_id = dict() #add type hint (int, anything)
 
         self.__update_tree()
@@ -109,6 +118,12 @@ class MapLoadingInteractionManager:
                 add_to_tree(tt, tt.station_links, "stnlinks.cfg", "STNLINKS", tt.station_links.info_short())
             
             add_timetable(omsi_map.get_standard_timetable(), map_to_merge)
+            # CHRONOS
+            chronos = omsi_map.get_chrono()
+            add_to_tree(map_to_merge, chronos, "Chrono", EMPTY_STR, "n/a")
+            for chrono in chronos:
+                add_to_tree(chronos, chrono, chrono.chrono_directory, "CHRONO", "n/a")
+                add_timetable(chrono.get_timetable(), chrono)
         self.__tree.update(values = tree_data)
 
     def __get_selected_map_component(self):
@@ -141,10 +156,6 @@ class MapLoadingInteractionManager:
         self.__update_tree()
         #self.__button_remove.update(disabled=True)
     
-    def __handle_load_whole_map(self) -> None:
-        self.__omsi_map_merger.load_maps()
-        self.__update_tree()
-    
     def __handle_load_selected(self) -> None:
         try:
             smc = self.__get_selected_map_component()
@@ -162,7 +173,7 @@ class MapLoadingInteractionManager:
         self.__update_tree()
         #self.__update_disability() może to jest potrzebne pomyslec kiedyś
     
-    def __is_selected_component_instance(self, component_type):
+    def __is_selected_component_instance(self, component_type) -> bool:
         try:
             return isinstance(self.__get_selected_map_component(), component_type)
         except self.NoSelectedMapComponentError:
@@ -170,21 +181,38 @@ class MapLoadingInteractionManager:
     
     def __update_disability(self):
         self.__button_remove.update(disabled = not self.__is_selected_component_instance(omsi_map_merger.MapToMerge))
+        self.__button_load_scan_chronos.update(disabled = not (self.__is_selected_component_instance(omsi_map_merger.MapToMerge)
+                            and self.__get_selected_map_component().omsi_map.get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
         self.__button_load_selected.update(disabled = not (   self.__is_selected_component_instance(loader.SafeLoader)
                                                            or self.__is_selected_component_instance(list)
                                                            ))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
+        selected_tt = self.__is_selected_component_instance(timetable.Timetable)
+        for button in [
+            self.__button_load_scan_timetable_lines,
+            self.__button_load_scan_tracks,
+            self.__button_load_scan_trips,
+        ]:
+            button.update(disabled = not selected_tt)
     
     def handle_event(self, event) -> bool:
+        if self.__tree.key == event:
+            self.__handle_tree()#needn't tree update
+            self.__update_disability()
+            return True
         for gui_element, handler in [
-            (self.__tree, self.__handle_tree),
             (self.__input_add, self.__handle_add),
             (self.__button_remove, self.__handle_remove),
-            (self.__button_load_whole_map, self.__handle_load_whole_map),
+            (self.__button_load_whole_map, lambda: self.__omsi_map_merger.load_maps()),
             (self.__button_load_selected, self.__handle_load_selected),
+            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().omsi_map.scan_chrono()),
+            (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines()),
+            (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks()),
+            (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips()),
         ]:
             if gui_element.key == event:
-                handler()
+                handler() # need tree update
+                self.__update_tree()
                 self.__update_disability()
                 return True
         return False
@@ -211,6 +239,12 @@ map_reading_panel = [
     [
         sg.Button("Load_selected", key="load_selected", disabled=True),
         sg.Button("Open text editor", key="open_text_editor", disabled=True),
+    ],
+    [
+        sg.Button("Scan for chronos", key='load_scan_chronos', disabled=True),
+        sg.Button("Scan for lines", key='load_scan_timetable_lines', disabled=True),
+        sg.Button("Scan for tracks", key='load_scan_tracks', disabled=True),
+        sg.Button("Scan for trips", key='load_scan_trips', disabled=True),
     ],
     [sg.Multiline(key='load_details', s=(90,10), disabled=True, default_text="det")],
 ]
@@ -348,7 +382,11 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'load_add_button',
     'load_remove',
     'load_whole_maps',
-    'load_selected')
+    'load_selected',
+    'load_scan_chronos',
+    'load_scan_timetable_lines',
+    'load_scan_tracks',
+    'load_scan_trips')
 
 while True:
     event, values = window.read()
