@@ -108,7 +108,7 @@ class MapLoadingInteractionManager:
                 add_to_tree(tt, tt.busstops, "busstops.cfg", "BUSSTOPS", tt.busstops.info_short())
                 add_to_tree(tt, tt.station_links, "stnlinks.cfg", "STNLINKS", tt.station_links.info_short())
             
-            add_timetable(omsi_map.get_standard_timetable(), map_to_merge) 
+            add_timetable(omsi_map.get_standard_timetable(), map_to_merge)
         self.__tree.update(values = tree_data)
 
     def __get_selected_map_component(self):
