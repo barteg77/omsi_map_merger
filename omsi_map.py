@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -75,7 +75,7 @@ class OmsiMap:
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         # set tiles' safe parsers
         for gc_tile in self._global_config.get_data()._map:
-            self._tiles.append(loader.SafeLoader(TileLoader(os.path.join(self.directory, gc_tile.map_file))))
+            self._tiles.append(loader.SafeLoaderUnit(TileLoader(os.path.join(self.directory, gc_tile.map_file))))
         self.scan_chrono()
     
     def empty_tiles_and_chronos(self) -> None:
@@ -85,14 +85,14 @@ class OmsiMap:
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: loader.SafeLoader = loader.SafeLoader(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)),
+        self._global_config: loader.SafeLoaderUnit = loader.SafeLoaderUnit(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)),
                                                                    self.set_tiles_and_chronos_gc_consistent, # on success
                                                                    self.empty_tiles_and_chronos, # on fail
                                                                    )
-        self._tiles: list[loader.SafeLoader] = []
+        self._tiles: list[loader.SafeLoaderList] = []
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
-        self._ailists: loader.SafeLoader = loader.SafeLoader(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
+        self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
         self._chronos: list[chrono.Chrono] = []
     
     def get_directory(self):

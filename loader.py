@@ -1,4 +1,4 @@
-# Copyright 2023 Bartosz Gajewski
+# Copyright 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
+from enum import Enum, auto
 
 class NoDataError(Exception):
     pass
@@ -25,12 +25,23 @@ class Loader:
         self.data = None
 
 class FileParsingStatus(Enum):
-    NOT_READ = 1
-    READ_SUCCESS = 2
-    OPTIONAL_NOT_EXISTS = 3
-    ERROR = 4
+    NOT_READ = auto()
+    READ_SUCCESS = auto()
+    OPTIONAL_NOT_EXISTS = auto()
+    ERROR = auto()
+    LOWER_MIXED = auto()
 
 class SafeLoader:
+    # function self.__init__
+    # function self.get_status
+    # function self.get_data
+    # function self.load
+    # function self.info_short
+    # function self.info_detailed
+    # self.object_specific_actions ????
+    pass
+
+class SafeLoaderUnit(SafeLoader):
     def __init__(self,
                  real_loader,
                  callback_loaded: callable = None,
@@ -87,6 +98,42 @@ class SafeLoader:
             case FileParsingStatus.NOT_READ:
                 return "File not read yet."
             case FileParsingStatus.READ_SUCCESS:
-                return "Loaded successfully."
+                return "Loaded successfully.\n" + repr(self.get_data())
             case FileParsingStatus.ERROR:
                 return str(self.__exception)
+
+class SafeLoaderGroup(SafeLoader):
+    pass# to nie tak będzie tylko będzie Timetable(SafeLoaderGroup)
+
+class SafeLoaderList(SafeLoader):
+    def __init__(self, sl_list: list[SafeLoader]) -> None:
+        self.__lower_safe_loaders: list[SafeLoader] = sl_list
+    
+    def get_status(self) -> FileParsingStatus:
+        prev_status: FileParsingStatus = FileParsingStatus.ERROR
+        try:
+            prev_status = self.__lower_safe_loaders[0].get_status()
+        except IndexError:
+            return FileParsingStatus.READ_SUCCESS
+        for sl in self.__lower_safe_loaders:
+            if sl.get_status() != prev_status:
+                return FileParsingStatus.LOWER_MIXED
+        return prev_status
+    
+    def get_data(self) -> list[SafeLoader]:
+        return self.__lower_safe_loaders
+    
+    def load(self) -> None:
+        for sl in self.__lower_safe_loaders:
+            sl.load()
+    
+    def info_short(self) -> str:
+        prev_info: str = "prev info str"
+        try:
+            prev_status = self.__lower_safe_loaders[0].info_short()
+        except IndexError:
+            return FileParsingStatus.READ_SUCCESS
+        for sl in self.__lower_safe_loaders:
+            if sl.get_status() != prev_status:
+                return FileParsingStatus.LOWER_MIXED
+        return prev_status 
