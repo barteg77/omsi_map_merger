@@ -182,7 +182,7 @@ class MapLoadingInteractionManager:
         try:
             smc = self.__get_selected_map_component()
         except self.NoSelectedMapComponentError:
-            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader or its list is selected. There is nothing selected.")
+            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader (or its derivative) is selected. There is nothing selected.")
         
         if isinstance(smc, loader.SafeLoader):
             self.__get_selected_map_component().load()
@@ -190,7 +190,7 @@ class MapLoadingInteractionManager:
             for component in smc:
                 component.load()
         else:
-            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader or its list is selected. Type of selected: {type(smc)}.")
+            raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader (or its derivative) is selected. Type of selected: {type(smc)}.")
             
         self.__update_tree()
         #self.__update_disability() może to jest potrzebne pomyslec kiedyś
