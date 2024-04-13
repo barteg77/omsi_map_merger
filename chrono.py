@@ -31,7 +31,7 @@ _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 
 class ChronoTileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path, "ttl")
+        super().__init__(path, "chrono tile")
         self.data: chrono_tile.ChronoTile = None
         #self.__path: str = path
     
