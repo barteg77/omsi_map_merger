@@ -46,30 +46,30 @@ _ailists_serializer = ailists_serializer.AIListsSerializer()
 
 class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__() 
+        super().__init__(path) 
         self.data: global_config.GlobalConfig = None
-        self.__path: str = path
+        #self.__path: str = path
 
     def load(self) -> None:
-        self.data = _global_config_parser.parse(self.__path)
+        self.data = _global_config_parser.parse(self.path)
 
 class TileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__() 
+        super().__init__(path) 
         self.data: tile.Tile = None
-        self.__path: str = path
+        #self.__path: str = path
     
     def load(self) -> None:
-        self.data: tile.Tile = _tile_parser.parse(self.__path)
+        self.data: tile.Tile = _tile_parser.parse(self.path)
 
 class AilistsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__() 
+        super().__init__(path) 
         self.data: ailists.AILists = None
-        self.__path: str = path
+        #self.__path: str = path
     
     def load(self) -> None:
-        self.data = _ailists_parser.parse(self.__path)
+        self.data = _ailists_parser.parse(self.path)
 
 class OmsiMap:
     def set_tiles_and_chronos_gc_consistent(self) -> None:

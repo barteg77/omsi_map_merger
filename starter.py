@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -85,7 +85,24 @@ class MapLoadingInteractionManager:
                              id(element_map_component),
                              name,
                              [component_type, status],
-            )
+                            )
+        def add_safe_loader(parent_component, safe_loader: loader.SafeLoader):
+            for loader_type, add_function in [
+                (loader.SafeLoaderUnit, add_safe_loader_unit),
+                (loader.SafeLoaderList, add_safe_loader_list),
+            ]:
+                if type(safe_loader) == loader_type:
+                    add_function(parent_component, safe_loader)
+                    return
+            raise Exception(f"no appropriate tree-adding function for this type of SafeLoader (is  {type(safe_loader).__name})")
+        
+        def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
+            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.get_status())
+
+        def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
+            add_to_tree(parent_component, loader_list, "list of some loaders", "list", loader_list.get_status())
+            for loader in loader_list.get_data():
+                add_safe_loader(loader_list, loader)
         
         for map_to_merge in self.__omsi_map_merger.get_maps():
             omsi_map = map_to_merge.omsi_map
@@ -111,9 +128,10 @@ class MapLoadingInteractionManager:
                     ("Tracks", "TTR", tt.track_files, tt.tracks),
                     ("Trips", "TTP", tt.trip_files, tt.trips),
                 ]:
-                    add_to_tree(tt, components_list, type_name, EMPTY_STR, "n/a")
-                    for component_filename, component in zip(components_filenames_list, components_list):
-                        add_to_tree(components_list, component, component_filename, type_short, component.info_short())
+                    #add_to_tree(tt, components_list, type_name, EMPTY_STR, "n/a")
+                    #for component_filename, component in zip(components_filenames_list, components_list):
+                    #    add_to_tree(components_list, component, component_filename, type_short, component.info_short())
+                    add_safe_loader_list(tt, components_list)
                 add_to_tree(tt, tt.busstops, "busstops.cfg", "BUSSTOPS", tt.busstops.info_short())
                 add_to_tree(tt, tt.station_links, "stnlinks.cfg", "STNLINKS", tt.station_links.info_short())
             

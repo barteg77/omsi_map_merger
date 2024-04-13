@@ -1,4 +1,4 @@
-# Copyright 2020, 2023 Bartosz Gajewski
+# Copyright 2020, 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -31,12 +31,12 @@ _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 
 class ChronoTileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__() 
+        super().__init__(path, "ttl")
         self.data: chrono_tile.ChronoTile = None
-        self.__path: str = path
+        #self.__path: str = path
     
     def load(self) -> None:
-        self.data = _chrono_tile_parser.parse(self.__path)
+        self.data = _chrono_tile_parser.parse(self.path)
 
 class ChronoTileInfo:
     def __init__(self,

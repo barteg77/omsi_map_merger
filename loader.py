@@ -16,13 +16,24 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum, auto
+import os.path
 
 class NoDataError(Exception):
     pass
 
 class Loader:
-    def __init__(self):
+    def __init__(self, path: str, ltype = "unknown"):
+        self.type: str = ltype
+        self.path: str = path
         self.data = None
+    
+    def get_type(self) -> str:
+        return self.type
+
+    def get_path(self) -> str:
+        return self.path
+    
+    # function self.load
 
 class FileParsingStatus(Enum):
     NOT_READ = auto()
@@ -58,6 +69,15 @@ class SafeLoaderUnit(SafeLoader):
         self.__callback_failed: callable = callback_failed if callback_failed is not None else lambda: None
         self.__optional = optional
     
+    def get_type(self) -> str:
+        return self.__real_loader.get_type()
+    
+    def get_path(self) -> str:
+        return self.__real_loader.get_path()
+
+    def get_name(self) -> str:
+        return os.path.split(self.get_path())[1]
+    
     def get_status(self) -> FileParsingStatus:
         return self.__status
     
@@ -68,7 +88,7 @@ class SafeLoaderUnit(SafeLoader):
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
-        print(type(self.__real_loader).__name__, "loading file...")
+        print(f"{type(self.__real_loader).__name__} loading file \"{self.get_path()}\"...")
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
@@ -136,4 +156,4 @@ class SafeLoaderList(SafeLoader):
         for sl in self.__lower_safe_loaders:
             if sl.get_status() != prev_status:
                 return FileParsingStatus.LOWER_MIXED
-        return prev_status 
+        return prev_status
