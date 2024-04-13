@@ -100,7 +100,7 @@ class MapLoadingInteractionManager:
             add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.get_status())
 
         def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
-            add_to_tree(parent_component, loader_list, "list of some loaders", "list", loader_list.get_status())
+            add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.get_status())
             for loader in loader_list.get_data():
                 add_safe_loader(loader_list, loader)
         
@@ -144,10 +144,7 @@ class MapLoadingInteractionManager:
                 add_timetable(chrono.get_timetable(), chrono)
 
                 #CHRONO TILES
-                add_to_tree(chrono, chrono.chrono_tiles, "Chrono tiles", "CT", "n/a")
-                print('chrono', list(enumerate(zip(omsi_map._global_config.get_data()._map, chrono.get_chrono_tiles()))))
-                for tile_index, [gc_map, chrono_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, chrono.get_chrono_tiles())):
-                    add_to_tree(chrono.chrono_tiles, chrono_tile, f"n.{tile_index}, \"{gc_map.map_file}\"", "CT", chrono_tile.info_short())
+                add_safe_loader_list(chrono, chrono.chrono_tiles)
         
         self.__tree.update(values = tree_data)
 
@@ -230,7 +227,7 @@ class MapLoadingInteractionManager:
             (self.__button_remove, self.__handle_remove),
             (self.__button_load_whole_map, lambda: self.__omsi_map_merger.load_maps()),
             (self.__button_load_selected, self.__handle_load_selected),
-            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().omsi_map.scan_chrono()),
+            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().omsi_map.scan_chrono()),#po co to jest w lambda??
             (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines()),
             (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks()),
             (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips()),

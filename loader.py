@@ -126,8 +126,9 @@ class SafeLoaderGroup(SafeLoader):
     pass# to nie tak będzie tylko będzie Timetable(SafeLoaderGroup)
 
 class SafeLoaderList(SafeLoader):
-    def __init__(self, sl_list: list[SafeLoader]) -> None:
+    def __init__(self, sl_list: list[SafeLoader], name: str) -> None:
         self.__lower_safe_loaders: list[SafeLoader] = sl_list
+        self.__name = name
     
     def get_status(self) -> FileParsingStatus:
         prev_status: FileParsingStatus = FileParsingStatus.ERROR
@@ -139,6 +140,9 @@ class SafeLoaderList(SafeLoader):
             if sl.get_status() != prev_status:
                 return FileParsingStatus.LOWER_MIXED
         return prev_status
+    
+    def get_name(self) -> str:
+        return self.__name
     
     def get_data(self) -> list[SafeLoader]:
         return self.__lower_safe_loaders

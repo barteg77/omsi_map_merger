@@ -104,23 +104,23 @@ class Timetable:
         self.busstops = loader.SafeLoaderUnit(BusstopsLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg")))
         self.station_links = loader.SafeLoaderUnit(StationLinksLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg")))
         self.time_table_line_files = []
-        self.time_table_lines: loader.SafeLoaderList = loader.SafeLoaderList([])
+        self.time_table_lines: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable lines")
         self.track_files = []
-        self.tracks: loader.SafeLoaderList = loader.SafeLoaderList([])
+        self.tracks: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable tracks")
         self.trip_files = []
-        self.trips: loader.SafeLoaderList = loader.SafeLoaderList([])
+        self.trips: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable trips")
     
     def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
-        self.time_table_lines = loader.SafeLoaderList(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(TimetableLineLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))), self.time_table_line_files)))
+        self.time_table_lines = loader.SafeLoaderList(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(TimetableLineLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))), self.time_table_line_files)), self.time_table_lines.get_name())
     
     def scan_tracks(self) -> None:
         self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttr"))]
-        self.tracks = loader.SafeLoaderList(list(map(lambda track_file: loader.SafeLoaderUnit(TrackLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))), self.track_files)))
+        self.tracks = loader.SafeLoaderList(list(map(lambda track_file: loader.SafeLoaderUnit(TrackLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))), self.track_files)), self.tracks.get_name())
     
     def scan_trips(self) -> None:
         self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttp"))]
-        self.trips = loader.SafeLoaderList(list(map(lambda trip_file: loader.SafeLoaderUnit(TripLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))), self.trip_files)))
+        self.trips = loader.SafeLoaderList(list(map(lambda trip_file: loader.SafeLoaderUnit(TripLoader(os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))), self.trip_files)), self.trips.get_name())
     
     def load(self):
         self.scan_time_table_lines()
