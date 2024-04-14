@@ -75,6 +75,7 @@ class OmsiMap:
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         self.empty_tiles_and_chronos()
         # set tiles' safe parsers
+        tiles_safe_loaders: list[SafeLoaderUnit] = []
         groundtex_count = len(self._global_config.get_data().groundtex)
         for gc_tile in self._global_config.get_data()._map:
             tile_files = omsi_files.OmsiFiles([
@@ -99,11 +100,12 @@ class OmsiMap:
                                       params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": groundtex_index},
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
-            self._tiles.append(loader.SafeLoaderUnit(TileLoader(os.path.join(self.directory, gc_tile.map_file)), ofiles=tile_files))
+            tiles_safe_loaders.append(loader.SafeLoaderUnit(TileLoader(os.path.join(self.directory, gc_tile.map_file)), ofiles=tile_files))
+        self._tiles.set_data(tiles_safe_loaders)
         self.scan_chrono()
     
     def empty_tiles_and_chronos(self) -> None:
-        self._tiles = []
+        self._tiles.set_data([])
         self._chronos = []
 
     def __init__(self,
@@ -113,7 +115,7 @@ class OmsiMap:
                                                                    self.set_tiles_and_chronos_gc_consistent, # on success
                                                                    self.empty_tiles_and_chronos, # on fail
                                                                    )
-        self._tiles: list[loader.SafeLoaderList] = []
+        self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))

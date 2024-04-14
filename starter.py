@@ -113,13 +113,7 @@ class MapLoadingInteractionManager:
             ]:
                 add_to_tree(map_to_merge, safe_loader, name, component_type, safe_loader.info_short())
             
-            tiles = omsi_map.get_tiles()
-            add_to_tree(map_to_merge, tiles, "Tiles", EMPTY_STR, EMPTY_STR)
-            try:
-                for tile_index, [gc_map, omsi_map_tile] in enumerate(zip(omsi_map._global_config.get_data()._map, tiles)):
-                    add_to_tree(tiles, omsi_map_tile, f"Tile n.{tile_index}, \"{gc_map.map_file}\"", "TILE", omsi_map_tile.info_short())
-            except loader.NoDataError:
-                add_to_tree(tiles, None, "Can't get tiles' list.\"global.cfg\" wasn't loaded successfully.", EMPTY_STR, EMPTY_STR)
+            add_safe_loader(map_to_merge, omsi_map.get_tiles())
             
             def add_timetable(tt, parent_component):
                 add_to_tree(parent_component, tt, "Timetable", EMPTY_STR, "n/a")
