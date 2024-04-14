@@ -51,7 +51,7 @@ _station_links_serializer = station_links_serializer.StationLinksSerializer()
 
 class TimetableLineLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path, "ttl")
         self.data = None
         #self.__path: str = path
     
@@ -60,7 +60,7 @@ class TimetableLineLoader(loader.Loader):
 
 class TrackLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path, "ttr")
         self.data = None
         #self.__path: str = path
     
@@ -69,7 +69,7 @@ class TrackLoader(loader.Loader):
 
 class TripLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path, "ttp")
         self.data = None
         #self.__path: str = path
     
@@ -78,7 +78,7 @@ class TripLoader(loader.Loader):
 
 class BusstopsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path, "busstops")
         self.data = None
         #self.__path: str = path
     
@@ -87,7 +87,7 @@ class BusstopsLoader(loader.Loader):
 
 class StationLinksLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path)
+        super().__init__(path, "station links")
         self.data = None
         #self.__path: str = path
     
