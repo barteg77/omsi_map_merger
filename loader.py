@@ -56,6 +56,9 @@ class SafeLoader:
     
     def get_omsi_files(self) -> omsi_files.OmsiFiles:
         return self.__omsi_files
+    
+    def omsi_files_info(self) -> str:
+        return "Attached omsi-files:" + "".join(["\n\t"+ filename for filename in self.get_omsi_files().get_files_names()])
 
 class SafeLoaderUnit(SafeLoader):
     def __init__(self,
@@ -122,14 +125,20 @@ class SafeLoaderUnit(SafeLoader):
                 return f"ERROR: {type(self.__exception).__name__}"
     
     def info_detailed(self) -> str:
+        status_description: str
         match self.__status:
             case FileParsingStatus.NOT_READ:
-                return "File not read yet."
+                status_description = "File not read yet."
             case FileParsingStatus.READ_SUCCESS:
-                return "Loaded successfully.\n" + repr(self.get_data()) + "\nAttached omsi-files:\n" + "\n".join(["\t"+ filename for filename in self.get_omsi_files().get_files_names()])
+                status_description = "Loaded successfully.\n" + repr(self.get_data())
                 #return "Loaded successfully.\n" + repr(self.get_data())
             case FileParsingStatus.ERROR:
-                return str(self.__exception)
+                status_description = str(self.__exception)
+            case FileParsingStatus.OPTIONAL_NOT_EXISTS:
+                status_description = "This file does not exist, but it is not a problem, because it is optional."
+            case _:
+                raise Exception(f"This status was not expected here (is {self.__status})")
+        return status_description + "\n" + self.omsi_files_info()
 
 class SafeLoaderGroup(SafeLoader):
     pass# to nie tak będzie tylko będzie Timetable(SafeLoaderGroup)
@@ -175,4 +184,4 @@ class SafeLoaderList(SafeLoader):
         return prev_status
     
     def info_detailed(self) -> str:
-        return "list of SafeLoaders"
+        return "list of SafeLoaders\n" + self.omsi_files_info()
