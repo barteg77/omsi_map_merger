@@ -147,6 +147,9 @@ class SafeLoaderList(SafeLoader):
     def get_data(self) -> list[SafeLoader]:
         return self.__lower_safe_loaders
     
+    def set_data(self, new_data: list[SafeLoader]) -> None:
+        self.__lower_safe_loaders = new_data
+    
     def load(self) -> None:
         for sl in self.__lower_safe_loaders:
             sl.load()
