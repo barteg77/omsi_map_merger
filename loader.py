@@ -144,7 +144,12 @@ class SafeLoaderGroup(SafeLoader):
     pass# to nie tak będzie tylko będzie Timetable(SafeLoaderGroup)
 
 class SafeLoaderList(SafeLoader):
-    def __init__(self, sl_list: list[SafeLoader], name: str) -> None:
+    def __init__(self,
+                 sl_list: list[SafeLoader],
+                 name: str,
+                 ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
+                 ) -> None:
+        super().__init__(ofiles)
         self.__lower_safe_loaders: list[SafeLoader] = sl_list
         self.__name = name
     
