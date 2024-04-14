@@ -62,7 +62,8 @@ class SafeLoaderUnit(SafeLoader):
                  real_loader,
                  callback_loaded: callable = None,
                  callback_failed: callable = None,
-                 ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
+                 ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
+                 optional: bool = False,
                  ) -> None:
         super().__init__(ofiles)
         self.__real_loader: Loader = real_loader
@@ -73,6 +74,7 @@ class SafeLoaderUnit(SafeLoader):
             raise Exception("You have to provide callback_loaded and callback_failed or not to provide any of them.")
         self.__callback_loaded: callable = callback_loaded if callback_loaded is not None else lambda: None
         self.__callback_failed: callable = callback_failed if callback_failed is not None else lambda: None
+        self.__optional = optional
     
     def get_type(self) -> str:
         return self.__real_loader.get_type()
@@ -99,12 +101,14 @@ class SafeLoaderUnit(SafeLoader):
             self.__status = FileParsingStatus.READ_SUCCESS
             self.__exception = None
             self.__callback_loaded()
-        except FileNotFoundError:
-            pass
-        """except Exception as exception:
+        except Exception as exception:
+            print(str(exception))
+            if self.__optional and isinstance(exception, FileNotFoundError):
+                    self.__status = FileParsingStatus.OPTIONAL_NOT_EXISTS
+                    return
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
-            self.__callback_failed()"""
+            self.__callback_failed()
     
     def info_short(self) -> str:
         match self.__status:
