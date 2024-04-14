@@ -94,7 +94,7 @@ class StationLinksLoader(loader.Loader):
     def load(self) -> None:
         self.data: station_links.StationLinks = _station_links_parser.parse(self.path)
 
-class Timetable:
+class Timetable(loader.SafeLoaderList):
     def __init__(self,
                  map_directory: str,
                  chrono_directory: str = "",
@@ -109,6 +109,13 @@ class Timetable:
         self.tracks: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable tracks")
         self.trip_files = []
         self.trips: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable trips")
+        super().__init__([
+            self.time_table_lines,
+            self.tracks,
+            self.trips,
+            self.busstops,
+            self.station_links,
+        ], "Timetable")
     
     def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
@@ -126,11 +133,7 @@ class Timetable:
         self.scan_time_table_lines()
         self.scan_tracks()
         self.scan_trips()
-        for safe_loader_list in [self.time_table_lines, self.tracks, self.trips]:
-            safe_loader_list.load()
-        
-        for safe_loader in [self.busstops, self.station_links]:
-            safe_loader.load()
+        super().load()
     
     def save(self):
         for time_table_line, time_table_line_file in zip(self.time_table_lines, self.time_table_line_files):

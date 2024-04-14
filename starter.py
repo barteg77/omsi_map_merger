@@ -17,6 +17,7 @@
 
 import PySimpleGUI as sg
 import os
+import traceback
 import omsi_map
 import omsi_map_merger
 import global_config_parser
@@ -91,10 +92,10 @@ class MapLoadingInteractionManager:
                 (loader.SafeLoaderUnit, add_safe_loader_unit),
                 (loader.SafeLoaderList, add_safe_loader_list),
             ]:
-                if type(safe_loader) == loader_type:
+                if isinstance(safe_loader, loader_type):
                     add_function(parent_component, safe_loader)
                     return
-            raise Exception(f"no appropriate tree-adding function for this type of SafeLoader (is  {type(safe_loader).__name})")
+            raise Exception(f"no appropriate tree-adding function for this type of SafeLoader (is  {type(safe_loader).__name__})")
         
         def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
             add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.get_status())
@@ -114,28 +115,13 @@ class MapLoadingInteractionManager:
                 add_to_tree(map_to_merge, safe_loader, name, component_type, safe_loader.info_short())
             
             add_safe_loader(map_to_merge, omsi_map.get_tiles())
-            
-            def add_timetable(tt, parent_component):
-                add_to_tree(parent_component, tt, "Timetable", EMPTY_STR, "n/a")
-                for type_name, type_short, components_filenames_list, components_list in [
-                    ("Timetable lines", "TTL", tt.time_table_line_files, tt.time_table_lines),
-                    ("Tracks", "TTR", tt.track_files, tt.tracks),
-                    ("Trips", "TTP", tt.trip_files, tt.trips),
-                ]:
-                    #add_to_tree(tt, components_list, type_name, EMPTY_STR, "n/a")
-                    #for component_filename, component in zip(components_filenames_list, components_list):
-                    #    add_to_tree(components_list, component, component_filename, type_short, component.info_short())
-                    add_safe_loader_list(tt, components_list)
-                add_to_tree(tt, tt.busstops, "busstops.cfg", "BUSSTOPS", tt.busstops.info_short())
-                add_to_tree(tt, tt.station_links, "stnlinks.cfg", "STNLINKS", tt.station_links.info_short())
-            
-            add_timetable(omsi_map.get_standard_timetable(), map_to_merge)
+            add_safe_loader(map_to_merge, omsi_map.get_standard_timetable())
             # CHRONOS
             chronos = omsi_map.get_chrono()
             add_to_tree(map_to_merge, chronos, "Chrono", EMPTY_STR, "n/a")
             for chrono in chronos:
                 add_to_tree(chronos, chrono, chrono.chrono_directory, "CHRONO", "n/a")
-                add_timetable(chrono.get_timetable(), chrono)
+                add_safe_loader(chrono, chrono.get_timetable())
 
                 #CHRONO TILES
                 add_safe_loader_list(chrono, chrono.chrono_tiles)
@@ -151,11 +137,11 @@ class MapLoadingInteractionManager:
     def __handle_tree(self) -> None:
         try:
             self.__multiline_details.update(value=self.__get_selected_map_component().info_detailed())
-        except (AttributeError,
+        except (AttributeError,# 'MapToMerge' object has no attribute 'info_detailed' // to wyrzucić jak będą tylko SafeLoadery w tree
                 self.NoSelectedMapComponentError,# After removal of map to merge, 'load_tree' event occurs,
-                #but there is no selected map component. (Tree data was updated.)
+                                                 # but there is no selected map component. (Tree data was updated.)
                 ):
-            self.__multiline_details.update(value="wybierz tam, gdzie jest info")
+            self.__multiline_details.update(value="wybierz tam, gdzie jest info\n" + traceback.format_exc())
     
     def __handle_add(self) -> None:
         try:
@@ -413,5 +399,5 @@ while True:
         pass
     #trzeba kiedyś ustawić raise exception jak jest event nieobsłużony
     
-    print(f"GUI event occured: {event}, values: {values}")
+    #print(f"GUI event occured: {event}, values: {values}")
 window.close()
