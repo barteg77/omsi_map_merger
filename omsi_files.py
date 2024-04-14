@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -68,3 +68,6 @@ class OmsiFiles:
              ):
         for of in self.omsi_files:
             of.save(target_directory)
+    
+    def get_files_names(self) -> list[str]:
+        return [ofile.get_file_name() for ofile in self.omsi_files]

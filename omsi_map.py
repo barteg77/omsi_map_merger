@@ -73,9 +73,33 @@ class AilistsLoader(loader.Loader):
 
 class OmsiMap:
     def set_tiles_and_chronos_gc_consistent(self) -> None:
+        self.empty_tiles_and_chronos()
         # set tiles' safe parsers
+        groundtex_count = len(self._global_config.get_data().groundtex)
         for gc_tile in self._global_config.get_data()._map:
-            self._tiles.append(loader.SafeLoaderUnit(TileLoader(os.path.join(self.directory, gc_tile.map_file))))
+            tile_files = omsi_files.OmsiFiles([
+                omsi_files.OmsiFile(map_path=self.directory,
+                                    pattern="tile_{pos_x}_{pos_y}.map.terrain",
+                                    params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y},
+                                    optional=True),
+                omsi_files.OmsiFile(map_path=self.directory,
+                                    pattern="tile_{pos_x}_{pos_y}.map.water",
+                                    params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y},
+                                    optional=True),
+                omsi_files.OmsiFile(map_path=self.directory,
+                                    pattern="tile_{pos_x}_{pos_y}.map.LM.bmp",
+                                    params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y},
+                                    optional=True),
+                omsi_files.OmsiFile(map_path=self.directory,
+                                    pattern="texture/map/tile_{pos_x}_{pos_y}.map.roadmap.bmp",
+                                    params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y},
+                                    optional=True),
+            ] + [ omsi_files.OmsiFile(map_path=self.directory,
+                                      pattern="texture/map/tile_{pos_x}_{pos_y}.map.{groundtex_index}.dds",
+                                      params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": groundtex_index},
+                                      optional=True)
+                  for groundtex_index in range(1, groundtex_count+1) ])
+            self._tiles.append(loader.SafeLoaderUnit(TileLoader(os.path.join(self.directory, gc_tile.map_file)), ofiles=tile_files))
         self.scan_chrono()
     
     def empty_tiles_and_chronos(self) -> None:

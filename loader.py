@@ -17,6 +17,7 @@
 
 from enum import Enum, auto
 import os.path
+import omsi_files
 
 class NoDataError(Exception):
     pass
@@ -50,14 +51,20 @@ class SafeLoader:
     # function self.info_short
     # function self.info_detailed
     # self.object_specific_actions ????
-    pass
+    def __init__(self, ofiles: omsi_files.OmsiFiles) -> None:
+        self.__omsi_files: omsi_files.OmsiFiles = ofiles
+    
+    def get_omsi_files(self) -> omsi_files.OmsiFiles:
+        return self.__omsi_files
 
 class SafeLoaderUnit(SafeLoader):
     def __init__(self,
                  real_loader,
                  callback_loaded: callable = None,
                  callback_failed: callable = None,
+                 ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
                  ) -> None:
+        super().__init__(ofiles)
         self.__real_loader: Loader = real_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
         self.__exception: Exception = None
@@ -92,10 +99,12 @@ class SafeLoaderUnit(SafeLoader):
             self.__status = FileParsingStatus.READ_SUCCESS
             self.__exception = None
             self.__callback_loaded()
-        except Exception as exception:
+        except FileNotFoundError:
+            pass
+        """except Exception as exception:
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
-            self.__callback_failed()
+            self.__callback_failed()"""
     
     def info_short(self) -> str:
         match self.__status:
@@ -113,7 +122,8 @@ class SafeLoaderUnit(SafeLoader):
             case FileParsingStatus.NOT_READ:
                 return "File not read yet."
             case FileParsingStatus.READ_SUCCESS:
-                return "Loaded successfully.\n" + repr(self.get_data())
+                return "Loaded successfully.\n" + repr(self.get_data()) + "\nAttached omsi-files:\n" + "\n".join(["\t"+ filename for filename in self.get_omsi_files().get_files_names()])
+                #return "Loaded successfully.\n" + repr(self.get_data())
             case FileParsingStatus.ERROR:
                 return str(self.__exception)
 
@@ -159,3 +169,6 @@ class SafeLoaderList(SafeLoader):
             if sl.get_status() != prev_status:
                 return FileParsingStatus.LOWER_MIXED
         return prev_status
+    
+    def info_detailed(self) -> str:
+        return "list of SafeLoaders"
