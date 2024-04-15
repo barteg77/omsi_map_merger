@@ -46,7 +46,7 @@ _ailists_serializer = ailists_serializer.AIListsSerializer()
 
 class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path) 
+        super().__init__(path, "gc") 
         self.data: global_config.GlobalConfig = None
         #self.__path: str = path
 
@@ -55,7 +55,7 @@ class GlobalConfigLoader(loader.Loader):
 
 class TileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path) 
+        super().__init__(path, "tile") 
         self.data: tile.Tile = None
         #self.__path: str = path
     
@@ -64,7 +64,7 @@ class TileLoader(loader.Loader):
 
 class AilistsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
-        super().__init__(path) 
+        super().__init__(path, "ailists") 
         self.data: ailists.AILists = None
         #self.__path: str = path
     
