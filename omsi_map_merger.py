@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -49,6 +49,7 @@ class OmsiMapMerger:
         for test_map in [
             "/home/bartek/OMSI 2/maps/Podmiejska/",
             "/home/bartek/OMSI 2/maps/MZK Kydczice/",#;)
+            "/home/bartek/Downloads/omsi/Städtedreieck21/OMSI 2/maps/Städtedreieck21/",
         ]:
             self.append_map(test_map)
     
