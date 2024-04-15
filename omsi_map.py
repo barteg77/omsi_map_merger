@@ -71,7 +71,7 @@ class AilistsLoader(loader.Loader):
     def load(self) -> None:
         self.data = _ailists_parser.parse(self.path)
 
-class OmsiMap:
+class OmsiMap(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         self.empty_tiles_and_chronos()
         # set tiles' safe parsers
@@ -120,6 +120,17 @@ class OmsiMap:
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
         self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
+        super().__init__(
+            [
+                self._global_config,
+                self._tiles,
+                self._standard_timetable,
+                self._ailists,
+                self._chronos,
+            ],
+            self.directory,# safe loader name
+            self._files,
+        )
     
     def get_directory(self):
         return self.directory

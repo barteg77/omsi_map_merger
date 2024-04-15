@@ -80,6 +80,7 @@ class MapLoadingInteractionManager:
     def __update_tree(self):
         tree_data: sg.TreeData = sg.TreeData()
         self.__maps_components_by_id = dict()
+        
         def add_to_tree(parent_map_component, element_map_component, name: str, component_type: str, status: str) -> None:
             self.__maps_components_by_id[id(element_map_component)] = element_map_component
             tree_data.insert(EMPTY_STR if parent_map_component == EMPTY_STR  else id(parent_map_component),
@@ -106,19 +107,8 @@ class MapLoadingInteractionManager:
                 add_safe_loader(loader_list, loader)
         
         for map_to_merge in self.__omsi_map_merger.get_maps():
-            omsi_map = map_to_merge.omsi_map
-            add_to_tree(EMPTY_STR, map_to_merge, str(omsi_map.get_directory()), "MAP", str(omsi_map.fully_loaded()))
-            for name, component_type, safe_loader in [
-                ("global.cfg", "GC", omsi_map.get_global_config()),
-                ("ailists.cfg", "AILISTS", omsi_map.get_ailists()),
-            ]:
-                add_to_tree(map_to_merge, safe_loader, name, component_type, safe_loader.info_short())
-            
-            add_safe_loader(map_to_merge, omsi_map.get_tiles())
-            add_safe_loader(map_to_merge, omsi_map.get_standard_timetable())
-            # CHRONOS
-            chronos = omsi_map.get_chrono()
-            add_safe_loader(map_to_merge, chronos)
+            om = map_to_merge.omsi_map
+            add_safe_loader(EMPTY_STR, om)
         
         self.__tree.update(values = tree_data)
 
