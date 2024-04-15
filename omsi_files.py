@@ -71,3 +71,11 @@ class OmsiFiles:
     
     def get_files_names(self) -> list[str]:
         return [ofile.get_file_name() for ofile in self.omsi_files]
+    
+    def set_omsi_files(self, ofiles: list[OmsiFile]) -> None:
+        if type(ofiles) is not list:
+            raise Exception(f"You must provide list[OmsiFile] here (provided {type(ofiles)}.")
+        for ofile in ofiles:
+            if type(ofile) is not OmsiFile:
+                raise Exception(f"You must provide list[OmsiFile] here (one of list's elements is {type(ofile)}.")
+        self.omsi_files = ofiles
