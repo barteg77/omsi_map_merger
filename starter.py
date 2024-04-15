@@ -118,9 +118,7 @@ class MapLoadingInteractionManager:
             add_safe_loader(map_to_merge, omsi_map.get_standard_timetable())
             # CHRONOS
             chronos = omsi_map.get_chrono()
-            add_to_tree(map_to_merge, chronos, "Chrono", EMPTY_STR, "n/a")
-            for chrono in chronos:
-                add_safe_loader(chronos, chrono)
+            add_safe_loader(map_to_merge, chronos)
         
         self.__tree.update(values = tree_data)
 

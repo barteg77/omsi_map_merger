@@ -106,7 +106,7 @@ class OmsiMap:
     
     def empty_tiles_and_chronos(self) -> None:
         self._tiles.set_data([])
-        self._chronos = []
+        self._chronos.set_data([])
 
     def __init__(self,
                  directory=""):
@@ -119,7 +119,7 @@ class OmsiMap:
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
-        self._chronos: list[chrono.Chrono] = []
+        self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
     
     def get_directory(self):
         return self.directory
@@ -201,13 +201,10 @@ class OmsiMap:
     
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
-        self._chronos = []
-        for chrono_directory in chrono_directory_list:
-            self._chronos.append(chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map))
+        self._chronos.set_data([chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
     
     def load_chrono(self):
-        for chrono in self._chronos:
-            chrono.load()
+        self._chronos.load()
     
     def save_chrono(self):
         for chrono in self._chronos:
