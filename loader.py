@@ -141,9 +141,6 @@ class SafeLoaderUnit(SafeLoader):
                 raise Exception(f"This status was not expected here (is {self.__status})")
         return status_description + "\n" + self.omsi_files_info()
 
-class SafeLoaderGroup(SafeLoader):
-    pass# to nie tak będzie tylko będzie Timetable(SafeLoaderGroup)
-
 class SafeLoaderList(SafeLoader):
     def __init__(self,
                  sl_list: list[SafeLoader],
