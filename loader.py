@@ -60,6 +60,22 @@ class SafeLoader:
     
     def omsi_files_info(self) -> str:
         return "Attached omsi-files:" + "".join(["\n\t"+ filename for filename in self.get_omsi_files().get_files_names()])
+    
+    def info_short(self) -> str:
+        status = self.get_status()
+        match status:
+            case FileParsingStatus.NOT_READ:
+                return "NOT READ"
+            case FileParsingStatus.READ_SUCCESS:
+                return "READ SUCCESSFULLY"
+            case FileParsingStatus.OPTIONAL_NOT_EXISTS:
+                return "NOT EXISTS (optional)"
+            case FileParsingStatus.ERROR:
+                return f"ERROR: {type(self.__exception).__name__}"
+            case FileParsingStatus.LOWER_MIXED:
+                return "MIXED"
+            case _:
+                raise Exception(f"Unable to create short info for this status (is{status}).")
 
 class SafeLoaderUnit(SafeLoader):
     def __init__(self,
@@ -114,17 +130,6 @@ class SafeLoaderUnit(SafeLoader):
             self.__exception = exception
             self.__callback_failed()
     
-    def info_short(self) -> str:
-        match self.__status:
-            case FileParsingStatus.NOT_READ:
-                return "NOT READ"
-            case FileParsingStatus.READ_SUCCESS:
-                return "READ SUCCESSFULLY"
-            case FileParsingStatus.OPTIONAL_NOT_EXISTS:
-                return "NOT EXISTS (optional)"
-            case FileParsingStatus.ERROR:
-                return f"ERROR: {type(self.__exception).__name__}"
-    
     def info_detailed(self) -> str:
         status_description: str
         match self.__status:
@@ -174,17 +179,6 @@ class SafeLoaderList(SafeLoader):
     def load(self) -> None:
         for sl in self.__lower_safe_loaders:
             sl.load()
-    
-    def info_short(self) -> str:
-        prev_info: str = "prev info str"
-        try:
-            prev_status = self.__lower_safe_loaders[0].info_short()
-        except IndexError:
-            return FileParsingStatus.READ_SUCCESS
-        for sl in self.__lower_safe_loaders:
-            if sl.get_status() != prev_status:
-                return FileParsingStatus.LOWER_MIXED
-        return prev_status
     
     def info_detailed(self) -> str:
         return "list of SafeLoaders\n" + self.omsi_files_info()

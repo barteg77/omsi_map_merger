@@ -80,7 +80,7 @@ class MapLoadingInteractionManager:
     def __update_tree(self):
         tree_data: sg.TreeData = sg.TreeData()
         self.__maps_components_by_id = dict()
-        
+
         def add_to_tree(parent_map_component, element_map_component, name: str, component_type: str, status: str) -> None:
             self.__maps_components_by_id[id(element_map_component)] = element_map_component
             tree_data.insert(EMPTY_STR if parent_map_component == EMPTY_STR  else id(parent_map_component),
@@ -99,10 +99,10 @@ class MapLoadingInteractionManager:
             raise Exception(f"no appropriate tree-adding function for this type of SafeLoader (is  {type(safe_loader).__name__})")
         
         def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
-            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.get_status())
+            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.info_short())
 
         def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
-            add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.get_status())
+            add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.info_short())
             for loader in loader_list.get_data():
                 add_safe_loader(loader_list, loader)
         
