@@ -120,11 +120,7 @@ class MapLoadingInteractionManager:
             chronos = omsi_map.get_chrono()
             add_to_tree(map_to_merge, chronos, "Chrono", EMPTY_STR, "n/a")
             for chrono in chronos:
-                add_to_tree(chronos, chrono, chrono.chrono_directory, "CHRONO", "n/a")
-                add_safe_loader(chrono, chrono.get_timetable())
-
-                #CHRONO TILES
-                add_safe_loader_list(chrono, chrono.chrono_tiles)
+                add_safe_loader(chronos, chrono)
         
         self.__tree.update(values = tree_data)
 

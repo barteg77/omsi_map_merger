@@ -50,7 +50,7 @@ class ChronoTileInfo:
         self.pos_y = pos_y
         self.tile = tile
 
-class Chrono:
+class Chrono(loader.SafeLoaderList):
     def __init__(self,
                  map_directory: str,
                  chrono_directory: str,
@@ -59,12 +59,25 @@ class Chrono:
         self.map_directory: str = map_directory
         self.chrono_directory: str = chrono_directory
         self.gc_map: list[global_config.Map] = gc_map
-        self.chrono_config = None
+        self.chrono_config = None###### chrono config przerobuić na chrono omsi fi;le
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(ChronoTileLoader(os.path.join(map_directory, self.chrono_directory, tile.map_file)), optional=True), self.gc_map)), "Chrono tiles")
         self.chrono_tiles_infos = []
         self.timetable: timetable.Timetable = timetable.Timetable(os.path.join(self.map_directory, self.chrono_directory))
+        super().__init__([self.chrono_tiles],
+                         self.chrono_directory,
+                         omsi_files.OmsiFiles(self.__all_omsi_files()),
+                         )
     
+    def __lang_files_names(self):
+        return [os.path.relpath(x, self.map_directory) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "Chrono_*.dsc"))]
+    
+    def __all_files_names(self):
+        return [os.path.join(self.chrono_directory, "Chrono.cfg")] + self.__lang_files_names()
+    
+    def __all_omsi_files(self):
+        return [omsi_files.OmsiFile(self.map_directory, file_name) for file_name in self.__all_files_names()]
+
     def get_timetable(self):
         return self.timetable
     
@@ -72,11 +85,8 @@ class Chrono:
         return self.chrono_tiles
     
     def load(self):
-        self.chrono_config = omsi_files.OmsiFile(map_path=self.map_directory, pattern=os.path.join(self.chrono_directory, "Chrono.cfg"))
-        for f in [os.path.relpath(x, self.map_directory) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "Chrono_*.dsc"))]:
-            self.chrono_translations.add(omsi_files.OmsiFile(map_path=self.map_directory, pattern=f, optional=True))
-        
-        # HERE LOAD EVERY CHRONO TILE
+        super().get_omsi_files().set_omsi_files(self.__all_omsi_files())
+        super().load()
         self.get_timetable().load()
     
     def save(self,
