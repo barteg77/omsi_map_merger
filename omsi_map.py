@@ -149,8 +149,7 @@ class OmsiMap:
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, GLOBAL_CONFIG_FILENAME))
     
     def load_tiles(self):
-        for tile in self._tiles:
-            tile.load()
+        self._tiles.load()
     
     def save_tile(self, index):
         gc_tile = self._global_config._map[index]
@@ -202,6 +201,7 @@ class OmsiMap:
     
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
+        self._chronos = []
         for chrono_directory in chrono_directory_list:
             self._chronos.append(chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map))
     
