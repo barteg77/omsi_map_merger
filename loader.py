@@ -18,6 +18,7 @@
 from enum import Enum, auto
 import os.path
 import omsi_files
+import traceback
 
 class NoDataError(Exception):
     pass
@@ -105,7 +106,7 @@ class SafeLoaderUnit(SafeLoader):
             self.__exception = None
             self.__callback_loaded()
         except Exception as exception:
-            print(str(exception))
+            print(traceback.format_exc())
             if self.__optional and isinstance(exception, FileNotFoundError):
                     self.__status = FileParsingStatus.OPTIONAL_NOT_EXISTS
                     return
