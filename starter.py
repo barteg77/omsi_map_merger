@@ -96,7 +96,7 @@ class MapLoadingInteractionManager:
                 if isinstance(safe_loader, loader_type):
                     add_function(parent_component, safe_loader)
                     return
-            raise Exception(f"no appropriate tree-adding function for this type of SafeLoader (is  {type(safe_loader).__name__})")
+            raise Exception(f"This object isn't object of SafeLoader type (is  {type(safe_loader).__name__})")
         
         def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
             add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.info_short())

@@ -119,7 +119,7 @@ class OmsiMap(loader.SafeLoaderList):
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
-        self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
+        self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos", self.__fresh_omsi_files())
         super().__init__(
             [
                 self._global_config,
@@ -131,6 +131,10 @@ class OmsiMap(loader.SafeLoaderList):
             self.directory,# safe loader name
             self._files,
         )
+    
+    def load(self) -> None:
+        self._files.set_omsi_files(self.__fresh_omsi_files())
+        super().load()
     
     def get_directory(self):
         return self.directory
@@ -152,15 +156,9 @@ class OmsiMap(loader.SafeLoaderList):
     
     def get_chrono(self):
         return self._chronos
-    
-    def load_global_config(self):# affects self._tiles too
-        self._global_config.load()
 
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, GLOBAL_CONFIG_FILENAME))
-    
-    def load_tiles(self):
-        self._tiles.load()
     
     def save_tile(self, index):
         gc_tile = self._global_config._map[index]
@@ -173,7 +171,8 @@ class OmsiMap(loader.SafeLoaderList):
         for tile_index in range(len(self._global_config._map)):
             self.save_tile(tile_index)
     
-    def load_files(self):
+    def __fresh_omsi_files(self) -> list[omsi_files.OmsiFile]:
+        of_list = []
         for f in ["drivers.txt",
                   "Holidays.txt",
                   "humans.txt",
@@ -186,25 +185,20 @@ class OmsiMap(loader.SafeLoaderList):
                   "unsched_trafficdens.txt",
                   "unsched_vehgroups.txt"
                   ]:
-            self._files.add(omsi_files.OmsiFile(map_path=self.directory, pattern=f))
+            of_list.append(omsi_files.OmsiFile(map_path=self.directory, pattern=f))
         for f in ["picture.jpg",
                   "timezone.txt",
                   ]:
-            self._files.add(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
+            of_list.append(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
         for f in [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Holidays_*.txt"))]:
-            self._files.add(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
+            of_list.append(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
+        return of_list
     
     def save_files(self):
         self._files.save(self.directory)
     
-    def load_standard_timetable(self):
-        self._standard_timetable.load()
-    
     def save_standard_timetable(self):
         self._standard_timetable.save()
-    
-    def load_ailists(self):
-        self._ailists.load()
     
     def save_ailists(self):
         print("Serializing ailists file " + os.path.join(self.directory, AILISTS_FILENAME))
@@ -214,21 +208,9 @@ class OmsiMap(loader.SafeLoaderList):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         self._chronos.set_data([chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
     
-    def load_chrono(self):
-        self._chronos.load()
-    
     def save_chrono(self):
         for chrono in self._chronos:
             chrono.save(self.directory)
-    
-    def load(self):
-        self.load_global_config()
-        if self._global_config.get_status() == loader.FileParsingStatus.READ_SUCCESS:
-            self.load_tiles()
-        self.load_files()
-        self.load_standard_timetable()
-        self.load_ailists()
-        self.load_chrono()
         
     def save(self):
         pathlib.Path(os.path.join(self.directory, "texture", "map")).mkdir(parents=True, exist_ok=True)
