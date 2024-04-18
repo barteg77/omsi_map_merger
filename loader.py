@@ -153,6 +153,8 @@ class SafeLoaderList(SafeLoader):
                  ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
                  ) -> None:
         super().__init__(ofiles)
+        if not (type(sl_list) == list and all([isinstance(sl, SafeLoader) for sl in sl_list])):
+            raise Exception(f"\"sl_list\" must be list of SafeLoaders, is {repr(sl_list)}")
         self.__lower_safe_loaders: list[SafeLoader] = sl_list
         self.__name = name
     
