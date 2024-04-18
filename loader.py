@@ -41,7 +41,7 @@ class FileParsingStatus(Enum):
     NOT_READ = auto()
     READ_SUCCESS = auto()
     OPTIONAL_NOT_EXISTS = auto()
-    ERROR = auto()
+    ERROR = auto()#only SafeLoaderUnit can set this status!
     LOWER_MIXED = auto()
 
 class SafeLoader:
@@ -71,7 +71,7 @@ class SafeLoader:
             case FileParsingStatus.OPTIONAL_NOT_EXISTS:
                 return "NOT EXISTS (optional)"
             case FileParsingStatus.ERROR:
-                return f"ERROR: {type(self.__exception).__name__}"
+                return f"ERROR"
             case FileParsingStatus.LOWER_MIXED:
                 return "MIXED"
             case _:
