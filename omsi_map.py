@@ -112,9 +112,9 @@ class OmsiMap(loader.SafeLoaderList):
                  directory=""):
         self.directory = directory
         self._global_config: loader.SafeLoaderUnit = loader.SafeLoaderUnit(GlobalConfigLoader(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME)),
-                                                                   self.set_tiles_and_chronos_gc_consistent, # on success
-                                                                   self.empty_tiles_and_chronos, # on fail
-                                                                   )
+                                                                           self.set_tiles_and_chronos_gc_consistent, # on success
+                                                                           self.empty_tiles_and_chronos, # on fail
+                                                                           )
         self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
