@@ -16,7 +16,7 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum, auto
-from typing import Callable
+import typing
 import os.path
 import omsi_files
 import traceback
@@ -93,8 +93,8 @@ class SafeLoaderUnit(SafeLoader):
     __placeholder_exception: Exception = Exception("placeholder exception")
     def __init__(self,
                  real_loader: Loader,
-                 callback_loaded: Callable[[], None] = lambda: None,
-                 callback_failed: Callable[[], None] = lambda: None,
+                 callback_loaded: typing.Callable[[], None] = lambda: None,
+                 callback_failed: typing.Callable[[], None] = lambda: None,
                  ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
                  optional: bool = False,
                  ) -> None:
@@ -102,9 +102,9 @@ class SafeLoaderUnit(SafeLoader):
         self.__real_loader: Loader = real_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
         self.__exception: Exception = self.__placeholder_exception
-        assert bool(callback_loaded == (lambda: None)) != bool(callback_failed == (lambda: None)), "You have to provide callback_loaded and callback_failed or not to provide any of them."
-        self.__callback_loaded: Callable[[], None] = callback_loaded
-        self.__callback_failed: Callable[[], None] = callback_failed
+        #assert bool(callback_loaded == (lambda: None)) != bool(callback_failed == (lambda: None)), "You have to provide callback_loaded and callback_failed or not to provide any of them."
+        self.__callback_loaded: typing.Callable[[], None] = callback_loaded
+        self.__callback_failed: typing.Callable[[], None] = callback_failed
         self.__optional = optional
     
     def get_type(self) -> str:
@@ -119,7 +119,7 @@ class SafeLoaderUnit(SafeLoader):
     def get_status(self) -> FileParsingStatus:
         return self.__status
     
-    def get_data(self) -> None:
+    def get_data(self) -> typing.Any:
         if self.__status == FileParsingStatus.READ_SUCCESS:
             return self.__real_loader.data
         else:

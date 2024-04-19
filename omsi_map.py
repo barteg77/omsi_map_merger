@@ -17,6 +17,7 @@
 
 import os
 import glob
+import typing
 import pathlib
 import global_config
 import global_config_parser
@@ -47,7 +48,7 @@ _ailists_serializer = ailists_serializer.AIListsSerializer()
 class GlobalConfigLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__(path, "gc") 
-        self.data: global_config.GlobalConfig = None
+        self.data: typing.Union[global_config.GlobalConfig, None] = None
         #self.__path: str = path
 
     def load(self) -> None:
@@ -56,16 +57,16 @@ class GlobalConfigLoader(loader.Loader):
 class TileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__(path, "tile") 
-        self.data: tile.Tile = None
+        self.data: typing.Union[tile.Tile, None] = None
         #self.__path: str = path
     
     def load(self) -> None:
-        self.data: tile.Tile = _tile_parser.parse(self.path)
+        self.data = _tile_parser.parse(self.path)
 
 class AilistsLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__(path, "ailists") 
-        self.data: ailists.AILists = None
+        self.data: typing.Union[ailists.AILists, None] = None
         #self.__path: str = path
     
     def load(self) -> None:
@@ -75,7 +76,7 @@ class OmsiMap(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         self.empty_tiles_and_chronos()
         # set tiles' safe parsers
-        tiles_safe_loaders: list[SafeLoaderUnit] = []
+        tiles_safe_loaders: list[loader.SafeLoader] = []
         groundtex_count = len(self._global_config.get_data().groundtex)
         for gc_tile in self._global_config.get_data()._map:
             tile_files = omsi_files.OmsiFiles([

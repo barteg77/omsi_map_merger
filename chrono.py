@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
+import typing
+
 import global_config
 import chrono_tile
 import chrono_tile_parser
@@ -32,11 +34,14 @@ _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 class ChronoTileLoader(loader.Loader):
     def __init__(self, path: str) -> None:
         super().__init__(path, "chrono tile")
-        self.data: chrono_tile.ChronoTile = None
+        self.data: typing.Union[chrono_tile.ChronoTile, None] = None
         #self.__path: str = path
     
     def load(self) -> None:
         self.data = _chrono_tile_parser.parse(self.path)
+
+f=ChronoTileLoader("xd")
+print(f.data)
 
 class ChronoTileInfo:
     def __init__(self,
@@ -59,7 +64,6 @@ class Chrono(loader.SafeLoaderList):
         self.map_directory: str = map_directory
         self.chrono_directory: str = chrono_directory
         self.gc_map: list[global_config.Map] = gc_map
-        self.chrono_config = None###### chrono config przerobuić na chrono omsi fi;le
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(ChronoTileLoader(os.path.join(map_directory, self.chrono_directory, tile.map_file)), optional=True), self.gc_map)), "Chrono tiles")
         self.chrono_tiles_infos = []
@@ -93,7 +97,6 @@ class Chrono(loader.SafeLoaderList):
              map_directory
              ):
         pathlib.Path(os.path.join(map_directory, self.chrono_directory, "TTData")).mkdir(parents=True, exist_ok=True)
-        self.chrono_config.save(map_directory)
         self.chrono_translations.save(map_directory)
         for chrono_tile in self.chrono_tiles_infos:
             print("Serializing chrono tile file " + os.path.join(map_directory, chrono_tile.directory, "tile_"+chrono_tile.pos_x+"_"+chrono_tile.pos_y+".map"))
