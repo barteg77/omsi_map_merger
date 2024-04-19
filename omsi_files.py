@@ -55,10 +55,8 @@ class OmsiFile:
             print("Non-optional file " + self.real_file_name + " does not exist, will not be copied.")
 
 class OmsiFiles:
-    def __init__(self, omsi_files=None):
+    def __init__(self, omsi_files=[]):
         self.omsi_files = omsi_files
-        if self.omsi_files is None:
-            self.omsi_files = []
     
     def add(self, omsi_file):
         self.omsi_files.append(omsi_file)

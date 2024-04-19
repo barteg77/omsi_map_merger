@@ -41,7 +41,7 @@ class MapLoadingInteractionManager:
         pass
 
     def __init__(self,
-                 omsi_map_merger: omsi_map_merger.OmsiMapMerger,
+                 merger: omsi_map_merger.OmsiMapMerger,
                  gui,
                  window: sg.Window,
                  key_tree: str,
@@ -56,7 +56,7 @@ class MapLoadingInteractionManager:
                  key_load_scan_tracks: str,
                  key_load_scan_trips: str,
                  ) -> None:
-        self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = omsi_map_merger
+        self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = merger
         self.__gui = gui
         self.__tree: gui.Tree = window[key_tree]
         self.__multiline_details: gui.Multiline = window[key_details]

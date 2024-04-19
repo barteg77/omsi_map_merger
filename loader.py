@@ -16,6 +16,7 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum, auto
+from typing import Callable
 import os.path
 import omsi_files
 import traceback
@@ -35,6 +36,9 @@ class Loader:
     def get_path(self) -> str:
         return self.path
     
+    def load(self) -> None:
+        raise NotImplementedError()
+    
     # function self.load
 
 class FileParsingStatus(Enum):
@@ -52,8 +56,13 @@ class SafeLoader:
     # function self.info_short
     # function self.info_detailed
     # self.object_specific_actions ????
+    
+
     def __init__(self, ofiles: omsi_files.OmsiFiles) -> None:
         self.__omsi_files: omsi_files.OmsiFiles = ofiles
+    
+    def get_status(self) -> FileParsingStatus:
+        raise NotImplementedError()
     
     def get_omsi_files(self) -> omsi_files.OmsiFiles:
         return self.__omsi_files
@@ -76,24 +85,26 @@ class SafeLoader:
                 return "MIXED"
             case _:
                 raise Exception(f"Unable to create short info for this status (is{status}).")
+    
+    def load(self) -> None:
+        raise NotImplementedError()
 
 class SafeLoaderUnit(SafeLoader):
+    __placeholder_exception: Exception = Exception("placeholder exception")
     def __init__(self,
-                 real_loader,
-                 callback_loaded: callable = None,
-                 callback_failed: callable = None,
+                 real_loader: Loader,
+                 callback_loaded: Callable[[], None] = lambda: None,
+                 callback_failed: Callable[[], None] = lambda: None,
                  ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
                  optional: bool = False,
                  ) -> None:
         super().__init__(ofiles)
         self.__real_loader: Loader = real_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
-        self.__exception: Exception = None
-        self.__callback_loaded: function
-        if bool(callback_loaded is None) ^ bool(callback_failed is None):
-            raise Exception("You have to provide callback_loaded and callback_failed or not to provide any of them.")
-        self.__callback_loaded: callable = callback_loaded if callback_loaded is not None else lambda: None
-        self.__callback_failed: callable = callback_failed if callback_failed is not None else lambda: None
+        self.__exception: Exception = self.__placeholder_exception
+        assert bool(callback_loaded == (lambda: None)) != bool(callback_failed == (lambda: None)), "You have to provide callback_loaded and callback_failed or not to provide any of them."
+        self.__callback_loaded: Callable[[], None] = callback_loaded
+        self.__callback_failed: Callable[[], None] = callback_failed
         self.__optional = optional
     
     def get_type(self) -> str:
@@ -119,8 +130,8 @@ class SafeLoaderUnit(SafeLoader):
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
-            self.__exception = None
-            self.__callback_loaded()
+            self.__exception = self.__placeholder_exception
+            self.__callback_loaded() # type: ignore
         except Exception as exception:
             print(traceback.format_exc())
             if self.__optional and isinstance(exception, FileNotFoundError):
@@ -128,7 +139,7 @@ class SafeLoaderUnit(SafeLoader):
                     return
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
-            self.__callback_failed()
+            self.__callback_failed() # type: ignore
     
     def info_detailed(self) -> str:
         status_description: str
