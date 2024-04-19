@@ -116,10 +116,10 @@ class OmsiMap(loader.SafeLoaderList):
                                                                            self.empty_tiles_and_chronos, # on fail
                                                                            )
         self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
-        self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
+        self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles(self.__fresh_omsi_files())
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(AilistsLoader(os.path.join(self.directory, AILISTS_FILENAME)))
-        self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos", self.__fresh_omsi_files())
+        self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
         super().__init__(
             [
                 self._global_config,
