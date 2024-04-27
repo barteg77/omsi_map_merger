@@ -16,11 +16,8 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 import PySimpleGUI as sg
-import os
 import traceback
-import omsi_map
 import omsi_map_merger
-import global_config_parser
 import version
 import loader
 import timetable
@@ -42,7 +39,6 @@ class MapLoadingInteractionManager:
 
     def __init__(self,
                  merger: omsi_map_merger.OmsiMapMerger,
-                 gui,
                  window: sg.Window,
                  key_tree: str,
                  key_details: str,
@@ -55,20 +51,29 @@ class MapLoadingInteractionManager:
                  key_load_scan_timetable_lines: str,
                  key_load_scan_tracks: str,
                  key_load_scan_trips: str,
+                 key_graph: str,
+                 key_shift_left: str,
+                 key_shift_right: str,
+                 key_shift_up: str,
+                 key_shift_down: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = merger
-        self.__gui = gui
-        self.__tree: gui.Tree = window[key_tree]
-        self.__multiline_details: gui.Multiline = window[key_details]
-        self.__input_add: gui.Button = window[key_add_input]
-        self.__button_add: gui.Button = window[key_add_button]
-        self.__button_remove: gui.Button = window[key_remove]
-        self.__button_load_whole_map: gui.Button = window[key_load_whole_maps]
-        self.__button_load_selected: gui.Button = window[key_load_selected]
-        self.__button_load_scan_chronos: gui.Button = window[key_load_scan_chronos]
-        self.__button_load_scan_timetable_lines = window[key_load_scan_timetable_lines]
-        self.__button_load_scan_tracks = window[key_load_scan_tracks]
-        self.__button_load_scan_trips = window[key_load_scan_trips]
+        self.__tree: sg.Tree = window[key_tree] # type: ignore
+        self.__multiline_details: sg.Multiline = window[key_details] # type: ignore
+        self.__input_add: sg.Input = window[key_add_input] # type: ignore
+        self.__button_add: sg.Button = window[key_add_button] # type: ignore
+        self.__button_remove: sg.Button = window[key_remove] # type: ignore
+        self.__button_load_whole_map: sg.Button = window[key_load_whole_maps] # type: ignore
+        self.__button_load_selected: sg.Button = window[key_load_selected] # type: ignore
+        self.__button_load_scan_chronos: sg.Button = window[key_load_scan_chronos] # type: ignore
+        self.__button_load_scan_timetable_lines: sg.Button = window[key_load_scan_timetable_lines] # type: ignore
+        self.__button_load_scan_tracks: sg.Button = window[key_load_scan_tracks] # type: ignore
+        self.__button_load_scan_trips: sg.Button = window[key_load_scan_trips] # type: ignore
+        self.__graph: sg.Graph = window[key_graph] # type: ignore
+        self.__button_shift_left: sg.Button = window[key_shift_left] # type: ignore
+        self.__button_shift_right: sg.Button = window[key_shift_right] # type: ignore
+        self.__button_shift_up: sg.Button = window[key_shift_up] # type: ignore
+        self.__button_shift_down: sg.Button = window[key_shift_down] # type: ignore
         self.__maps_components_by_id = dict() #add type hint (int, anything)
 
         self.__update_tree()
@@ -107,8 +112,7 @@ class MapLoadingInteractionManager:
                 add_safe_loader(loader_list, loader)
         
         for map_to_merge in self.__omsi_map_merger.get_maps():
-            om = map_to_merge.omsi_map
-            add_safe_loader(EMPTY_STR, om)
+            add_safe_loader(EMPTY_STR, map_to_merge)
         
         self.__tree.update(values = tree_data)
 
@@ -133,9 +137,9 @@ class MapLoadingInteractionManager:
             self.__update_tree()
             #self.__button_remove.update(disabled=True)
         except ValueError as e:
-            self.__gui.popup(e)# "x" is not directory
+            sg.popup(e)# "x" is not directory
         except omsi_map_merger.MapRepetitionError as e:
-            self.__gui.popup(e)
+            sg.popup(e)
     
     def __handle_remove(self) -> None:
         self.__omsi_map_merger.remove_map(self.__omsi_map_merger.get_maps().index(self.__get_selected_map_component()))
@@ -150,9 +154,6 @@ class MapLoadingInteractionManager:
         
         if isinstance(smc, loader.SafeLoader):
             self.__get_selected_map_component().load()
-        elif isinstance(smc, list):# list of SafeLoaders
-            for component in smc:
-                component.load()
         else:
             raise self.NoSelectedMapComponentError(f"Handling of \"Load selected\" is allowed only when SafeLoader (or its derivative) is selected. Type of selected: {type(smc)}.")
             
@@ -166,32 +167,42 @@ class MapLoadingInteractionManager:
             return False
     
     def __update_disability(self):
-        self.__button_remove.update(disabled = not self.__is_selected_component_instance(omsi_map_merger.MapToMerge))
-        self.__button_load_scan_chronos.update(disabled = not (self.__is_selected_component_instance(omsi_map_merger.MapToMerge)
-                            and self.__get_selected_map_component().omsi_map.get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
+        selected_mtm: bool = self.__is_selected_component_instance(omsi_map_merger.MapToMerge)
+
+        self.__button_remove.update(disabled = not selected_mtm)
+        self.__button_load_scan_chronos.update(disabled = not (selected_mtm
+                            and self.__get_selected_map_component().get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
         self.__button_load_selected.update(disabled = not (   self.__is_selected_component_instance(loader.SafeLoader)
                                                            or self.__is_selected_component_instance(list)
                                                            ))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
-        selected_tt = self.__is_selected_component_instance(timetable.Timetable)
+        selected_tt :bool = self.__is_selected_component_instance(timetable.Timetable)
         for button in [
             self.__button_load_scan_timetable_lines,
             self.__button_load_scan_tracks,
             self.__button_load_scan_trips,
         ]:
             button.update(disabled = not selected_tt)
+        for button in [
+            self.__button_shift_left,
+            self.__button_shift_right,
+            self.__button_shift_up,
+            self.__button_shift_down,
+        ]:
+            button.update(disabled=not selected_mtm)
     
-    def handle_event(self, event) -> bool:
+    def handle_event(self, event) -> bool:#true if handled, false if didn't handled
         if self.__tree.key == event:
             self.__handle_tree()#needn't tree update
             self.__update_disability()
             return True
-        for gui_element, handler in [
+        
+        for gui_element, handler in [# handling wiht tree/disability update
             (self.__input_add, self.__handle_add),
             (self.__button_remove, self.__handle_remove),
             (self.__button_load_whole_map, lambda: self.__omsi_map_merger.load_maps()),
             (self.__button_load_selected, self.__handle_load_selected),
-            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().omsi_map.scan_chrono()),#po co to jest w lambda??
+            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().scan_chrono()),#po co to jest w lambda??
             (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines()),
             (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks()),
             (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips()),
@@ -200,8 +211,52 @@ class MapLoadingInteractionManager:
                 handler() # need tree update
                 self.__update_tree()
                 self.__update_disability()
+                self.__draw_graph() #tylko na chwilę!!!!
                 return True
+        
+        for gui_element, handler in [# handling wihtout tree/disability update
+            (self.__button_shift_left, lambda: self.__get_selected_map_component().shift(shift_x = -1)),
+            (self.__button_shift_right, lambda: self.__get_selected_map_component().shift(shift_x = 1)),
+            (self.__button_shift_up, lambda: self.__get_selected_map_component().shift(shift_y = 1)),
+            (self.__button_shift_down, lambda: self.__get_selected_map_component().shift(shift_y = -1)),
+        ]:
+            if gui_element.key == event:
+                handler()
+                self.__draw_graph() #tylko na chwilę!!!!
+                return True
+        
         return False
+    
+    def __draw_graph(self) -> None:
+        try:
+            colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', 'slate blue', 'slate gray', 'yellow']
+            multiple_maps_color: str = 'black'
+            maps: list[omsi_map_merger.MapToMerge] = self.__omsi_map_merger.get_maps()
+            maps_colors: dict[omsi_map_merger.MapToMerge, str] = dict(zip(maps, colors))
+            name_row_height: int = 16
+            if len(maps) > len(colors):
+                sg.popup("Can't draw graph, maps count exceed available colors' count.")
+                self.__graph.Erase()
+                return
+            
+            self.__graph.Erase()
+            tile_size: int = 7
+            for tile_pos, present_maps in self.__omsi_map_merger.get_graph_data().items():
+                color = maps_colors[present_maps[0]] if len(present_maps) == 1 else multiple_maps_color
+                self.__graph.DrawRectangle((tile_pos.pos_x*tile_size, tile_pos.pos_y*tile_size),
+                                           ((tile_pos.pos_x-1)*tile_size, (tile_pos.pos_y-1)*tile_size),
+                                           line_color="black",
+                                           fill_color=color)
+            for index, [name, color] in enumerate(zip([mtm.get_name() for mtm in maps], colors)):
+                top_left: tuple[int, int] = (-320, 320-index*name_row_height)
+                bottom_right: tuple[int, int] = (-200, 320-(index+1)*name_row_height)
+                self.__graph.draw_rectangle(top_left, bottom_right, color, color)
+                self.__graph.draw_text(name, top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
+
+        except Exception:
+            self.__graph.draw_text("An error occured while drawinggggggg", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
+            print(traceback.format_exc())
+            pass
 
 map_reading_panel = [
     [
@@ -256,111 +311,12 @@ layout_right = [
     [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
 ]
 layout = [[sg.Column(layout_left), sg.VSep(), sg.Column(layout_right)]]
-_global_config_parser = global_config_parser.GlobalConfigParser()
-map1_last_directory = None
-map2_last_directory = None
-gc1 = None
-gc2 = None
-gc1_set = None
-gc2_set = None
-min1_x = None
-max1_x = None
-min1_y = None
-max1_y = None
-min2_x = None
-max2_x = None
-min2_y = None
-max2_y = None
-shift_x = 0
-shift_y = 0
-
-def draw_scheme():
-    global map1_last_directory
-    global map2_last_directory
-    global gc1
-    global gc2
-    global gc1_set
-    global gc2_set
-    global min1_x
-    global max1_x
-    global min1_y
-    global max1_y
-    global min2_x
-    global max2_x
-    global min2_y
-    global max2_y
-    global shift_x
-    global shift_y
-    if not map1_last_directory == values["map1_directory"]:
-        gc1 = _global_config_parser.parse(os.path.join(os.path.realpath(values["map1_directory"]),"global.cfg"))
-        map1_last_directory = values["map1_directory"]
-        if (gc1.worldcoordinates):
-            sg.popup('Map 1: Value of "worldcoordinates" is True.\nMap created during merge can be corrupted!')
-
-        shift_x = None
-        min1_x = min([int(tile.pos_x) for tile in gc1._map])
-        max1_x = max([int(tile.pos_x) for tile in gc1._map])
-        min1_y = min([int(tile.pos_y) for tile in gc1._map])
-        max1_y = max([int(tile.pos_y) for tile in gc1._map])
-
-        gc1_set = set([(int(tile.pos_x), int(tile.pos_y)) for tile in gc1._map])#tu ma byc  wciete bo to sie nie przesuwa
-
-    draw_shift_x = int(min1_x + (max1_x - min1_x) / 2)
-    draw_shift_y = int(min1_y + (max1_y - min1_y) / 2)
-
-    if not map2_last_directory == values["map2_directory"]:
-        gc2 = _global_config_parser.parse(os.path.join(os.path.realpath(values["map2_directory"]),"global.cfg"))
-        map2_last_directory = values["map2_directory"]
-        if (gc2.worldcoordinates):
-            sg.popup('Map 2: Value of "worldcoordinates" is True.\nMap created during merge can be corrupted!')
-
-        shift_x = None
-        min2_x = min([int(tile.pos_x) for tile in gc2._map])
-        max2_x = max([int(tile.pos_x) for tile in gc2._map])
-        min2_y = min([int(tile.pos_y) for tile in gc2._map])
-        max2_y = max([int(tile.pos_y) for tile in gc2._map])
-
-    if shift_x == None:
-        map2_middle_x = int(min2_x + (max2_x - min2_x) / 2)
-        map2_middle_y = int(min2_y + (max2_y - min2_y) / 2)
-
-        shift_x = draw_shift_x - map2_middle_x
-        shift_y = draw_shift_y - map2_middle_y
-
-    gc2_set = set([(int(tile.pos_x)+shift_x, int(tile.pos_y)+shift_y) for tile in gc2._map])#tu ma byc nie wciete bo to sie przesuwa
-    
-    tile_size = 5
-    graph = window["graph"]
-    graph.Erase()
-    for tile_x, tile_y in gc1_set:
-        tile_x -= draw_shift_x
-        tile_y -= draw_shift_y
-        graph.DrawRectangle((tile_x*tile_size, tile_y*tile_size),
-                            ((tile_x+1)*tile_size, (tile_y+1)*tile_size),
-                            line_color="black",
-                            fill_color="yellow")
-    for tile_x, tile_y in gc2_set:
-        if (tile_x, tile_y) in gc1_set:
-            tile_x -= draw_shift_x
-            tile_y -= draw_shift_y
-            graph.DrawRectangle((tile_x*tile_size, tile_y*tile_size),
-                                ((tile_x+1)*tile_size, (tile_y+1)*tile_size),
-                                line_color="black",
-                                fill_color="red")
-        else:
-            tile_x -= draw_shift_x
-            tile_y -= draw_shift_y
-            graph.DrawRectangle((tile_x*tile_size, tile_y*tile_size),
-                                ((tile_x+1)*tile_size, (tile_y+1)*tile_size),
-                                line_color="black",
-                                fill_color="green")
 
 omm = omsi_map_merger.OmsiMapMerger()
 window = sg.Window("OMSI Map Merger", layout, finalize=True)
 
 maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInteractionManager(
     omm,
-    sg,
     window,
     'load_tree',
     'load_details',
@@ -372,10 +328,15 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'load_scan_chronos',
     'load_scan_timetable_lines',
     'load_scan_tracks',
-    'load_scan_trips')
+    'load_scan_trips',
+    'graph',
+    'shift_left',
+    'shift_right',
+    'shift_up',
+    'shift_down')
 
 while True:
-    event, values = window.read()
+    event, values = window.read() # type: ignore
     
     if event == sg.WIN_CLOSED or event == "cancel":
         break

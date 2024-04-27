@@ -19,7 +19,6 @@ import argparse
 import omsi_map
 import omsi_files
 import global_config
-import tile
 import os
 
 class MapRepetitionError(Exception):
@@ -28,7 +27,24 @@ class MapRepetitionError(Exception):
 class LoadingMapNotInListToMergeError(Exception):
     pass
 
-class MapToMerge:
+class TilePos:
+    def __init__(self,
+                 pos_x: int,
+                 pos_y: int,
+    ) -> None:
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+    
+    def __key(self):
+        return (self.pos_x, self.pos_y)
+    
+    def __eq__(self, other: 'TilePos') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
+
+class MapToMerge(omsi_map.OmsiMap):
     def __init__(self,
                  directory: str,
                  shift_x: int,
@@ -36,12 +52,23 @@ class MapToMerge:
                  ) -> None:
         if not os.path.isdir(directory):
             raise ValueError(f"\"{directory}\" is not directory")
-        self.omsi_map: omsi_map.OmsiMap = omsi_map.OmsiMap(directory)
+        super().__init__(directory)
         self.shift_x: int = shift_x
         self.shift_y: int = shift_y
     
     def __str__(self) -> str:
-        return self.omsi_map.directory
+        return self.directory
+    
+    def get_shifted_tiles_pos(self) -> list[TilePos]:
+        return [TilePos(int(tile.pos_x) + self.shift_x,
+                        int(tile.pos_y) + self.shift_y) for tile in self.get_global_config().get_data()._map]
+    
+    def shift(self,
+              shift_x: int = 0,
+              shift_y: int = 0,
+    ) -> None:
+        self.shift_x += shift_x
+        self.shift_y += shift_y
 
 class OmsiMapMerger:
     def __init__(self) -> None:
@@ -56,8 +83,17 @@ class OmsiMapMerger:
     def get_maps(self) -> list[MapToMerge]:
         return self.__maps
     
+    def get_graph_data(self) -> dict[TilePos, list[MapToMerge]]:
+        graph_data: dict[TilePos, list[MapToMerge]] = {}
+        for mtm, shifted_tiles_pos in zip(self.get_maps(), [mtm.get_shifted_tiles_pos() for mtm in self.get_maps()]):
+            for tile_pos in shifted_tiles_pos:
+                if tile_pos not in graph_data:
+                    graph_data[tile_pos] = []
+                graph_data[tile_pos].append(mtm)
+        return graph_data
+    
     def append_map(self, directory: str) -> None:
-        if os.path.normpath(directory) in map(lambda x: x.omsi_map.directory, self.__maps):
+        if os.path.normpath(directory) in map(lambda om: om.directory, self.__maps):
             raise MapRepetitionError(f"This map (\"{directory}\") has been added to merge before.\nMerging map with iself is not allowed.")
         self.__maps.append(MapToMerge(os.path.normpath(directory), 0, 0))# tu ma byc normpath czy w OmsiMap??
     
@@ -66,7 +102,7 @@ class OmsiMapMerger:
     
     def load_maps(self)-> None:
         for map_to_load in self.__maps:
-            map_to_load.omsi_map.load()
+            map_to_load.load()
 
 def merge(map1_directory,
           map2_directory,
