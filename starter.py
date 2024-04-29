@@ -172,9 +172,7 @@ class MapLoadingInteractionManager:
         self.__button_remove.update(disabled = not selected_mtm)
         self.__button_load_scan_chronos.update(disabled = not (selected_mtm
                             and self.__get_selected_map_component().get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
-        self.__button_load_selected.update(disabled = not (   self.__is_selected_component_instance(loader.SafeLoader)
-                                                           or self.__is_selected_component_instance(list)
-                                                           ))
+        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
         selected_tt :bool = self.__is_selected_component_instance(timetable.Timetable)
         for button in [
