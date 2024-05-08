@@ -78,6 +78,7 @@ class MapLoadingInteractionManager:
 
         self.__update_tree()
         self.__update_disability()
+        self.__draw_graph()
     
     def ready_to_confirm(self) -> bool:
         return False
@@ -115,6 +116,7 @@ class MapLoadingInteractionManager:
             add_safe_loader(EMPTY_STR, map_to_merge)
         
         self.__tree.update(values = tree_data)
+        self.__update_multiline()
 
     def __get_selected_map_component(self):
         try:
@@ -122,14 +124,11 @@ class MapLoadingInteractionManager:
         except IndexError:
             raise self.NoSelectedMapComponentError()
 
-    def __handle_tree(self) -> None:
+    def __update_multiline(self) -> None:
         try:
             self.__multiline_details.update(value=self.__get_selected_map_component().info_detailed())
-        except (AttributeError,# 'MapToMerge' object has no attribute 'info_detailed' // to wyrzucić jak będą tylko SafeLoadery w tree
-                self.NoSelectedMapComponentError,# After removal of map to merge, 'load_tree' event occurs,
-                                                 # but there is no selected map component. (Tree data was updated.)
-                ):
-            self.__multiline_details.update(value="wybierz tam, gdzie jest info\n" + traceback.format_exc())
+        except (self.NoSelectedMapComponentError):# because tree data was updated
+            self.__multiline_details.update(value="Select map component to see detailed info.")
     
     def __handle_add(self) -> None:
         try:
@@ -191,7 +190,7 @@ class MapLoadingInteractionManager:
     
     def handle_event(self, event) -> bool:#true if handled, false if didn't handled
         if self.__tree.key == event:
-            self.__handle_tree()#needn't tree update
+            self.__update_multiline()#needn't tree update
             self.__update_disability()
             return True
         
@@ -226,6 +225,7 @@ class MapLoadingInteractionManager:
         return False
     
     def __draw_graph(self) -> None:
+        print("Drawing graph...")
         try:
             colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', 'slate blue', 'slate gray', 'yellow']
             multiple_maps_color: str = 'black'
@@ -251,10 +251,8 @@ class MapLoadingInteractionManager:
                 self.__graph.draw_rectangle(top_left, bottom_right, color, color)
                 self.__graph.draw_text(name, top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
 
-        except Exception:
-            self.__graph.draw_text("An error occured while drawinggggggg", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
-            print(traceback.format_exc())
-            pass
+        except loader.NoDataError:
+            self.__graph.draw_text("An error occured while drawing.\nSome data required to draw a graph is missing.", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
 
 map_reading_panel = [
     [

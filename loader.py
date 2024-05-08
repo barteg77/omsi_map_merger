@@ -88,6 +88,9 @@ class SafeLoader:
     
     def load(self) -> None:
         raise NotImplementedError()
+    
+    def ready(self) -> bool:
+        raise NotImplementedError
 
 class SafeLoaderUnit(SafeLoader):
     __placeholder_exception: Exception = Exception("placeholder exception")
@@ -126,7 +129,7 @@ class SafeLoaderUnit(SafeLoader):
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
-        print(f"{type(self.__real_loader).__name__} loading file \"{self.get_path()}\"...")
+        print(f"SafeLoaderUnit of {type(self.__real_loader).__name__} loading file \"{self.get_path()}\"...")
         try:
             self.__real_loader.load()
             self.__status = FileParsingStatus.READ_SUCCESS
@@ -140,6 +143,7 @@ class SafeLoaderUnit(SafeLoader):
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
             self.__callback_failed() # type: ignore
+        print(f"Safe loading finished. Status set to {self.get_status()}")
     
     def info_detailed(self) -> str:
         status_description: str
@@ -156,7 +160,10 @@ class SafeLoaderUnit(SafeLoader):
             case _:
                 raise Exception(f"This status was not expected here (is {self.__status})")
         return status_description + "\n" + self.omsi_files_info()
-
+    
+    def ready(self) -> bool:
+        return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.OPTIONAL_NOT_EXISTS]
+    
 class SafeLoaderList(SafeLoader):
     def __init__(self,
                  sl_list: list[SafeLoader],
@@ -195,3 +202,6 @@ class SafeLoaderList(SafeLoader):
     
     def info_detailed(self) -> str:
         return "list of SafeLoaders\n" + self.omsi_files_info()
+    
+    def ready(self) -> bool:
+        return all([sl.ready() for sl in self.get_data()])
