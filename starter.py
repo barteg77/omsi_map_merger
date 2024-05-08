@@ -87,12 +87,12 @@ class MapLoadingInteractionManager:
         tree_data: sg.TreeData = sg.TreeData()
         self.__maps_components_by_id = dict()
 
-        def add_to_tree(parent_map_component, element_map_component, name: str, component_type: str, status: str) -> None:
+        def add_to_tree(parent_map_component, element_map_component, name: str, component_type: str, status: str, ready: str) -> None:
             self.__maps_components_by_id[id(element_map_component)] = element_map_component
             tree_data.insert(EMPTY_STR if parent_map_component == EMPTY_STR  else id(parent_map_component),
                              id(element_map_component),
                              name,
-                             [component_type, status],
+                             [component_type, status, ready],
                             )
         def add_safe_loader(parent_component, safe_loader: loader.SafeLoader):
             for loader_type, add_function in [
@@ -105,10 +105,10 @@ class MapLoadingInteractionManager:
             raise Exception(f"This object isn't object of SafeLoader type (is  {type(safe_loader).__name__})")
         
         def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
-            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.info_short())
+            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.info_short(), str(loader_unit.ready()))
 
         def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
-            add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.info_short())
+            add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.info_short(), str(loader_list.ready()))
             for loader in loader_list.get_data():
                 add_safe_loader(loader_list, loader)
         
@@ -262,7 +262,7 @@ map_reading_panel = [
         sg.Button("Read whole maps", key='load_whole_maps', disabled=True),
     ],
     [sg.Tree(sg.TreeData(),
-             ["Type", "Status"],
+             ["Type", "Status", "Ready"],
              col0_heading="Name",
              num_rows=20,
              enable_events=True,
