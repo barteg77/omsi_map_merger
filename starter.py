@@ -56,6 +56,7 @@ class MapLoadingInteractionManager:
                  key_shift_right: str,
                  key_shift_up: str,
                  key_shift_down: str,
+                 key_merge: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = merger
         self.__tree: sg.Tree = window[key_tree] # type: ignore
@@ -74,6 +75,7 @@ class MapLoadingInteractionManager:
         self.__button_shift_right: sg.Button = window[key_shift_right] # type: ignore
         self.__button_shift_up: sg.Button = window[key_shift_up] # type: ignore
         self.__button_shift_down: sg.Button = window[key_shift_down] # type: ignore
+        self.__button_merge: sg.Button = window[key_merge] # type: ignore
         self.__maps_components_by_id = dict() #add type hint (int, anything)
 
         self.__update_tree()
@@ -187,6 +189,7 @@ class MapLoadingInteractionManager:
             self.__button_shift_down,
         ]:
             button.update(disabled=not selected_mtm)
+        self.__button_merge.update(disabled = not self.__omsi_map_merger.ready())
     
     def handle_event(self, event) -> bool:#true if handled, false if didn't handled
         if self.__tree.key == event:
@@ -329,7 +332,8 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'shift_left',
     'shift_right',
     'shift_up',
-    'shift_down')
+    'shift_down',
+    'merge')
 
 while True:
     event, values = window.read() # type: ignore
