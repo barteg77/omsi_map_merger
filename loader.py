@@ -64,6 +64,9 @@ class SafeLoader:
     def get_status(self) -> FileParsingStatus:
         raise NotImplementedError()
     
+    def get_data(self):
+        raise NotImplementedError()
+    
     def get_omsi_files(self) -> omsi_files.OmsiFiles:
         return self.__omsi_files
     
