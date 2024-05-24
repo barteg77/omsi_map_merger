@@ -69,6 +69,12 @@ class MapToMerge(omsi_map.OmsiMap):
     ) -> None:
         self.shift_x += shift_x
         self.shift_y += shift_y
+    
+    def get_keep_groundtex(self) -> bool:
+        return self.__keep_groundtex
+    
+    def toggle_keep_groundtex(self) -> None:
+        self.__keep_groundtex = not self.get_keep_groundtex()
 
 class OmsiMapMerger:
     def __init__(self) -> None:
@@ -101,7 +107,7 @@ class OmsiMapMerger:
     def append_map(self, directory: str) -> None:
         if os.path.normpath(directory) in map(lambda om: om.directory, self.__maps):
             raise MapRepetitionError(f"This map (\"{directory}\") has been added to merge before.\nMerging map with iself is not allowed.")
-        self.__maps.append(MapToMerge(os.path.normpath(directory), 0, 0))# tu ma byc normpath czy w OmsiMap??
+        self.__maps.append(MapToMerge(os.path.normpath(directory), 0, 0, False))# tu ma byc normpath czy w OmsiMap??
     
     def remove_map(self, index: int) -> None:
         del self.__maps[index]# tu handle exception??

@@ -56,6 +56,7 @@ class MapLoadingInteractionManager:
                  key_shift_right: str,
                  key_shift_up: str,
                  key_shift_down: str,
+                 key_toggle_keep_groundtex: str,
                  key_merge: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = merger
@@ -75,6 +76,7 @@ class MapLoadingInteractionManager:
         self.__button_shift_right: sg.Button = window[key_shift_right] # type: ignore
         self.__button_shift_up: sg.Button = window[key_shift_up] # type: ignore
         self.__button_shift_down: sg.Button = window[key_shift_down] # type: ignore
+        self.__button_toggle_keep_groundtex: sg.Button = window[key_toggle_keep_groundtex] # type: ignore
         self.__button_merge: sg.Button = window[key_merge] # type: ignore
         self.__maps_components_by_id = dict() #add type hint (int, anything)
 
@@ -187,6 +189,7 @@ class MapLoadingInteractionManager:
             self.__button_shift_right,
             self.__button_shift_up,
             self.__button_shift_down,
+            self.__button_toggle_keep_groundtex,
         ]:
             button.update(disabled=not selected_mtm)
         self.__button_merge.update(disabled = not self.__omsi_map_merger.ready())
@@ -219,6 +222,7 @@ class MapLoadingInteractionManager:
             (self.__button_shift_right, lambda: self.__get_selected_map_component().shift(shift_x = 1)),
             (self.__button_shift_up, lambda: self.__get_selected_map_component().shift(shift_y = 1)),
             (self.__button_shift_down, lambda: self.__get_selected_map_component().shift(shift_y = -1)),
+            (self.__button_toggle_keep_groundtex, self.__get_selected_map_component().toggle_keep_groundtex),
         ]:
             if gui_element.key == event:
                 handler()
@@ -231,7 +235,7 @@ class MapLoadingInteractionManager:
         print("Drawing graph...")
         try:
             colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', 'slate blue', 'slate gray', 'yellow']
-            multiple_maps_color: str = 'black'
+            marking_color: str = 'black'
             maps: list[omsi_map_merger.MapToMerge] = self.__omsi_map_merger.get_maps()
             maps_colors: dict[omsi_map_merger.MapToMerge, str] = dict(zip(maps, colors))
             name_row_height: int = 16
@@ -243,16 +247,32 @@ class MapLoadingInteractionManager:
             self.__graph.Erase()
             tile_size: int = 7
             for tile_pos, present_maps in self.__omsi_map_merger.get_graph_data().items():
-                color = maps_colors[present_maps[0]] if len(present_maps) == 1 else multiple_maps_color
-                self.__graph.DrawRectangle((tile_pos.pos_x*tile_size, tile_pos.pos_y*tile_size),
-                                           ((tile_pos.pos_x-1)*tile_size, (tile_pos.pos_y-1)*tile_size),
-                                           line_color="black",
-                                           fill_color=color)
-            for index, [name, color] in enumerate(zip([mtm.get_name() for mtm in maps], colors)):
+                fill_color = maps_colors[present_maps[0]] if len(present_maps) == 1 else marking_color
+
+                left_x: int = tile_pos.pos_x*tile_size
+                top_y: int = tile_pos.pos_y*tile_size
+                right_x: int = (tile_pos.pos_x-1)*tile_size
+                bottom_y: int = (tile_pos.pos_y-1)*tile_size
+                
+                top_left: tuple[int, int] = (left_x, top_y)
+                top_right: tuple[int, int] = (right_x, top_y)
+                bottom_left: tuple[int, int] = (left_x, bottom_y)
+                bottom_right: tuple[int, int] = (right_x, bottom_y)
+
+                self.__graph.DrawRectangle(top_left,
+                                           bottom_right,
+                                           line_color=marking_color,
+                                           fill_color=fill_color)
+                # marking 'keep groundtex'
+                if present_maps[0].get_keep_groundtex():
+                    self.__graph.draw_line(top_left, bottom_right)
+                    self.__graph.draw_line(top_right, bottom_left)
+            
+            for index, [[name, keep_groundtex], color] in enumerate(zip([(mtm.get_name(), mtm.get_keep_groundtex()) for mtm in maps], colors)):
                 top_left: tuple[int, int] = (-320, 320-index*name_row_height)
                 bottom_right: tuple[int, int] = (-200, 320-(index+1)*name_row_height)
                 self.__graph.draw_rectangle(top_left, bottom_right, color, color)
-                self.__graph.draw_text(name, top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
+                self.__graph.draw_text(name + (" (keep groundtex)" if keep_groundtex else ""), top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
 
         except loader.NoDataError:
             self.__graph.draw_text("An error occured while drawing.\nSome data required to draw a graph is missing.", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
@@ -299,13 +319,9 @@ layout_right = [
     [sg.Button("    ←    ", key="shift_left"),
         sg.Button("    ↑    ", key="shift_up"),
         sg.Button("    ↓    ", key="shift_down"),
-        sg.Button("    →    ", key="shift_right"),
-        sg.Text("Colours:"),
-        sg.Text(" MAP1 ", text_color="black", background_color="yellow"),
-        sg.Text(" MAP2 ", text_color="white", background_color="green"),
-        sg.Text(" BOTH MAPS ", text_color="white", background_color="red")],
+        sg.Button("    →    ", key="shift_right"),],
+    [sg.Button("(toggle) Keep original main ground texture on tiles of selected map", key="toggle_keep_groundtex")],
     [sg.HorizontalSeparator(),],
-    [sg.Checkbox("Keep original main ground texture on tiles of Map 2 if are not same", key="keep_map2_groundtex"),],
     [sg.Text("New map directory"),sg.In(key="new_map_directory"), sg.FolderBrowse()],
     [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
 ]
@@ -333,6 +349,7 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'shift_right',
     'shift_up',
     'shift_down',
+    'toggle_keep_groundtex',
     'merge')
 
 while True:
