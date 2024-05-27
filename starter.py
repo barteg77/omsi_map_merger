@@ -226,6 +226,7 @@ class MapLoadingInteractionManager:
             if gui_element.key == event:
                 handler()
                 self.__draw_graph() #tylko na chwilę!!!!
+                self.__update_disability()
                 return True
         
         return False
