@@ -119,7 +119,7 @@ class OmsiMapMerger:
             map_to_load.load()
     
     def ready(self) -> bool:
-        return all([mtm.ready() for mtm in self.get_maps()])
+        return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping()
     
     def mergedOmsiMap(self):
         if not self.ready():
