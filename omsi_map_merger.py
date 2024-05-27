@@ -49,12 +49,14 @@ class MapToMerge(omsi_map.OmsiMap):
                  directory: str,
                  shift_x: int,
                  shift_y: int,
+                 keep_groundtex: bool,
                  ) -> None:
         if not os.path.isdir(directory):
             raise ValueError(f"\"{directory}\" is not directory")
         super().__init__(directory)
         self.shift_x: int = shift_x
         self.shift_y: int = shift_y
+        self.__keep_groundtex: bool = keep_groundtex
     
     def __str__(self) -> str:
         return self.directory
