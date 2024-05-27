@@ -31,18 +31,6 @@ import loader
 _chrono_tile_parser = chrono_tile_parser.ChronoTileParser()
 _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 
-class ChronoTileLoader(loader.Loader):
-    def __init__(self, path: str) -> None:
-        super().__init__(path, "chrono tile")
-        self.data: typing.Union[chrono_tile.ChronoTile, None] = None
-        #self.__path: str = path
-    
-    def load(self) -> None:
-        self.data = _chrono_tile_parser.parse(self.path)
-
-f=ChronoTileLoader("xd")
-print(f.data)
-
 class ChronoTileInfo:
     def __init__(self,
                  directory,
@@ -65,7 +53,7 @@ class Chrono(loader.SafeLoaderList):
         self.chrono_directory: str = chrono_directory
         self.gc_map: list[global_config.Map] = gc_map
         self.chrono_translations = omsi_files.OmsiFiles()
-        self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(ChronoTileLoader(os.path.join(map_directory, self.chrono_directory, tile.map_file)), optional=True), self.gc_map)), "Chrono tiles")
+        self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
         self.chrono_tiles_infos = []
         self.timetable: timetable.Timetable = timetable.Timetable(os.path.join(self.map_directory, self.chrono_directory))
         super().__init__([self.chrono_tiles],

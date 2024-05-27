@@ -24,23 +24,6 @@ import traceback
 class NoDataError(Exception):
     pass
 
-class Loader:
-    def __init__(self, path: str, ltype = "unknown"):
-        self.type: str = ltype
-        self.path: str = path
-        self.data = None
-    
-    def get_type(self) -> str:
-        return self.type
-
-    def get_path(self) -> str:
-        return self.path
-    
-    def load(self) -> None:
-        raise NotImplementedError()
-    
-    # function self.load
-
 class FileParsingStatus(Enum):
     NOT_READ = auto()
     READ_SUCCESS = auto()
@@ -98,26 +81,29 @@ class SafeLoader:
 class SafeLoaderUnit(SafeLoader):
     __placeholder_exception: Exception = Exception("placeholder exception")
     def __init__(self,
-                 real_loader: Loader,
+                 path: str,
+                 true_loader: typing.Callable[[str], typing.Any],
                  callback_loaded: typing.Callable[[], None] = lambda: None,
                  callback_failed: typing.Callable[[], None] = lambda: None,
                  ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
                  optional: bool = False,
                  ) -> None:
         super().__init__(ofiles)
-        self.__real_loader: Loader = real_loader
+        self.__path: str = path
+        self.__true_loader: typing.Callable[[str]] = true_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
         self.__exception: Exception = self.__placeholder_exception
         #assert bool(callback_loaded == (lambda: None)) != bool(callback_failed == (lambda: None)), "You have to provide callback_loaded and callback_failed or not to provide any of them."
         self.__callback_loaded: typing.Callable[[], None] = callback_loaded
         self.__callback_failed: typing.Callable[[], None] = callback_failed
-        self.__optional = optional
+        self.__optional: bool = optional
+        self.__data = None
     
     def get_type(self) -> str:
-        return self.__real_loader.get_type()
+        return 'n/a'
     
     def get_path(self) -> str:
-        return self.__real_loader.get_path()
+        return self.__path
 
     def get_name(self) -> str:
         return os.path.split(self.get_path())[1]
@@ -125,16 +111,16 @@ class SafeLoaderUnit(SafeLoader):
     def get_status(self) -> FileParsingStatus:
         return self.__status
     
-    def get_data(self) -> typing.Any:
+    def get_data(self):
         if self.__status == FileParsingStatus.READ_SUCCESS:
-            return self.__real_loader.data
+            return self.__data
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
-        print(f"SafeLoaderUnit of {type(self.__real_loader).__name__} loading file \"{self.get_path()}\"...")
+        print(f"SafeLoaderUnit of {'todo'} loading file \"{self.get_path()}\"...")
         try:
-            self.__real_loader.load()
+            self.__data = self.__true_loader(self.get_path())
             self.__status = FileParsingStatus.READ_SUCCESS
             self.__exception = self.__placeholder_exception
             self.__callback_loaded() # type: ignore
