@@ -20,6 +20,7 @@ import omsi_map
 import omsi_files
 import global_config
 import os
+import version
 
 class MapRepetitionError(Exception):
     pass

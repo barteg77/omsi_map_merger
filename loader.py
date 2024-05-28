@@ -81,6 +81,7 @@ class SafeLoader:
 class SafeLoaderUnit(SafeLoader):
     __placeholder_exception: Exception = Exception("placeholder exception")
     def __init__(self,
+                 data_type,
                  path: str,
                  true_loader: typing.Callable[[str], typing.Any],
                  callback_loaded: typing.Callable[[], None] = lambda: None,
@@ -89,6 +90,7 @@ class SafeLoaderUnit(SafeLoader):
                  optional: bool = False,
                  ) -> None:
         super().__init__(ofiles)
+        self.__data_type = data_type
         self.__path: str = path
         self.__true_loader: typing.Callable[[str]] = true_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
@@ -120,10 +122,7 @@ class SafeLoaderUnit(SafeLoader):
     def load(self) -> None:
         print(f"SafeLoaderUnit of {'todo'} loading file \"{self.get_path()}\"...")
         try:
-            self.__data = self.__true_loader(self.get_path())
-            self.__status = FileParsingStatus.READ_SUCCESS
-            self.__exception = self.__placeholder_exception
-            self.__callback_loaded() # type: ignore
+            loaded = self.__true_loader(self.get_path())
         except Exception as exception:
             print(traceback.format_exc())
             if self.__optional and isinstance(exception, FileNotFoundError):
@@ -132,6 +131,13 @@ class SafeLoaderUnit(SafeLoader):
             self.__status = FileParsingStatus.ERROR
             self.__exception = exception
             self.__callback_failed() # type: ignore
+        else:
+            assert type(loaded) == self.__data_type, f"true_loader must return object of type declared when constructing SafeLoader, required type: {self.__data_type}, type of returned: {type(loaded)}"
+            self.__data = loaded
+            self.__status = FileParsingStatus.READ_SUCCESS
+            self.__exception = self.__placeholder_exception
+            self.__callback_loaded() # type: ignore
+        
         print(f"Safe loading finished. Status set to {self.get_status()}")
     
     def info_detailed(self) -> str:

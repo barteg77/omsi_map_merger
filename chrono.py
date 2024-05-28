@@ -53,7 +53,7 @@ class Chrono(loader.SafeLoaderList):
         self.chrono_directory: str = chrono_directory
         self.gc_map: list[global_config.Map] = gc_map
         self.chrono_translations = omsi_files.OmsiFiles()
-        self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
+        self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(chrono_tile.ChronoTile, os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
         self.chrono_tiles_infos = []
         self.timetable: timetable.Timetable = timetable.Timetable(os.path.join(self.map_directory, self.chrono_directory))
         super().__init__([self.chrono_tiles],

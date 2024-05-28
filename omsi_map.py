@@ -74,7 +74,7 @@ class OmsiMap(loader.SafeLoaderList):
                                       params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": groundtex_index},
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
-            tiles_safe_loaders.append(loader.SafeLoaderUnit(os.path.join(self.directory, gc_tile.map_file), _tile_parser.parse, ofiles=tile_files))
+            tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), _tile_parser.parse, ofiles=tile_files))
         self._tiles.set_data(tiles_safe_loaders)
         self.scan_chrono()
     
@@ -85,7 +85,8 @@ class OmsiMap(loader.SafeLoaderList):
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: loader.SafeLoaderUnit = loader.SafeLoaderUnit(os.path.join(self.directory, GLOBAL_CONFIG_FILENAME),
+        self._global_config: loader.SafeLoaderUnit = loader.SafeLoaderUnit(global_config.GlobalConfig,
+                                                                           os.path.join(self.directory, GLOBAL_CONFIG_FILENAME),
                                                                            _global_config_parser.parse,
                                                                            self.set_tiles_and_chronos_gc_consistent, # on success
                                                                            self.empty_tiles_and_chronos, # on fail
@@ -93,7 +94,7 @@ class OmsiMap(loader.SafeLoaderList):
         self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles(self.__fresh_omsi_files())
         self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
-        self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(os.path.join(self.directory, AILISTS_FILENAME), _ailists_parser.parse)
+        self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(ailists.AILists, os.path.join(self.directory, AILISTS_FILENAME), _ailists_parser.parse)
         self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
         super().__init__(
             [
