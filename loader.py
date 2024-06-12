@@ -101,8 +101,8 @@ class SafeLoaderUnit(SafeLoader):
         self.__optional: bool = optional
         self.__data = None
     
-    def get_type(self) -> str:
-        return 'n/a'
+    def get_type_name(self) -> str:
+        return self.__data_type.__name__
     
     def get_path(self) -> str:
         return self.__path

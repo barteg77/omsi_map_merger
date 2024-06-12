@@ -108,7 +108,7 @@ class MapLoadingInteractionManager:
             raise Exception(f"This object isn't object of SafeLoader type (is  {type(safe_loader).__name__})")
         
         def add_safe_loader_unit(parent_component, loader_unit: loader.SafeLoaderUnit):
-            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type(), loader_unit.info_short(), str(loader_unit.ready()))
+            add_to_tree(parent_component, loader_unit, loader_unit.get_name(), "unit/"+loader_unit.get_type_name(), loader_unit.info_short(), str(loader_unit.ready()))
 
         def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
             add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.info_short(), str(loader_list.ready()))
