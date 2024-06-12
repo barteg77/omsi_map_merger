@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -122,9 +122,9 @@ class Entrypoints:
 
 class Map:
     def __init__(self,
-                 pos_x=0,
-                 pos_y=0,
-                 map_file=""
+                 pos_x,
+                 pos_y,
+                 map_file
                  ):
         self.pos_x = pos_x
         self.pos_y = pos_y
