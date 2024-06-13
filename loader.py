@@ -28,8 +28,9 @@ class FileParsingStatus(Enum):
     NOT_READ = auto()
     READ_SUCCESS = auto()
     OPTIONAL_NOT_EXISTS = auto()
-    ERROR = auto()#only SafeLoaderUnit can set this status!
+    ERROR = auto()
     LOWER_MIXED = auto()
+    EXTERNAL_DATA = auto()
 
 class SafeLoader:
     # function self.__init__
@@ -114,7 +115,7 @@ class SafeLoaderUnit(SafeLoader):
         return self.__status
     
     def get_data(self):
-        if self.__status == FileParsingStatus.READ_SUCCESS:
+        if self.__status in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.EXTERNAL_DATA]:
             return self.__data
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
@@ -140,6 +141,11 @@ class SafeLoaderUnit(SafeLoader):
         
         print(f"Safe loading finished. Status set to {self.get_status()}")
     
+    def set_external_data(self, external_data) -> None:
+        assert type(external_data) == self.__data_type, f"external data's type must be equal to declared SafeLoader's data_type, required type: {self.__data_type}, type of returned: {type(external_data)}"
+        self.__data = external_data
+        self.__status = FileParsingStatus.EXTERNAL_DATA
+    
     def info_detailed(self) -> str:
         status_description: str
         match self.__status:
@@ -157,7 +163,7 @@ class SafeLoaderUnit(SafeLoader):
         return status_description + "\n" + self.omsi_files_info()
     
     def ready(self) -> bool:
-        return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.OPTIONAL_NOT_EXISTS]
+        return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.EXTERNAL_DATA, FileParsingStatus.OPTIONAL_NOT_EXISTS]
     
 class SafeLoaderList(SafeLoader):
     def __init__(self,
