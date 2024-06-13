@@ -60,10 +60,13 @@ class Timetable(loader.SafeLoaderList):
         self.station_links = loader.SafeLoaderUnit(station_links.StationLinks, os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"), _station_links_parser.parse)
         self.time_table_line_files = []
         self.time_table_lines: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable lines")
+        self.scanned_time_table_lines: bool = False
         self.track_files = []
         self.tracks: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable tracks")
+        self.scanned_tracks: bool = False
         self.trip_files = []
         self.trips: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable trips")
+        self.scanned_trips: bool = False
         super().__init__([
             self.time_table_lines,
             self.tracks,
@@ -75,20 +78,41 @@ class Timetable(loader.SafeLoaderList):
     def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
         self.time_table_lines.set_data(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(time_table_line.TimeTableLine, os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file), _time_table_line_parser.parse), self.time_table_line_files)))
+        self.scanned_time_table_lines  = True
     
     def scan_tracks(self) -> None:
         self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttr"))]
         self.tracks.set_data(list(map(lambda track_file: loader.SafeLoaderUnit(track.Track, os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file), _track_parser.parse), self.track_files)))
+        self.scanned_tracks = True
     
     def scan_trips(self) -> None:
         self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttp"))]
         self.trips.set_data(list(map(lambda trip_file: loader.SafeLoaderUnit(trip.Trip, os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file), _trip_parser.parse), self.trip_files)))
+        self.scanned_trips = True
     
     def load(self):
         self.scan_time_table_lines()
         self.scan_tracks()
         self.scan_trips()
         super().load()
+    
+    def everything_scanned(self) -> bool:
+        return self.scanned_time_table_lines and self.scanned_tracks and self.scanned_trips
+
+    def ready(self) -> bool:
+        return super().ready() and self.everything_scanned()
+    
+    def scanned_info(self) -> str:
+        component_type_name_scanned: list[tuple[str, bool]] = [
+            ("TTL", self.scanned_time_table_lines),
+            ("TTR", self.scanned_tracks),
+            ("TTP", self.scanned_trips),
+        ]
+        not_scanned_names: list[str] = [component[0] for component in component_type_name_scanned if not component[1]]
+        return f"{' and '.join(not_scanned_names)} not scanned!\n" if not self.everything_scanned() else ""
+    
+    def info_detailed(self) -> str:
+        return self.scanned_info() + super().info_detailed()
     
     def save(self):
         for time_table_line, time_table_line_file in zip(self.time_table_lines, self.time_table_line_files):
