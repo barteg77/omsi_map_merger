@@ -155,7 +155,7 @@ class SafeLoaderUnit(SafeLoader):
                 status_description = "Loaded successfully.\n" + repr(self.get_data())
                 #return "Loaded successfully.\n" + repr(self.get_data())
             case FileParsingStatus.ERROR:
-                status_description = str(self.__exception)
+                status_description = f"Error: {type(self.__exception).__name__}\nError message: {str(self.__exception)}"
             case FileParsingStatus.OPTIONAL_NOT_EXISTS:
                 status_description = "This file does not exist, but it is not a problem, because it is optional."
             case _:
