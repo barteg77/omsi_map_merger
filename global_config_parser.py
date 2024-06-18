@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -108,7 +108,7 @@ class GlobalConfigParser():
         "TRAFFICDENSITY_PASSENGER_GROUP_LIST": [lambda _, n: [n[0]],
                                                 lambda _, n: n[0] + [n[1]]],
         "ENTRYPOINTS_GROUP": [lambda _, n: global_config.Entrypoints(object_on_tile_index=n[0],
-                                                                     id=n[1],
+                                                                     id=int(n[1]),
                                                                      line3=n[2],
                                                                      line4=n[3],
                                                                      line5=n[4],
@@ -117,7 +117,7 @@ class GlobalConfigParser():
                                                                      line8=n[7],
                                                                      line9=n[8],
                                                                      line10=n[9],
-                                                                     tile_index=n[10],
+                                                                     tile_index=int(n[10]),
                                                                      name=n[11],
                                                                      )],
         "ENTRYPOINTS_GROUP_LIST_": [lambda _, n: [n[0]],

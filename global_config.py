@@ -94,31 +94,31 @@ class Trafficdensity:
 
 class Entrypoints:
     def __init__(self,
-                 object_on_tile_index=None,
-                 id=None,
-                 line3=None,
-                 line4=None,
-                 line5=None,
-                 line6=None,
-                 line7=None,
-                 line8=None,
-                 line9=None,
-                 line10=None,
-                 tile_index=None,
-                 name=None
+                 object_on_tile_index: str,
+                 id: int,
+                 line3: str,
+                 line4: str,
+                 line5: str,
+                 line6: str,
+                 line7: str,
+                 line8: str,
+                 line9: str,
+                 line10: str,
+                 tile_index: int,
+                 name: str
                  ):
-        self.object_on_tile_index = object_on_tile_index
-        self.id = id
-        self.line3 = line3
-        self.line4 = line4
-        self.line5 = line5
-        self.line6 = line6
-        self.line7 = line7
-        self.line8 = line8
-        self.line9 = line9
-        self.line10 = line10
-        self.tile_index = tile_index
-        self.name = name
+        self.object_on_tile_index: str = object_on_tile_index
+        self.id: int = id
+        self.line3: str = line3
+        self.line4: str = line4
+        self.line5: str = line5
+        self.line6: str = line6
+        self.line7: str = line7
+        self.line8: str = line8
+        self.line9: str = line9
+        self.line10: str = line10
+        self.tile_index: int = tile_index
+        self.name: str = name
 
 class Map:
     def __init__(self,
