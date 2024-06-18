@@ -119,6 +119,19 @@ class Entrypoints:
         self.line10: str = line10
         self.tile_index: int = tile_index
         self.name: str = name
+    
+    def __key(self):
+        return (self.object_on_tile_index, self.id, self.line3, self.line4, self.line5, self.line6, self.line7, self.line8, self.line9, self.line10, \
+                self.tile_index, self.name)
+    
+    def __eq__(self, other: 'Entrypoints') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
+    
+    def __repr__(self) -> str:
+        return type(self).__name__ + str(self.__key())
 
 class Map:
     def __init__(self,
@@ -129,6 +142,18 @@ class Map:
         self.pos_x: int = pos_x
         self.pos_y: int = pos_y
         self.map_file: str = map_file
+    
+    def __key(self):
+        return (self.pos_x, self.pos_y, self.map_file)
+    
+    def __eq__(self, other: 'Map') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
+    
+    def __repr__(self) -> str:
+        return type(self).__name__ + str(self.__key())
 
 class GlobalConfig:
     def __init__(self,
