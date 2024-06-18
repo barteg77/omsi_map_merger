@@ -122,13 +122,13 @@ class Entrypoints:
 
 class Map:
     def __init__(self,
-                 pos_x,
-                 pos_y,
-                 map_file
+                 pos_x: int,
+                 pos_y: int,
+                 map_file: str,
                  ):
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.map_file = map_file
+        self.pos_x: int = pos_x
+        self.pos_y: int = pos_y
+        self.map_file: str = map_file
 
 class GlobalConfig:
     def __init__(self,
