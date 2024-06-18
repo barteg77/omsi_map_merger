@@ -1,4 +1,4 @@
-# Copyright 2020, 2023 Bartosz Gajewski
+# Copyright 2020, 2023, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -269,8 +269,3 @@ class Tile:
                 obj.id = str(int(obj.id) + int(value))
                 if obj.varparent is not None:
                    obj.varparent = str(int(obj.varparent) + int(value))
-    
-    def change_groundtex_indexes(self, value):
-        for omsi_file in self._files.omsi_files:
-            if "groundtex_index" in omsi_file.params:
-                omsi_file.params["groundtex_index"] = str(int(omsi_file.params["groundtex_index"])+int(value))
