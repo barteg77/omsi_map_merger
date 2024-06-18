@@ -79,10 +79,10 @@ class SafeLoader:
     def ready(self) -> bool:
         raise NotImplementedError
 
-class SafeLoaderUnit(SafeLoader):
+class SafeLoaderUnit[T](SafeLoader):
     __placeholder_exception: Exception = Exception("placeholder exception")
     def __init__(self,
-                 data_type,
+                 data_type: typing.Type[T],
                  path: str,
                  true_loader: typing.Callable[[str], typing.Any],
                  callback_loaded: typing.Callable[[], None] = lambda: None,
@@ -91,7 +91,7 @@ class SafeLoaderUnit(SafeLoader):
                  optional: bool = False,
                  ) -> None:
         super().__init__(ofiles)
-        self.__data_type = data_type
+        self.__data_type: typing.Type[T] = data_type
         self.__path: str = path
         self.__true_loader: typing.Callable[[str]] = true_loader
         self.__status: FileParsingStatus = FileParsingStatus.NOT_READ
@@ -100,7 +100,7 @@ class SafeLoaderUnit(SafeLoader):
         self.__callback_loaded: typing.Callable[[], None] = callback_loaded
         self.__callback_failed: typing.Callable[[], None] = callback_failed
         self.__optional: bool = optional
-        self.__data = None
+        self.__data: T
     
     def get_type_name(self) -> str:
         return self.__data_type.__name__
@@ -114,7 +114,7 @@ class SafeLoaderUnit(SafeLoader):
     def get_status(self) -> FileParsingStatus:
         return self.__status
     
-    def get_data(self):
+    def get_data(self) -> T:
         if self.__status in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.EXTERNAL_DATA]:
             return self.__data
         else:

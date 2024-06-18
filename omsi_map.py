@@ -118,7 +118,7 @@ class OmsiMap(loader.SafeLoaderList):
     def fully_loaded(self):
         return False#może kiedyś bedzie lepiej
     
-    def get_global_config(self):
+    def get_global_config(self) -> loader.SafeLoaderUnit[global_config.GlobalConfig]:
         return self._global_config
     
     def get_standard_timetable(self):
