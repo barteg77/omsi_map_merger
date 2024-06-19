@@ -17,210 +17,210 @@
 
 import omsi_files
 
+class Rule:
+    def __init__(self,
+                 kill: bool,
+                 line1: str,
+                 line2: str,
+                 line3: str,
+                 line4: str
+                 ):
+        self.kill: bool = kill
+        self.line1: str = line1
+        self.line2: str = line2
+        self.line3: str = line3
+        self.line4: str = line4
+
 class Spline:
     def __init__(self,
-                 h=False,
-                 line1=None,
-                 file_name=None,
-                 id=None,
-                 id_previous=None,
-                 id_next=None,
-                 pos_x=None,
-                 pos_z=None,
-                 pos_y=None,
-                 rotate=None,
-                 length=None,
-                 radius=None,
-                 gradient_start=None,
-                 gradient_end=None,
-                 delta_h=None,
-                 cant_start=None,
-                 cant_end=None,
-                 skew_start=None,
-                 skew_end=None,
-                 line18=None,
-                 mirror=False,
-                 spline_terrain_align_2=None,
-                 rule_list=[]
+                 h: bool,
+                 line1: str,
+                 file_name: str,
+                 id: int,
+                 id_previous: int,
+                 id_next: int,
+                 pos_x: str,
+                 pos_z: str,
+                 pos_y: str,
+                 rotate: str,
+                 length: str,
+                 radius: str,
+                 gradient_start: str,
+                 gradient_end: str,
+                 delta_h: str | None,
+                 cant_start: str,
+                 cant_end: str,
+                 skew_start: str,
+                 skew_end: str,
+                 line18: str,
+                 mirror: bool,
+                 spline_terrain_align_2: str | None,
+                 rule_list: list[Rule] | None,
                  ):
-        self.h = h
-        self.line1 = line1
-        self.file_name = file_name
-        self.id = id
-        self.id_previous = id_previous
-        self.id_next = id_next
-        self.pos_x = pos_x
-        self.pos_z = pos_z
-        self.pos_y = pos_y
-        self.rotate = rotate
-        self.length = length
-        self.radius = radius
-        self.gradient_start = gradient_start
-        self.gradient_end = gradient_end
-        self.delta_h = delta_h
-        self.cant_start = cant_start
-        self.cant_end = cant_end
-        self.skew_start = skew_start
-        self.skew_end = skew_end
-        self.line18 = line18
-        self.mirror = mirror
-        self.spline_terrain_align_2 = spline_terrain_align_2
-        self.rule_list = rule_list
+        self.h: bool = h
+        self.line1: str = line1
+        self.file_name: str = file_name
+        self.id: int = id
+        self.id_previous: int = id_previous
+        self.id_next: int = id_next
+        self.pos_x: str = pos_x
+        self.pos_z: str = pos_z
+        self.pos_y: str = pos_y
+        self.rotate: str = rotate
+        self.length: str = length
+        self.radius: str = radius
+        self.gradient_start: str = gradient_start
+        self.gradient_end: str = gradient_end
+        self.delta_h: str | None = delta_h
+        self.cant_start: str = cant_start
+        self.cant_end: str = cant_end
+        self.skew_start: str = skew_start
+        self.skew_end: str = skew_end
+        self.line18: str = line18
+        self.mirror: bool = mirror
+        self.spline_terrain_align_2: str | None = spline_terrain_align_2
+        self.rule_list: list[Rule] | None = rule_list
 
 class _Object:
     def __init__(self,
-                 description=None,
-				 attach_object=False,
-                 line1=None,
-                 file_name=None,
-                 id=None,
-                 pos_x=None,
-                 pos_z=None,
-                 pos_y=None,
-                 rotate=None,
-                 pitch=None,
-                 bank=None,
-                 line10=None,
-                 opt_lines=[],
-                 varparent=None,
-                 spline_terrain_align=False,
-                 rule_list=[]
+                 description: str,
+				 attach_object: bool,
+                 line1: str,
+                 file_name: str,
+                 id: int,
+                 pos_x: str,
+                 pos_z: str,
+                 pos_y: str,
+                 rotate: str,
+                 pitch: str,
+                 bank: str,
+                 line10: str,
+                 opt_lines: list[str] | None,
+                 varparent: int | None,
+                 spline_terrain_align: bool,
+                 rule_list: list[Rule] | None,
                  ):
-        self.description = description
-        self.attach_object = attach_object
-        self.line1 = line1
-        self.file_name = file_name
-        self.id = id
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.pos_z = pos_z
-        self.rotate = rotate
-        self.pitch = pitch
-        self.bank = bank
-        self.line10 = line10
-        self.opt_lines = opt_lines
-        self.varparent = varparent
-        self.spline_terrain_align = spline_terrain_align
-        self.rule_list = rule_list
+        self.description: str = description
+        self.attach_object: bool = attach_object
+        self.line1: str = line1
+        self.file_name: str = file_name
+        self.id: int = id
+        self.pos_x: str = pos_x
+        self.pos_y: str = pos_y
+        self.pos_z: str = pos_z
+        self.rotate: str = rotate
+        self.pitch: str = pitch
+        self.bank: str = bank
+        self.line10: str = line10
+        self.opt_lines: list[str] | None = opt_lines
+        self.varparent: int | None = varparent
+        self.spline_terrain_align: bool = spline_terrain_align
+        self.rule_list: list[Rule] | None = rule_list
 
 class SplineAttachement:
     def __init__(self,
-                 description=None,
-                 line1=None,
-                 file_name=None,
-                 id=None,
-                 line4=None,
-                 pos_x=None,
-                 pos_z=None,
-                 pos_y=None,
-                 rotate=None,
-                 pitch=None,
-                 bank=None,
-                 interval=None,
-                 distance=None,
-                 line13=None,
-                 line14=None,
-                 opt_lines=[],
-                 varparent=None,
-                 spline_terrain_align=False,
-                 rule_list=None,
+                 description: str,
+                 line1: str,
+                 file_name: str,
+                 id: int,
+                 line4: str,
+                 pos_x: str,
+                 pos_z: str,
+                 pos_y: str,
+                 rotate: str,
+                 pitch: str,
+                 bank: str,
+                 interval: str,
+                 distance: str,
+                 line13: str,
+                 line14: str,
+                 opt_lines: list[str] | None,
+                 varparent: int | None,
+                 spline_terrain_align: bool,
+                 rule_list: list[Rule] | None,
                  ):
-        self.description = description
-        self.line1 = line1
-        self.file_name = file_name
-        self.id = id
-        self.line4 = line4
-        self.pos_x = pos_x
-        self.pos_z = pos_z
-        self.pos_y = pos_y
-        self.rotate = rotate
-        self.pitch = pitch
-        self.bank = bank
-        self.interval = interval
-        self.distance = distance
-        self.line13 = line13
-        self.line14 = line14
-        self.opt_lines = opt_lines
-        self.varparent = varparent
-        self.spline_terrain_align = spline_terrain_align
-        self.rule_list = rule_list
+        self.description: str = description
+        self.line1: str = line1
+        self.file_name: str = file_name
+        self.id: int = id
+        self.line4: str = line4
+        self.pos_x: str = pos_x
+        self.pos_z: str = pos_z
+        self.pos_y: str = pos_y
+        self.rotate: str = rotate
+        self.pitch: str = pitch
+        self.bank: str = bank
+        self.interval: str = interval
+        self.distance: str = distance
+        self.line13: str = line13
+        self.line14: str = line14
+        self.opt_lines: list[str] | None = opt_lines
+        self.varparent: int | None = varparent
+        self.spline_terrain_align: bool = spline_terrain_align
+        self.rule_list: list[Rule] | None = rule_list
 
 class SplineAttachementRepeater:
     def __init__(self,
-                 description=None,
-                 line1=None,
-                 line2=None,
-                 line3=None,
-                 file_name=None,
-                 id=None,
-                 line6=None,
-                 pos_x=None,
-                 pos_z=None,
-                 pos_y=None,
-                 rotate=None,
-                 pitch=None,
-                 bank=None,
-                 interval=None,
-                 distance=None,
-                 line15=None,
-                 line16=None,
-                 opt_lines=[],
-                 varparent=None,
-                 spline_terrain_align=False,
-                 rule_list=[]
+                 description: str,
+                 line1: str,
+                 line2: str,
+                 line3: str,
+                 file_name: str,
+                 id: int,
+                 line6: str,
+                 pos_x: str,
+                 pos_z: str,
+                 pos_y: str,
+                 rotate: str,
+                 pitch: str,
+                 bank: str,
+                 interval: str,
+                 distance: str,
+                 line15: str,
+                 line16: str,
+                 opt_lines: list[str] | None,
+                 varparent: int | None,
+                 spline_terrain_align: bool,
+                 rule_list: list[Rule] | None,
                  ):
-        self.description = description
-        self.line1 = line1
-        self.line2 = line2
-        self.line3 = line3
-        self.file_name = file_name
-        self.id = id
-        self.line6 = line6
-        self.pos_x = pos_x
-        self.pos_z = pos_z
-        self.pos_y = pos_y
-        self.rotate = rotate
-        self.pitch = pitch
-        self.bank = bank
-        self.interval = interval
-        self.distance = distance
-        self.line15 = line15
-        self.line16 = line16
-        self.opt_lines = opt_lines
-        self.varparent = varparent
-        self.spline_terrain_align = spline_terrain_align
-        self.rule_list = rule_list
-
-class Rule:
-    def __init__(self,
-                 kill=False,
-                 line1=None,
-                 line2=None,
-                 line3=None,
-                 line4=None
-                 ):
-        self.kill = kill
-        self.line1 = line1
-        self.line2 = line2
-        self.line3 = line3
-        self.line4 = line4
+        self.description: str = description
+        self.line1: str = line1
+        self.line2: str = line2
+        self.line3: str = line3
+        self.file_name: str = file_name
+        self.id: int = id
+        self.line6: str = line6
+        self.pos_x: str = pos_x
+        self.pos_z: str = pos_z
+        self.pos_y: str = pos_y
+        self.rotate: str = rotate
+        self.pitch: str = pitch
+        self.bank: str = bank
+        self.interval: str = interval
+        self.distance: str = distance
+        self.line15: str = line15
+        self.line16: str = line16
+        self.opt_lines: list[str] | None = opt_lines
+        self.varparent: int | None = varparent
+        self.spline_terrain_align: bool = spline_terrain_align
+        self.rule_list: list[Rule] | None = rule_list
 
 class Tile:
     def __init__(self,
-                 initial_comment=None,
-                 version=None,
-                 terrain=False,
-                 water=False,
-                 variable_terrainlightmap=False,
-                 variable_terrain=False,
-                 spline=[],
-                 _object=[],
+                 initial_comment: str,
+                 version: str,
+                 terrain: bool,
+                 water: bool,
+                 variable_terrainlightmap: bool,
+                 variable_terrain: bool,
+                 spline: list[Spline],
+                 _object: list[_Object | SplineAttachement | SplineAttachementRepeater],
                  ):
-        self.initial_comment = initial_comment
-        self.version = version
-        self.terrain = terrain
-        self.water = water
-        self.variable_terrainlightmap = variable_terrainlightmap
-        self.variable_terrain = variable_terrain
-        self.spline = spline
-        self._object = _object
+        self.initial_comment: str = initial_comment
+        self.version: str = version
+        self.terrain: bool = terrain
+        self.water: bool = water
+        self.variable_terrainlightmap: bool = variable_terrainlightmap
+        self.variable_terrain: bool = variable_terrain
+        self.spline: list[Spline] = spline
+        self._object: list[_Object | SplineAttachement | SplineAttachementRepeater] = _object
