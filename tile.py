@@ -277,6 +277,7 @@ class Tile:
         self.variable_terrainlightmap: bool = variable_terrainlightmap
         self.variable_terrain: bool = variable_terrain
         self.spline: list[Spline] = spline
+        self._object: list[_Object | SplineAttachement | SplineAttachementRepeater] = _object
     
     def __key(self):
         return (self.initial_comment, self.version, self.terrain, self.water, self.variable_terrainlightmap, self.variable_terrain, \
