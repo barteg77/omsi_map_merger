@@ -70,7 +70,7 @@ def some_tile() -> tile.Tile:
                      True, True, True, True,
                      [
                          tile.Spline(False, '0', 'Splines\\Marcel\\Hstr_6spur_Wilhelm1.sli', 4, 0,5,'45.8954123576869','3.81469718101361E-6','14.8770606207205','0','149.999997646012','199.99999686135', \
-                                     '0','0','0','0','0','0','0','',False, None,[]),
+                                     '0','0',None,'0','0','0','0','0',False, None,[]),
                      ],
                      [
                          tile._Object('Object Nr. 1',False, '0','Sceneryobjects\\Buildings_MC\\bw_50s_01.sco',6,'53.3936693422588','126.708424359543','0','29.4639429430018','0','0','0',[], None, False, []),

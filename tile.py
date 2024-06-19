@@ -66,6 +66,7 @@ class Spline:
                  spline_terrain_align_2: str | None,
                  rule_list: list[Rule] | None,
                  ):
+        assert h ^ (delta_h is None)
         self.h: bool = h
         self.line1: str = line1
         self.file_name: str = file_name
