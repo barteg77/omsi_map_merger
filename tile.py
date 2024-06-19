@@ -224,17 +224,3 @@ class Tile:
         self.variable_terrain = variable_terrain
         self.spline = spline
         self._object = _object
-    
-    def change_ids(self, value):
-        if self.spline is not None:
-            for spl in self.spline:
-                spl.id = str(int(spl.id) + int(value))
-                if spl.id_previous != "0":
-                    spl.id_previous = str(int(spl.id_previous) + int(value))
-                if spl.id_next != "0":
-                    spl.id_next = str(int(spl.id_next) + int(value))
-        if self._object is not None:
-            for obj in self._object:
-                obj.id = str(int(obj.id) + int(value))
-                if obj.varparent is not None:
-                   obj.varparent = str(int(obj.varparent) + int(value))
