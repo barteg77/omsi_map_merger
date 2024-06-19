@@ -80,7 +80,7 @@ def some_tile() -> tile.Tile:
                                                         '-0.499999992153375','971.351040613941','90.0000020235813','0','0','2.99999995292025','394.999998955127','0', '0', None, 4444, False, None),
                      ])
 
-def test_tile_shifted_id(some_tile) -> None:
+def test_tile_shifted_id_natural(some_tile) -> None:
     def all_ids(t:tile.Tile) -> list[int]:
         sli_ids: list[int] = list(itertools.chain.from_iterable([(sli.id, sli. id_previous, sli.id_next) for sli in t.spline]))
         sco_ids: list[int] = list(itertools.chain.from_iterable([tuple([sco.id]) if sco.varparent is None else (sco.id, sco.varparent) for sco in t._object]))
@@ -90,3 +90,6 @@ def test_tile_shifted_id(some_tile) -> None:
     id_shift: int = 63897
     shifted: tile.Tile = omsi_map_merger.tile_shifted_ids(some_tile, id_shift)
     assert all_ids(shifted) == [id + id_shift if id != 0 else 0 for id in all_ids(some_tile)]
+
+def test_tile_shifted_id_0(some_tile) -> None:
+    assert some_tile == omsi_map_merger.tile_shifted_ids(some_tile, 0)

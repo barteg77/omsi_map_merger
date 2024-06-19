@@ -142,7 +142,7 @@ def tile_shifted_ids(tile_old: tile.Tile, id_shift: int) -> tile.Tile:
                                                       son(sco.varparent, id_shift), sco.spline_terrain_align, sco.rule_list)
     
     return tile.Tile(tile_old.initial_comment,
-                     '14',
+                     tile_old.version,
                      tile_old.terrain,
                      tile_old.water,
                      tile_old.variable_terrainlightmap,

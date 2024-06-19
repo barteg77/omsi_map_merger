@@ -30,6 +30,15 @@ class Rule:
         self.line2: str = line2
         self.line3: str = line3
         self.line4: str = line4
+    
+    def __key(self):
+        return (self.kill, self.line1, self.line2, self.line3, self.line4)
+    
+    def __eq__(self, other: 'Rule') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
 class Spline:
     def __init__(self,
@@ -80,6 +89,18 @@ class Spline:
         self.mirror: bool = mirror
         self.spline_terrain_align_2: str | None = spline_terrain_align_2
         self.rule_list: list[Rule] | None = rule_list
+    
+    def __key(self):
+        return (self.h, self.line1, self.file_name, self.id, self.id_previous, self.id_next, \
+                self.pos_x, self.pos_z, self.pos_y, self.rotate, self.length, self.radius, \
+                self.gradient_start, self.gradient_end, self.delta_h, self.cant_start, self.cant_end, self.skew_start, \
+                self.skew_end, self.line18, self.mirror, self.spline_terrain_align_2, self.rule_list)
+    
+    def __eq__(self, other: 'Spline') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
 class _Object:
     def __init__(self,
@@ -116,6 +137,17 @@ class _Object:
         self.varparent: int | None = varparent
         self.spline_terrain_align: bool = spline_terrain_align
         self.rule_list: list[Rule] | None = rule_list
+    
+    def __key(self):
+        return (self.description, self.attach_object, self.line1, self.file_name, self.id, self.pos_x, \
+                self.pos_z, self.pos_y, self.rotate, self.pitch, self.bank, self.line10, \
+                self.opt_lines, self.varparent, self.spline_terrain_align, self.rule_list)
+    
+    def __eq__(self, other: '_Object') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
 class SplineAttachement:
     def __init__(self,
@@ -158,6 +190,17 @@ class SplineAttachement:
         self.varparent: int | None = varparent
         self.spline_terrain_align: bool = spline_terrain_align
         self.rule_list: list[Rule] | None = rule_list
+    
+    def __key(self):
+        return (self.description, self.line1, self.file_name, self.id, self.pos_x, self.pos_z, \
+                self.pos_y, self.rotate, self.pitch, self.bank, self.interval, self.distance, \
+                self.line13, self.line14, self.opt_lines, self.varparent, self.spline_terrain_align, self.rule_list)
+    
+    def __eq__(self, other: 'SplineAttachement') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
 class SplineAttachementRepeater:
     def __init__(self,
@@ -204,6 +247,17 @@ class SplineAttachementRepeater:
         self.varparent: int | None = varparent
         self.spline_terrain_align: bool = spline_terrain_align
         self.rule_list: list[Rule] | None = rule_list
+    
+    def __key(self):
+        return (self.description, self.line1, self.line3, self.file_name, self.id, self.pos_x, \
+                self.pos_z, self.pos_y, self.rotate, self.pitch, self.bank, self.interval, self.distance, \
+                self.line15, self.line16, self.opt_lines, self.varparent, self.spline_terrain_align, self.rule_list)
+    
+    def __eq__(self, other: 'SplineAttachementRepeater') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
 class Tile:
     def __init__(self,
@@ -223,4 +277,13 @@ class Tile:
         self.variable_terrainlightmap: bool = variable_terrainlightmap
         self.variable_terrain: bool = variable_terrain
         self.spline: list[Spline] = spline
-        self._object: list[_Object | SplineAttachement | SplineAttachementRepeater] = _object
+    
+    def __key(self):
+        return (self.initial_comment, self.version, self.terrain, self.water, self.variable_terrainlightmap, self.variable_terrain, \
+                self.spline, self._object)
+    
+    def __eq__(self, other: 'Tile') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
