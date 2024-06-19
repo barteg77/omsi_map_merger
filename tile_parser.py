@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -29,7 +29,6 @@ class TileParser():
                                         variable_terrain=n[6],
                                         spline=n[7],
                                         _object=n[8],
-                                        _files=None
                                         )],
         "VERSION_GROUP": [lambda _, n: n[1]],
         "TERRAIN_GROUP": [lambda _, n: True],

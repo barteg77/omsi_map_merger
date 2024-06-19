@@ -215,7 +215,6 @@ class Tile:
                  variable_terrain=False,
                  spline=[],
                  _object=[],
-                 _files=None
                  ):
         self.initial_comment = initial_comment
         self.version = version
@@ -225,36 +224,6 @@ class Tile:
         self.variable_terrain = variable_terrain
         self.spline = spline
         self._object = _object
-        
-        self._files = _files
-        if self._files is None:
-            self._files = omsi_files.OmsiFiles()
-    
-    def load_files(self, directory, pos_x, pos_y, groundtex_count):
-        self._files.add(omsi_files.OmsiFile(map_path=directory,
-                                            pattern="tile_{pos_x}_{pos_y}.map.terrain",
-                                            params={"pos_x": pos_x, "pos_y": pos_y},
-                                            optional=True))
-        self._files.add(omsi_files.OmsiFile(map_path=directory,
-                                            pattern="tile_{pos_x}_{pos_y}.map.water",
-                                            params={"pos_x": pos_x, "pos_y": pos_y},
-                                            optional=True))
-        self._files.add(omsi_files.OmsiFile(map_path=directory,
-                                            pattern="tile_{pos_x}_{pos_y}.map.LM.bmp",
-                                            params={"pos_x": pos_x, "pos_y": pos_y},
-                                            optional=True))
-        self._files.add(omsi_files.OmsiFile(map_path=directory,
-                                            pattern="texture/map/tile_{pos_x}_{pos_y}.map.roadmap.bmp",
-                                            params={"pos_x": pos_x, "pos_y": pos_y},
-                                            optional=True))
-        for groundtex_index in range(1, groundtex_count+1):
-            self._files.add(omsi_files.OmsiFile(map_path=directory,
-                                                pattern="texture/map/tile_{pos_x}_{pos_y}.map.{groundtex_index}.dds",
-                                                params={"pos_x": pos_x, "pos_y": pos_y, "groundtex_index": groundtex_index},
-                                                optional=True))
-    
-    def save_files(self, directory):
-        self._files.save(directory)
     
     def change_ids(self, value):
         if self.spline is not None:
