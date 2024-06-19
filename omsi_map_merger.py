@@ -17,7 +17,9 @@
 
 import omsi_map
 import global_config
+import tile
 import os
+import typing
 import itertools
 import operator
 import version
@@ -111,6 +113,42 @@ def shifted_gc_tile(gc_tile: global_config.Map, shift_x: int, shift_y: int) -> g
 
 def shifted_gc_tiles(gc_tiles: list[global_config.Map], shift_x: int, shift_y: int) -> list[global_config.Map]:
     return [shifted_gc_tile(gc_tile, shift_x, shift_y) for gc_tile in gc_tiles]
+
+def tile_shifted_ids(tile_old: tile.Tile, id_shift: int) -> tile.Tile:
+    new_splines: list[tile.Spline] =  [tile.Spline(s.h, s.line1, s.file_name, s.id+id_shift, s.id_previous+id_shift if s.id_previous!=0 else 0, s.id_next+id_shift if s.id_next!=0 else 0, \
+                                                   s.pos_x, s.pos_z, s.pos_y, s.rotate, s.length, s.radius, \
+                                                   s.gradient_start, s.gradient_end, s.delta_h, s.cant_start, s.cant_end, s.skew_start, \
+                                                   s.skew_end, s.line18, s.mirror, s.spline_terrain_align_2, s.rule_list) \
+                                        for s in tile_old.spline]
+    
+    def sceneryobject_id_shifted(sco) -> tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater: # type: ignore
+        def son(sco_id: int | None, shift: int) -> int | None:
+            return None if sco_id is None else sco_id+shift
+        sco_type: typing.Type[tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater] = type(sco)
+        match sco_type:
+            case tile._Object:
+                return tile._Object(sco.description, sco.attach_object, sco.line1, sco.file_name, sco.id+id_shift, sco.pos_x, \
+                                    sco.pos_z, sco.pos_y, sco.rotate, sco.pitch, sco.bank, sco.line10, \
+                                        sco.opt_lines, son(sco.varparent, id_shift), sco.spline_terrain_align, sco.rule_list)
+            case tile.SplineAttachement:
+                return tile.SplineAttachement(sco.description, sco.line1, sco.file_name, sco.id+id_shift, sco.line4, sco.pos_x, \
+                                              sco.pos_z, sco.pos_y, sco.rotate, sco.pitch, sco.bank, sco.interval, \
+                                              sco.distance, sco.line13, sco.line14, sco.opt_lines, son(sco.varparent, id_shift), sco.spline_terrain_align, \
+                                              sco.rule_list)
+            case tile.SplineAttachementRepeater:
+                return tile.SplineAttachementRepeater(sco.description, sco.line1, sco.line2, sco.line3, sco.file_name, sco.id+id_shift, \
+                                                      sco.line6, sco.pos_x, sco.pos_z, sco.pos_y, sco.rotate, sco.pitch, \
+                                                      sco.bank, sco.interval, sco.distance, sco.line15, sco.line16, sco.opt_lines, \
+                                                      son(sco.varparent, id_shift), sco.spline_terrain_align, sco.rule_list)
+    
+    return tile.Tile(tile_old.initial_comment,
+                     '14',
+                     tile_old.terrain,
+                     tile_old.water,
+                     tile_old.variable_terrainlightmap,
+                     tile_old.variable_terrain,
+                     new_splines,
+                     list(map(sceneryobject_id_shifted, tile_old._object)))
 
 class OmsiMapMerger:
     def __init__(self) -> None:
