@@ -229,6 +229,9 @@ class MapLoadingInteractionManager:
                 self.__update_disability()
                 return True
         
+        if self.__button_merge.key == event:
+            print(self.__omsi_map_merger.merged_omsi_map("fffff"))
+        
         return False
     
     def __draw_graph(self) -> None:
