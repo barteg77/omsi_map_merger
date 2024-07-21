@@ -128,8 +128,8 @@ class _Object:
         self.file_name: str = file_name
         self.id: int = id
         self.pos_x: str = pos_x
-        self.pos_y: str = pos_y
         self.pos_z: str = pos_z
+        self.pos_y: str = pos_y
         self.rotate: str = rotate
         self.pitch: str = pitch
         self.bank: str = bank
