@@ -47,7 +47,7 @@ class TilePos:
     def __hash__(self) -> int:
         return hash(self.__key())
 
-class MapToMerge(omsi_map.OmsiMap):
+class MapToMerge(omsi_map.OmsiMapSl):
     def __init__(self,
                  directory: str,
                  shift_x: int,
@@ -218,12 +218,12 @@ class OmsiMapMerger:
         tiles_counts_sequentially: list[int] = [len(mtm.get_global_config().get_data()._map) for mtm in self.get_maps()]
         return dict(zip(self.get_maps(), itertools.accumulate([0] + tiles_counts_sequentially, operator.add)))
 
-    def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMap:
+    def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMapSl:
         assert self.ready(), "You can't get merged omsi map while not all maps are ready"
         assert not self.get_maps()[0].get_keep_groundtex(), "\"Keep groundtex\" on 1st map is nonsense."
         
         comment: str = "File created with OMSI Map Merger {version.version}"
-        new_om: omsi_map.OmsiMap = omsi_map.OmsiMap("to be set later")
+        new_om: omsi_map.OmsiMapSl = omsi_map.OmsiMapSl("to be set later")
 
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()

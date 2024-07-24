@@ -43,7 +43,17 @@ class ChronoTileInfo:
         self.pos_y = pos_y
         self.tile = tile
 
-class Chrono(loader.SafeLoaderList):
+class Chrono:
+    def __init__(self,
+                 chrono_directory: str,
+                 chrono_tiles_info: list[ChronoTileInfo],
+                 comsi_files: omsi_files.OmsiFiles,
+    ):
+        self.chrono_directory: str = chrono_directory
+        self.chrono_tiles_info: list[ChronoTileInfo] = chrono_tiles_info
+        self.omsi_files: omsi_files.OmsiFiles = comsi_files
+
+class ChronoSl(loader.SafeLoaderList):
     def __init__(self,
                  map_directory: str,
                  chrono_directory: str,
@@ -55,7 +65,7 @@ class Chrono(loader.SafeLoaderList):
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(chrono_tile.ChronoTile, os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
         self.chrono_tiles_infos = []
-        self.timetable: timetable.Timetable = timetable.Timetable(os.path.join(self.map_directory, self.chrono_directory))
+        self.timetable: timetable.TimetableSl = timetable.TimetableSl(os.path.join(self.map_directory, self.chrono_directory))
         super().__init__([self.chrono_tiles],
                          self.chrono_directory,
                          omsi_files.OmsiFiles(self.__all_omsi_files()),
@@ -79,6 +89,10 @@ class Chrono(loader.SafeLoaderList):
     def load(self):
         super().get_omsi_files().set_omsi_files(self.__all_omsi_files())
         super().load()
+        self.chrono_tiles_infos = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
+                                   for gc_map, chrono_tile
+                                   in zip(self.gc_map, self.chrono_tiles.get_data())
+                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
         self.get_timetable().load()
     
     def save(self,
@@ -95,3 +109,8 @@ class Chrono(loader.SafeLoaderList):
         for chrono_tiles_info in self.chrono_tiles_infos:
             chrono_tiles_info.tile.change_ids(ids_value)
         self.timetable.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
+    
+    def get_pure(self) -> Chrono:
+        if not self.ready():
+            raise loader.NoDataError
+        return Chrono(self.chrono_directory, self.chrono_tiles_infos, self.get_omsi_files())

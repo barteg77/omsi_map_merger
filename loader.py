@@ -30,7 +30,6 @@ class FileParsingStatus(Enum):
     OPTIONAL_NOT_EXISTS = auto()
     ERROR = auto()
     LOWER_MIXED = auto()
-    EXTERNAL_DATA = auto()
 
 class SafeLoader:
     # function self.__init__
@@ -84,7 +83,7 @@ class SafeLoaderUnit[T](SafeLoader):
     def __init__(self,
                  data_type: typing.Type[T],
                  path: str,
-                 true_loader: typing.Callable[[str], typing.Any],
+                 true_loader: typing.Callable[[str], T],
                  callback_loaded: typing.Callable[[], None] = lambda: None,
                  callback_failed: typing.Callable[[], None] = lambda: None,
                  ofiles: omsi_files.OmsiFiles = omsi_files.OmsiFiles(),
@@ -115,7 +114,7 @@ class SafeLoaderUnit[T](SafeLoader):
         return self.__status
     
     def get_data(self) -> T:
-        if self.__status in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.EXTERNAL_DATA]:
+        if self.__status is FileParsingStatus.READ_SUCCESS:
             return self.__data
         else:
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
@@ -141,11 +140,6 @@ class SafeLoaderUnit[T](SafeLoader):
         
         print(f"Safe loading finished. Status set to {self.get_status()}")
     
-    def set_external_data(self, external_data) -> None:
-        assert type(external_data) == self.__data_type, f"external data's type must be equal to declared SafeLoader's data_type, required type: {self.__data_type}, type of returned: {type(external_data)}"
-        self.__data = external_data
-        self.__status = FileParsingStatus.EXTERNAL_DATA
-    
     def info_detailed(self) -> str:
         status_description: str
         match self.__status:
@@ -163,7 +157,7 @@ class SafeLoaderUnit[T](SafeLoader):
         return status_description + "\n" + self.omsi_files_info()
     
     def ready(self) -> bool:
-        return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.EXTERNAL_DATA, FileParsingStatus.OPTIONAL_NOT_EXISTS]
+        return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.OPTIONAL_NOT_EXISTS]
     
 class SafeLoaderList(SafeLoader):
     def __init__(self,

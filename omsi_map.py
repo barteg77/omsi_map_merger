@@ -45,7 +45,23 @@ _tile_serializer = tile_serializer.TileSerializer()
 _ailists_parser = ailists_parser.AIListsParser()
 _ailists_serializer = ailists_serializer.AIListsSerializer()
 
-class OmsiMap(loader.SafeLoaderList):
+class OmsiMap:
+    def __init__(self,
+                 mglobal_config: global_config.GlobalConfig,
+                 mtiles: list[tile.Tile],
+                 momsi_files: omsi_files.OmsiFiles,
+                 mstandard_timetable: timetable.Timetable,
+                 mailists: ailists.AILists,
+                 mchronos: list[chrono.Chrono],
+    ):
+        self.global_config: global_config.GlobalConfig = mglobal_config
+        self.tiles: list[tile.Tile] = mtiles
+        self.mfiles: omsi_files.OmsiFiles = momsi_files
+        self.mstandard_timetable: timetable.Timetable = mstandard_timetable
+        self.ailists: ailists.AILists = mailists
+        self.mchronos: list[chrono.Chrono] = mchronos
+    
+class OmsiMapSl(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         self.empty_tiles_and_chronos()
         # set tiles' safe parsers
@@ -93,7 +109,7 @@ class OmsiMap(loader.SafeLoaderList):
                                                                            )
         self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles(self.__fresh_omsi_files())
-        self._standard_timetable: timetable.Timetable = timetable.Timetable(self.directory)
+        self._standard_timetable: timetable.TimetableSl = timetable.TimetableSl(self.directory)
         self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(ailists.AILists, os.path.join(self.directory, AILISTS_FILENAME), _ailists_parser.parse)
         self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
         super().__init__(
@@ -182,7 +198,7 @@ class OmsiMap(loader.SafeLoaderList):
     
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
-        self._chronos.set_data([chrono.Chrono(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
+        self._chronos.set_data([chrono.ChronoSl(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
     
     def save_chrono(self):
         for chrono in self._chronos:
@@ -214,3 +230,13 @@ class OmsiMap(loader.SafeLoaderList):
     def change_groundtex_indexes(self, value):
         for tile_index, til in self._tiles.items():
             til.change_groundtex_indexes(value)
+    
+    def get_pure(self) -> OmsiMap:
+        if not self.ready():
+            raise loader.NoDataError
+        return OmsiMap(self.get_global_config().get_data(),
+                       [x.get_data() for x in self.get_tiles().get_data()],
+                       self.get_omsi_files(),
+                       self.get_standard_timetable().get_pure(),
+                       self.get_ailists().get_data(),
+                       [x.get_data() for x in self.get_chrono().get_data()])

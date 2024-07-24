@@ -31,6 +31,7 @@ import station_links
 import station_links_parser
 import station_links_serializer
 import loader
+import named_data as nd
 import glob
 import os
 
@@ -49,7 +50,21 @@ _busstops_serializer = busstops_serializer.BusstopsSerializer()
 _station_links_parser = station_links_parser.StationLinksParser()
 _station_links_serializer = station_links_serializer.StationLinksSerializer()
 
-class Timetable(loader.SafeLoaderList):
+class Timetable:
+    def __init__(self,
+                 tbusstops: busstops.Busstops,
+                 tstation_links: station_links.StationLinks,
+                 ttime_table_lines: list[nd.NamedData[time_table_line.TimeTableLine]],
+                 ttracks: list[nd.NamedData[track.Track]],
+                 ttrips: list[nd.NamedData[trip.Trip]],
+    ):
+        self.busstops: busstops.Busstops = tbusstops
+        self.station_links: station_links.StationLinks = tstation_links
+        self.time_table_lines: list[nd.NamedData[time_table_line.TimeTableLine]] = ttime_table_lines
+        self.tracks: list[nd.NamedData[track.Track]] = ttracks
+        self.trips: list[nd.NamedData[trip.Trip]] = ttrips
+
+class TimetableSl(loader.SafeLoaderList):
     def __init__(self,
                  map_directory: str,
                  chrono_directory: str = "",
@@ -74,6 +89,18 @@ class Timetable(loader.SafeLoaderList):
             self.busstops,
             self.station_links,
         ], "Timetable")
+    
+    def get_pure(self) -> Timetable:
+        if not self.ready():
+            raise loader.NoDataError
+        
+        return Timetable(self.busstops.get_data(),
+                             self.station_links.get_data(),
+                             [nd.NamedData(*args) for args in zip(self.time_table_line_files, [sl.get_data() for sl in self.time_table_lines.get_data()])],
+                             [nd.NamedData(*args) for args in zip(self.track_files, [sl.get_data() for sl in self.tracks.get_data()])],
+                             [nd.NamedData(*args) for args in zip(self.trip_files, [sl.get_data() for sl in self.trips.get_data()])],
+        )
+
     
     def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]

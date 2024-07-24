@@ -176,7 +176,7 @@ class MapLoadingInteractionManager:
                             and self.__get_selected_map_component().get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
         self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
-        selected_tt :bool = self.__is_selected_component_instance(timetable.Timetable)
+        selected_tt :bool = self.__is_selected_component_instance(timetable.TimetableSl)
         for button in [
             self.__button_load_scan_timetable_lines,
             self.__button_load_scan_tracks,
