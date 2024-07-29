@@ -33,25 +33,42 @@ _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 
 class ChronoTileInfo:
     def __init__(self,
-                 directory,
-                 pos_x,
-                 pos_y,
-                 tile=None
+                 directory: str,
+                 pos_x: int,
+                 pos_y: int,
+                 tile: chrono_tile.ChronoTile,
                  ):
-        self.directory = directory
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-        self.tile = tile
+        self.directory: str = directory
+        self.pos_x: int = pos_x
+        self.pos_y: int = pos_y
+        self.tile: chrono_tile.ChronoTile = tile
 
 class Chrono:
     def __init__(self,
                  chrono_directory: str,
-                 chrono_tiles_info: list[ChronoTileInfo],
+                 chrono_tiles_info: list[ChronoTileInfo], # only tiles with chrono tile
                  comsi_files: omsi_files.OmsiFiles,
+                 ctimetable: timetable.Timetable,
     ):
         self.chrono_directory: str = chrono_directory
-        self.chrono_tiles_info: list[ChronoTileInfo] = chrono_tiles_info
+        self.chrono_tiles_info: list[ChronoTileInfo] = chrono_tiles_info # only tiles with chrono tile
         self.omsi_files: omsi_files.OmsiFiles = comsi_files
+        self.timetable: timetable.Timetable = ctimetable
+    
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
+        for chrono_tiles_info in self.chrono_tiles_info:
+            chrono_tiles_info.tile.change_ids(ids_value)
+        self.timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)
+    
+    def save(self, map_directory: str) -> None:
+        joined_directory: str = os.path.join(map_directory, self.chrono_directory)
+        pathlib.Path(os.path.join(map_directory, self.chrono_directory, "TTData")).mkdir(parents=True, exist_ok=True)
+        self.omsi_files.save(map_directory)
+        for chrono_tile in self.chrono_tiles_info:
+            file_path: str = os.path.join(joined_directory, f'tile_{chrono_tile.pos_x}_{chrono_tile.pos_y}.map')
+            print(f"Serializing chrono tile file {file_path}...")
+            _chrono_tile_serializer.serialize(chrono_tile.tile, file_path)
+        self.timetable.save(joined_directory)
 
 class ChronoSl(loader.SafeLoaderList):
     def __init__(self,
@@ -64,7 +81,7 @@ class ChronoSl(loader.SafeLoaderList):
         self.gc_map: list[global_config.Map] = gc_map
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(chrono_tile.ChronoTile, os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
-        self.chrono_tiles_infos = []
+        self.chrono_tiles_infos: list[ChronoTileInfo] = [] # only tiles with chrono tile
         self.timetable: timetable.TimetableSl = timetable.TimetableSl(os.path.join(self.map_directory, self.chrono_directory))
         super().__init__([self.chrono_tiles],
                          self.chrono_directory,
@@ -95,22 +112,7 @@ class ChronoSl(loader.SafeLoaderList):
                                    if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
         self.get_timetable().load()
     
-    def save(self,
-             map_directory
-             ):
-        pathlib.Path(os.path.join(map_directory, self.chrono_directory, "TTData")).mkdir(parents=True, exist_ok=True)
-        self.chrono_translations.save(map_directory)
-        for chrono_tile in self.chrono_tiles_infos:
-            print("Serializing chrono tile file " + os.path.join(map_directory, chrono_tile.directory, "tile_"+chrono_tile.pos_x+"_"+chrono_tile.pos_y+".map"))
-            _chrono_tile_serializer.serialize(chrono_tile.tile, os.path.join(map_directory, chrono_tile.directory, "tile_"+chrono_tile.pos_x+"_"+chrono_tile.pos_y+".map"))
-        self.timetable.save(map_directory)
-    
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
-        for chrono_tiles_info in self.chrono_tiles_infos:
-            chrono_tiles_info.tile.change_ids(ids_value)
-        self.timetable.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-    
     def get_pure(self) -> Chrono:
         if not self.ready():
             raise loader.NoDataError
-        return Chrono(self.chrono_directory, self.chrono_tiles_infos, self.get_omsi_files())
+        return Chrono(self.chrono_directory, self.chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_pure())

@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -44,8 +44,8 @@ class Track:
         self.comment2 = comment2
         self.track_entry = track_entry
     
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
         if self.track_entry is not None:
             for te in self.track_entry:
-                te.id = str(int(te.id) + int(ids_value))
-                te.tile_index = str(int(te.tile_index) + int(tile_indexes_value))
+                te.id = str(int(te.id) + ids_value)
+                te.tile_index = str(int(te.tile_index) + tile_indices_value)

@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -17,19 +17,19 @@
 
 class Station:
     def __init__(self,
-                 id=None,
-                 interval=None,
-                 name=None,
-                 tile_index=None,
-                 line5=None,
-                 line6=None,
-                 line7=None,
-                 line8=None
+                 id: int,
+                 interval,
+                 name,
+                 tile_index: int,
+                 line5,
+                 line6,
+                 line7,
+                 line8,
                  ):
-        self.id = id
+        self.id: int = id
         self.interval = interval
         self.name = name
-        self.tile_index = tile_index
+        self.tile_index: int = tile_index
         self.line5 = line5
         self.line6 = line6
         self.line7 = line7
@@ -37,27 +37,28 @@ class Station:
 
 class Trip:
     def __init__(self,
-                 comment1=None,
-                 comment2=None,
-                 line1=None,
-                 line2=None,
-                 line3=None,
-                 station=None,
-                 lines=None
+                 comment1,
+                 comment2,
+                 line1,
+                 line2,
+                 line3,
+                 station: list[Station],
+                 lines=None,
                  ):
         self.comment1 = comment1
         self.comment2 = comment2
         self.line1 = line1
         self.line2 = line2
         self.line3 = line3
-        self.station = station
+        self.station: list[Station] = station
         self.lines = lines
     
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
         if self.station is not None:
             if isinstance(self.station[0], Station):
                 for station in self.station:
-                    station.id = str(int(station.id) + int(ids_value))
-                    station.tile_index = str(int(station.tile_index) + int(tile_indexes_value))
+                    station.id = station.id + ids_value
+                    station.tile_index = station.tile_index + tile_indices_value
             else:
-                self.station = [str(int(station) + int(ids_value)) for station in self.station]
+                self.station = [str(int(station) + int(ids_value)) for station in self.station]#chyba będzie działać mimo wszystko
+                                                                                               #ale bedzie trzeba ogarnąć

@@ -18,11 +18,14 @@
 import omsi_map
 import global_config
 import tile
+import ailists
+import timetable
 import os
 import typing
 import itertools
 import operator
 import version
+import copy
 
 class MapRepetitionError(Exception):
     pass
@@ -190,6 +193,10 @@ class OmsiMapMerger:
         for map_to_load in self.__maps:
             map_to_load.load()
     
+    def aigroup_name_collision(self) -> bool:
+        aigroups_names_seq: list[str] = list(itertools.chain.from_iterable([[aig.name for aig in mtm.get_ailists().get_data().aigroups] for mtm in self.get_maps()]))
+        return len(set(aigroups_names_seq)) != len(aigroups_names_seq)
+    
     def ready(self) -> bool:
         return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping() and len(self.get_maps()) >= 2
     
@@ -218,24 +225,26 @@ class OmsiMapMerger:
         tiles_counts_sequentially: list[int] = [len(mtm.get_global_config().get_data()._map) for mtm in self.get_maps()]
         return dict(zip(self.get_maps(), itertools.accumulate([0] + tiles_counts_sequentially, operator.add)))
 
-    def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMapSl:
+    def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMap:
         assert self.ready(), "You can't get merged omsi map while not all maps are ready"
         assert not self.get_maps()[0].get_keep_groundtex(), "\"Keep groundtex\" on 1st map is nonsense."
-        
-        comment: str = "File created with OMSI Map Merger {version.version}"
-        new_om: omsi_map.OmsiMapSl = omsi_map.OmsiMapSl("to be set later")
+        print("Aigroup name collision:", self.aigroup_name_collision())
 
+        fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_pure())) for mtm in self.get_maps()])
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()
+        groundtex_shift: dict[MapToMerge, int] = self.merged_groundtex_shift()
+
+        comment: str = "File created with OMSI Map Merger {version.version}"
 
         # constructing global config
         map_description: str = f"{new_map_name}\nMap created with OMSI Map Merger {version.version}\nMerged maps (path, shift_x, shift_y, keep_groundtex):\n"\
         + "".join(["\n* " + ", ".join([mtm.get_directory(), str(mtm.get_shift_x()), str(mtm.get_shift_y()), str(mtm.get_keep_groundtex())]) for mtm in self.get_maps()])
         
-        gc_entrypoints: list[global_config.Entrypoints] = list(itertools.chain.from_iterable([shifted_entrypoints(mtm._global_config.get_data().entrypoints,
-                                                                                                               idcode_shift[mtm],
-                                                                                                               tile_shift[mtm]) for mtm in self.get_maps()]))
-        gc_tiles: list[global_config.Map] = list(itertools.chain.from_iterable([shifted_gc_tiles(mtm._global_config.get_data()._map,
+        gc_entrypoints: list[global_config.Entrypoints] = list(itertools.chain.from_iterable([shifted_entrypoints(fm[mtm].global_config.entrypoints,#mtm._global_config.get_data().entrypoints,
+                                                                                                                  idcode_shift[mtm],
+                                                                                                                  tile_shift[mtm]) for mtm in self.get_maps()]))
+        gc_tiles: list[global_config.Map] = list(itertools.chain.from_iterable([shifted_gc_tiles(fm[mtm].global_config._map,#mtm._global_config.get_data()._map,
                                                                                                  mtm.get_shift_x(),
                                                                                                  mtm.get_shift_y()) for mtm in self.get_maps()]))
         gc: global_config.GlobalConfig
@@ -248,22 +257,35 @@ class OmsiMapMerger:
                                         False,
                                         False,
                                         False,
-                                        self.get_maps()[0].get_global_config().get_data().backgroundimage,
-                                        self.get_maps()[0].get_global_config().get_data().mapcam,
-                                        self.get_maps()[0].get_global_config().get_data().moneysystem,
-                                        self.get_maps()[0].get_global_config().get_data().ticketpack,
-                                        self.get_maps()[0].get_global_config().get_data().repair_time_min,
-                                        self.get_maps()[0].get_global_config().get_data().years,
-                                        self.get_maps()[0].get_global_config().get_data().realyearoffset,
-                                        self.get_maps()[0].get_global_config().get_data().standarddepot,
+                                        fm[self.get_maps()[0]].global_config.backgroundimage,
+                                        fm[self.get_maps()[0]].global_config.mapcam,
+                                        fm[self.get_maps()[0]].global_config.moneysystem,
+                                        fm[self.get_maps()[0]].global_config.ticketpack,
+                                        fm[self.get_maps()[0]].global_config.repair_time_min,
+                                        fm[self.get_maps()[0]].global_config.years,
+                                        fm[self.get_maps()[0]].global_config.realyearoffset,
+                                        fm[self.get_maps()[0]].global_config.standarddepot,
                                         self.merged_gc_groundtex(),
-                                        self.get_maps()[0].get_global_config().get_data().addseason,
-                                        self.get_maps()[0].get_global_config().get_data().trafficdensity_road,
-                                        self.get_maps()[0].get_global_config().get_data().trafficdensity_passenger,
+                                        fm[self.get_maps()[0]].global_config.addseason,
+                                        fm[self.get_maps()[0]].global_config.trafficdensity_road,
+                                        fm[self.get_maps()[0]].global_config.trafficdensity_passenger,
                                         gc_entrypoints,
                                         gc_tiles,
                                         )
-        new_om.get_global_config().set_external_data(gc)
-            
+        
+        # shift idcodes, tile indices, groundtex indices
+        for mtm in self.get_maps():
+            fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
+            fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
+        
+        tiles: list[tile.Tile] = list(itertools.chain.from_iterable([fm[mtm].tiles for mtm in self.get_maps()]))
+        
+        new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
+                                                    tiles,
+                                                    fm[self.get_maps()[0]].mfiles,
+                                                    timetable.joined([fm[mtm].mstandard_timetable for mtm in self.get_maps()]),
+                                                    ailists.AILists(list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))),
+                                                    list(itertools.chain.from_iterable([fm[mtm].mchronos for mtm in self.get_maps()])),
+                                                    )
         print('merged')
         return new_om

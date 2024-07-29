@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -15,7 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-class AIGroup2:
+class AnyAIgroup:
+    def __init__(self) -> None:
+        self.name: str
+        self.type: str
+        raise NotImplementedError("this is abstract class")
+
+class AIGroup2(AnyAIgroup):
     def __init__(self,
                  name,
                  hof_name=None,
@@ -33,17 +39,17 @@ class AIGroupDepotTypgroup2:
         self.type = type
         self.vehicles = vehicles
 
-class AIGroupDepot:
+class AIGroupDepot(AnyAIgroup):
     def __init__(self,
-                 name,
-                 hof_name,
-                 typgroups):
-        self.name = name
-        self.hof_name = hof_name
-        self.typgroups = typgroups
+                 name: str,
+                 hof_name: str,
+                 typgroups: list[AIGroupDepotTypgroup2]):
+        self.name: str = name
+        self.hof_name: str = hof_name
+        self.typgroups: list[AIGroupDepotTypgroup2] = typgroups
 
 class AILists:
     def __init__(self,
-                 aigroups=None
+                 aigroups: list[AnyAIgroup],
                  ):
-        self.aigroups = aigroups
+        self.aigroups: list[AnyAIgroup] = aigroups

@@ -279,6 +279,7 @@ class Tile:
         self.variable_terrain: bool = variable_terrain
         self.spline: list[Spline] = spline
         self._object: list[_Object | SplineAttachement | SplineAttachementRepeater] = _object
+        self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
     
     def __key(self):
         return (self.initial_comment, self.version, self.terrain, self.water, self.variable_terrainlightmap, self.variable_terrain, \
@@ -289,3 +290,30 @@ class Tile:
     
     def __hash__(self) -> int:
         return hash(self.__key())
+    
+    def change_ids(self, value: int) -> None:
+        if self.spline is not None:
+            for spl in self.spline:
+                spl.id = spl.id + value
+                if spl.id_previous != 0:
+                    spl.id_previous = spl.id_previous + value
+                if spl.id_next != 0:
+                    spl.id_next = spl.id_next + value
+        if self._object is not None:
+            for obj in self._object:
+                obj.id = obj.id + value
+                if obj.varparent is not None:
+                   obj.varparent = obj.varparent + value
+    
+    def change_groundtex_indices(self, value: int):
+        for omsi_file in self._files.omsi_files:
+            if "groundtex_index" in omsi_file.params:
+                omsi_file.params["groundtex_index"] = str(int(omsi_file.params["groundtex_index"])+value)
+
+    def set_files_pos(self, pos_x: int, pos_y: int) -> None:
+        for ofile in self._files.omsi_files:
+            ofile.params['pos_x'] = str(pos_x)
+            ofile.params['pos_y'] = str(pos_y)
+
+    def save_files(self, directory) -> None:
+        self._files.save(directory)

@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -17,32 +17,33 @@
 
 class Busstop:
     def __init__(self,
-                 name=None,
-                 tile_index=None,
-                 id=None,
-                 exiting_passengers=None,
-                 line4=None,
-                 line5=None,
-                 subname=None):
-        self.name = name
-        self.tile_index = tile_index
-        self.id = id
-        self.exiting_passengers = exiting_passengers
-        self.line4 = line4
-        self.line5 = line5
-        self.subname = subname
+                 name: str,
+                 tile_index: int,
+                 id: int,
+                 exiting_passengers: int,
+                 line4: str,
+                 line5: str,
+                 subname: str,
+                 ):
+        self.name: str = name
+        self.tile_index: int = tile_index
+        self.id: int = id
+        self.exiting_passengers: int = exiting_passengers
+        self.line4: str = line4
+        self.line5: str = line5
+        self.subname: str = subname
 
 class Busstops:
     def __init__(self,
-                 comment1=None,
-                 comment2=None,
-                 busstops=None):
-        self.comment1 = comment1
-        self.comment2 = comment2
-        self.busstops = busstops
+                 comment1: str,
+                 comment2: str,
+                 busstops: list[Busstop]):
+        self.comment1: str = comment1
+        self.comment2: str = comment2
+        self.busstops: list[Busstop] = busstops
     
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
         if self.busstops is not None:
             for busstop in self.busstops:
-                busstop.tile_index = str(int(busstop.tile_index) + int(tile_indexes_value))
-                busstop.id = str(int(busstop.id) + int(ids_value))
+                busstop.tile_index = busstop.tile_index + tile_indices_value
+                busstop.id = busstop.id + ids_value

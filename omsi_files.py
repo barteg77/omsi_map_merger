@@ -19,29 +19,29 @@ import os
 import shutil
 class OmsiFile:
     def __init__(self,
-                 map_path="",
-                 pattern="",
-                 params=None,
+                 map_path,#="",
+                 pattern,#="",
+                 params: dict[str, str] = {},
                  optional=False,
                  real_file_name=None
                  ):
         self.map_path = map_path
         self.pattern = pattern
-        self.params = params
+        self.params: dict[str, str] = params
         self.optional = optional
         if real_file_name is None:
             self.real_file_name = os.path.realpath(os.path.join(self.map_path, self.get_file_name()))
         else:
             self.real_file_name = real_file_name
             
-    def get_file_name(self):
+    def get_file_name(self) -> str:
         if self.params is None:
             return self.pattern
         return self.pattern.format(**self.params)
     
     def save(self,
              target_directory=""
-             ):
+             ) -> None:
         real_target_file = os.path.realpath(os.path.join(target_directory, self.get_file_name()))
         if os.path.isfile(self.real_file_name):
             if not self.real_file_name == real_target_file:
@@ -58,12 +58,12 @@ class OmsiFiles:
     def __init__(self, omsi_files=[]):
         self.omsi_files = omsi_files
     
-    def add(self, omsi_file):
+    def add(self, omsi_file) -> None:
         self.omsi_files.append(omsi_file)
     
     def save(self,
              target_directory=""
-             ):
+             ) -> None:
         for of in self.omsi_files:
             of.save(target_directory)
     

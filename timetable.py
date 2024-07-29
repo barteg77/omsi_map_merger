@@ -34,6 +34,7 @@ import loader
 import named_data as nd
 import glob
 import os
+import itertools
 
 _time_table_line_parser = time_table_line_parser.TimeTableLineParser()
 _time_table_line_serializer = time_table_line_serializer.TimeTableLineSerializer()
@@ -63,6 +64,40 @@ class Timetable:
         self.time_table_lines: list[nd.NamedData[time_table_line.TimeTableLine]] = ttime_table_lines
         self.tracks: list[nd.NamedData[track.Track]] = ttracks
         self.trips: list[nd.NamedData[trip.Trip]] = ttrips
+    
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
+        print("Changing objects' IDs and tiles' indices in tracks.")
+        for track in self.tracks:
+            track.data.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        
+        print("Changing objects' IDs and tiles' indices in trips.")
+        for trip in self.trips:
+            trip.data.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        
+        print("Changing objects' IDs, splines' IDs and tiles' indices in Busstops.cfg file.")
+        self.busstops.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        
+        print("Changing objects' IDs, splines' IDs and tiles' indices in StnLinks.cfg file.")
+        self.station_links.change_ids_and_tile_indices(ids_value, tile_indices_value)
+    
+    def save(self, directory: str) -> None:
+        for time_table_line in self.time_table_lines:
+            print("Serializing time table file " + os.path.join(directory, "TTData", time_table_line.name))
+            _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, "TTData", time_table_line.name))
+        
+        for track in self.tracks:
+            print("Serializing track file " + os.path.join(directory, "TTData", track.name))
+            _track_serializer.serialize(track.data, os.path.join(directory, "TTData", track.name))
+        
+        for trip in self.trips:
+            print("Serializing trip file " + os.path.join(directory, "TTData", track.name))
+            _trip_serializer.serialize(trip.data, os.path.join(directory, "TTData", track.name))
+        
+        print("Serializing busstops file " + os.path.join(directory, "TTData", "Busstops.cfg"))
+        _busstops_serializer.serialize(self.busstops, os.path.join(directory, "TTData", "Busstops.cfg"))
+        
+        print("Serializing station links file " + os.path.join(directory, "TTData", "StnLinks.cfg"))
+        _station_links_serializer.serialize(self.station_links, os.path.join(directory, "TTData", "StnLinks.cfg"))
 
 class TimetableSl(loader.SafeLoaderList):
     def __init__(self,
@@ -95,10 +130,10 @@ class TimetableSl(loader.SafeLoaderList):
             raise loader.NoDataError
         
         return Timetable(self.busstops.get_data(),
-                             self.station_links.get_data(),
-                             [nd.NamedData(*args) for args in zip(self.time_table_line_files, [sl.get_data() for sl in self.time_table_lines.get_data()])],
-                             [nd.NamedData(*args) for args in zip(self.track_files, [sl.get_data() for sl in self.tracks.get_data()])],
-                             [nd.NamedData(*args) for args in zip(self.trip_files, [sl.get_data() for sl in self.trips.get_data()])],
+                         self.station_links.get_data(),
+                         [nd.NamedData(*args) for args in zip(self.time_table_line_files, [sl.get_data() for sl in self.time_table_lines.get_data()])],
+                         [nd.NamedData(*args) for args in zip(self.track_files, [sl.get_data() for sl in self.tracks.get_data()])],
+                         [nd.NamedData(*args) for args in zip(self.trip_files, [sl.get_data() for sl in self.trips.get_data()])],
         )
 
     
@@ -140,37 +175,15 @@ class TimetableSl(loader.SafeLoaderList):
     
     def info_detailed(self) -> str:
         return self.scanned_info() + super().info_detailed()
-    
-    def save(self):
-        for time_table_line, time_table_line_file in zip(self.time_table_lines, self.time_table_line_files):
-            print("Serializing time table file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))
-            _time_table_line_serializer.serialize(time_table_line, os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file))
-        
-        for track, track_file in zip(self.tracks, self.track_files):
-            print("Serializing track file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))
-            _track_serializer.serialize(track, os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file))
-        
-        for trip, trip_file in zip(self.trips, self.trip_files):
-            print("Serializing trip file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))
-            _trip_serializer.serialize(trip, os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file))
-        
-        print("Serializing busstops file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
-        _busstops_serializer.serialize(self.busstops, os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg"))
-        
-        print("Serializing station links file " + os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
-        _station_links_serializer.serialize(self.station_links, os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"))
-    
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
-        print("Changing objects' IDs and tiles' indexes in tracks.")
-        for track in self.tracks:
-            track.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-        
-        print("Changing objects' IDs and tiles' indexes in trips.")
-        for trip in self.trips:
-            trip.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-        
-        print("Changing objects' IDs, splines' IDs and tiles' indexes in Busstops.cfg file.")
-        self.busstops.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-        
-        print("Changing objects' IDs, splines' IDs and tiles' indexes in StnLinks.cfg file.")
-        self.station_links.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
+
+def joined(timetables: list[Timetable]) -> Timetable:
+    return Timetable(busstops.Busstops("Busstops file created with Omsi Map Merger",
+                                       "(comment line 2)",
+                                       list(itertools.chain.from_iterable([tt.busstops.busstops for tt in timetables]))),
+                     station_links.StationLinks("Station Links file created with Omsi Map Merger",
+                                                "(comment line 2)",
+                                                list(itertools.chain.from_iterable([tt.station_links.station_link for tt in timetables]))),
+                     list(itertools.chain.from_iterable([tt.time_table_lines for tt in timetables])),
+                     list(itertools.chain.from_iterable([tt.tracks for tt in timetables])),
+                     list(itertools.chain.from_iterable([tt.trips for tt in timetables])),
+                     )

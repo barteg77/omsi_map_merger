@@ -17,8 +17,7 @@
 
 import os
 import glob
-import typing
-import pathlib
+import itertools
 import global_config
 import global_config_parser
 import global_config_serializer
@@ -61,12 +60,46 @@ class OmsiMap:
         self.ailists: ailists.AILists = mailists
         self.mchronos: list[chrono.Chrono] = mchronos
     
+    def shift_ids(self, value: int) -> None:
+        for mtile in self.tiles:
+            mtile.change_ids(value)
+    
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
+        for tile_index, til in zip(itertools.count(), self.tiles):
+            print("Changing objects' IDs and splines' IDs: TILE ", tile_index)
+            til.change_ids(ids_value)
+        
+        self.mstandard_timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        
+        print("Changing entrypoints' IDs and tile indices: global_config")
+        self.global_config.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        
+        for chrono in self.mchronos:
+            chrono.change_ids_and_tile_indices(ids_value, tile_indices_value)
+    
+    def change_groundtex_indices(self, value: int) -> None:
+        for til in self.tiles:
+            til.change_groundtex_indices(value)
+    
+    def save_tiles(self, directory: str) -> None:
+        for gc_tile, map_tile in zip(self.global_config._map, self.tiles):
+            _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile))
+    
+    def save(self, directory: str) -> None:
+        _global_config_serializer.serialize(self.global_config, os.path.join(directory, GLOBAL_CONFIG_FILENAME))
+        self.save_tiles(directory)
+        self.mfiles.save(directory)
+        self.mstandard_timetable.save(directory)
+        _ailists_serializer.serialize(self.ailists, os.path.join(directory, AILISTS_FILENAME))
+        for chrono in self.mchronos:
+            chrono.save(directory)
+    
 class OmsiMapSl(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
         self.empty_tiles_and_chronos()
         # set tiles' safe parsers
         tiles_safe_loaders: list[loader.SafeLoader] = []
-        groundtex_count = len(self._global_config.get_data().groundtex)
+        groundtex_count: int = len(self._global_config.get_data().groundtex)
         for gc_tile in self._global_config.get_data()._map:
             tile_files = omsi_files.OmsiFiles([
                 omsi_files.OmsiFile(map_path=self.directory,
@@ -87,7 +120,7 @@ class OmsiMapSl(loader.SafeLoaderList):
                                     optional=True),
             ] + [ omsi_files.OmsiFile(map_path=self.directory,
                                       pattern="texture/map/tile_{pos_x}_{pos_y}.map.{groundtex_index}.dds",
-                                      params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": groundtex_index},
+                                      params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": str(groundtex_index)},
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
             tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), _tile_parser.parse, ofiles=tile_files))
@@ -101,7 +134,7 @@ class OmsiMapSl(loader.SafeLoaderList):
     def __init__(self,
                  directory=""):
         self.directory = directory
-        self._global_config: loader.SafeLoaderUnit = loader.SafeLoaderUnit(global_config.GlobalConfig,
+        self._global_config: loader.SafeLoaderUnit[global_config.GlobalConfig] = loader.SafeLoaderUnit(global_config.GlobalConfig,
                                                                            os.path.join(self.directory, GLOBAL_CONFIG_FILENAME),
                                                                            _global_config_parser.parse,
                                                                            self.set_tiles_and_chronos_gc_consistent, # on success
@@ -131,16 +164,13 @@ class OmsiMapSl(loader.SafeLoaderList):
     def get_directory(self):
         return self.directory
     
-    def fully_loaded(self):
-        return False#może kiedyś bedzie lepiej
-    
     def get_global_config(self) -> loader.SafeLoaderUnit[global_config.GlobalConfig]:
         return self._global_config
     
     def get_standard_timetable(self):
         return self._standard_timetable
     
-    def get_ailists(self):
+    def get_ailists(self) -> loader.SafeLoaderUnit[ailists.AILists]:
         return self._ailists
     
     def get_tiles(self):
@@ -152,19 +182,8 @@ class OmsiMapSl(loader.SafeLoaderList):
     def save_global_config(self):
         _global_config_serializer.serialize(self._global_config.get_data(), os.path.join(self.directory, GLOBAL_CONFIG_FILENAME))
     
-    def save_tile(self, index):
-        gc_tile = self._global_config._map[index]
-        file_name = gc_tile.map_file
-        print("Serializing tile file " + os.path.join(self.directory, file_name))
-        _tile_serializer.serialize(self._tiles[index].get_data(), os.path.join(self.directory, file_name))
-        self._tiles[index].save_files(self.directory)
-    
-    def save_tiles(self):
-        for tile_index in range(len(self._global_config._map)):
-            self.save_tile(tile_index)
-    
     def __fresh_omsi_files(self) -> list[omsi_files.OmsiFile]:
-        of_list = []
+        of_list: list[omsi_files.OmsiFile] = []
         for f in ["drivers.txt",
                   "Holidays.txt",
                   "humans.txt",
@@ -185,51 +204,13 @@ class OmsiMapSl(loader.SafeLoaderList):
         for f in [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Holidays_*.txt"))]:
             of_list.append(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
         return of_list
-    
-    def save_files(self):
-        self._files.save(self.directory)
-    
-    def save_standard_timetable(self):
-        self._standard_timetable.save()
-    
-    def save_ailists(self):
-        print("Serializing ailists file " + os.path.join(self.directory, AILISTS_FILENAME))
-        _ailists_serializer.serialize(self._ailists, os.path.join(self.directory, AILISTS_FILENAME))
-    
+
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         self._chronos.set_data([chrono.ChronoSl(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
     
-    def save_chrono(self):
-        for chrono in self._chronos:
-            chrono.save(self.directory)
-        
-    def save(self):
-        pathlib.Path(os.path.join(self.directory, "texture", "map")).mkdir(parents=True, exist_ok=True)
-        pathlib.Path(os.path.join(self.directory, "TTData")).mkdir(parents=True, exist_ok=True)
-        self.save_global_config()
-        self.save_tiles()
-        self.save_files()
-        self.save_standard_timetable()
-        self.save_ailists()
-        self.save_chrono()
-    
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
-        for tile_index, til in self._tiles.items():
-            print("Changing objects' IDs and splines' IDs: TILE " + str(tile_index))
-            til.change_ids(ids_value)
-        
-        self._standard_timetable.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-        
-        print("Changing entrypoints' IDs and tile indexes: global_config")
-        self._global_config.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-        
-        for chrono in self._chronos:
-            chrono.change_ids_and_tile_indexes(ids_value, tile_indexes_value)
-    
-    def change_groundtex_indexes(self, value):
-        for tile_index, til in self._tiles.items():
-            til.change_groundtex_indexes(value)
+    def get_aigroups_names(self) -> list[str]:
+        return [aigroup.name for aigroup in self.get_ailists().get_data().aigroups]
     
     def get_pure(self) -> OmsiMap:
         if not self.ready():

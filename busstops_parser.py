@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -29,8 +29,8 @@ class BusstopsParser:
         "OPTIONAL_LINE": [lambda _, n: "",
                           lambda _, n: n[0]],
         "BUSSTOP_GROUP": [lambda _, n: busstops.Busstop(name=n[1],
-                                                        tile_index=n[2],
-                                                        id=n[3],
+                                                        tile_index=int(n[2]),
+                                                        id=int(n[3]),
                                                         exiting_passengers=n[4],
                                                         line4=n[5],
                                                         line5=n[6],

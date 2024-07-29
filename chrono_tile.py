@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -39,7 +39,7 @@ class ChronoTile:
             for entry in self.list:
                 entry.id = str(int(entry.id) + int(value))
                 if isinstance(entry, tile.Spline):
-                    entry.id_previous = str(int(entry.id_previous) + int(value))
-                    entry.id_next = str(int(entry.id_next) + int(entry.value))
+                    entry.id_previous = entry.id_previous + value
+                    entry.id_next = entry.id_next + value
                 if (isinstance(entry, tile._Object) or isinstance(entry, tile.SplineAttachement) or isinstance(entry, tile.SplineAttachement)) and entry.varparent is not None:
-                    entry.varparent = str(int(entry.varparent) + int(value))
+                    entry.varparent = entry.varparent + value

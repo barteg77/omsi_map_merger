@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -33,10 +33,10 @@ class TripParser:
         "STATION_TYP2_GROUP": [lambda _, n: int(n[1])],
         "STATION_TYP2_GROUP_LIST": [lambda _, n: [n[0]],
                                     lambda _, n: n[0] + [n[1]]],
-        "STATION_GROUP": [lambda _, n: trip.Station(id=n[1],
+        "STATION_GROUP": [lambda _, n: trip.Station(id=int(n[1]),
                                                     interval=n[2],
                                                     name=n[3],
-                                                    tile_index=n[4],
+                                                    tile_index=int(n[4]),
                                                     line5=n[5],
                                                     line6=n[6],
                                                     line7=n[7],

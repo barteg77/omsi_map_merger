@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -17,66 +17,66 @@
 
 class StationLinkEntry:
     def __init__(self,
-                 comment=None,
-                 id=None,
-                 line2=None,
-                 tile_index=None,
-                 length=None,
-                 line5=None,
-                 line6=None,
-                 line7=None,
+                 comment: str,
+                 id: int,
+                 line2: str,
+                 tile_index: int,
+                 length: str,
+                 line5: str,
+                 line6: str,
+                 line7: str,
                  chrono_files=None
                  ):
-        self.comment = comment
-        self.id = id
-        self.line2 = line2
-        self.tile_index = tile_index
-        self.length = length
-        self.line5 = line5
-        self.line6 = line6
-        self.line7 = line7
-        self.chrono_files = chrono_files
+        self.comment: str = comment
+        self.id: int = id
+        self.line2: str = line2
+        self.tile_index: int = tile_index
+        self.length: str = length
+        self.line5: str = line5
+        self.line6: str = line6
+        self.line7: str = line7
+        self.chrono_files = chrono_files#???????????
 
 class StationLink:
     def __init__(self,
-                 comment=None,
-                 line1=None,
-                 id_busstop_start=None,
-                 id_busstop_end=None,
-                 line4=None,
-                 line5=None,
-                 line6=None,
-                 line7=None,
-                 line8=None,
-                 line9=None,
-                 station_link_entry=None
+                 comment: str,
+                 line1: str,
+                 id_busstop_start: int,
+                 id_busstop_end: int,
+                 line4: str,
+                 line5: str,
+                 line6: str,
+                 line7: str,
+                 line8: str,
+                 line9: str,
+                 station_link_entry: list[StationLinkEntry],
                  ):
-        self.comment = comment
-        self.line1 = line1
-        self.id_busstop_start = id_busstop_start
-        self.id_busstop_end = id_busstop_end
-        self.line4 = line4
-        self.line5 = line5
-        self.line6 = line6
-        self.line7 = line7
-        self.line8 = line8
-        self.line9 = line9
-        self.station_link_entry = station_link_entry
+        self.comment: str = comment
+        self.line1: str = line1
+        self.id_busstop_start: int = id_busstop_start
+        self.id_busstop_end: int = id_busstop_end
+        self.line4: str = line4
+        self.line5: str = line5
+        self.line6: str = line6
+        self.line7: str = line7
+        self.line8: str = line8
+        self.line9: str = line9
+        self.station_link_entry: list[StationLinkEntry] = station_link_entry
 
 class StationLinks:
     def __init__(self,
-                 comment1=None,
-                 comment2=None,
-                 station_link=None):
-        self.comment1 = comment1
-        self.comment2 = comment2
-        self.station_link = station_link
+                 comment1: str,
+                 comment2: str,
+                 station_link: list[StationLink]):
+        self.comment1: str = comment1
+        self.comment2: str = comment2
+        self.station_link: list[StationLink] = station_link# no chyba ze None
     
-    def change_ids_and_tile_indexes(self, ids_value, tile_indexes_value):
+    def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
         if self.station_link is not None:
             for station_link in self.station_link:
-                station_link.id_busstop_start = str(int(station_link.id_busstop_start) + int(ids_value))
-                station_link.id_busstop_end = str(int(station_link.id_busstop_end) + int(ids_value))
+                station_link.id_busstop_start = station_link.id_busstop_start + ids_value
+                station_link.id_busstop_end = station_link.id_busstop_end + ids_value
                 for station_link_entry in station_link.station_link_entry:
-                    station_link_entry.id = str(int(station_link_entry.id) + int(ids_value))
-                    station_link_entry.tile_index = str(int(station_link_entry.tile_index) + int(tile_indexes_value))
+                    station_link_entry.id = station_link_entry.id + ids_value
+                    station_link_entry.tile_index = station_link_entry.tile_index + tile_indices_value
