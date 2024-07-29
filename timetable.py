@@ -37,6 +37,8 @@ import os
 import itertools
 
 TIMETABLE_DIRNAME: str = 'TTData'
+BUSSTOPS_FILENAME: str = 'Busstops.cfg'
+STNLINKS_FILENAME: str = 'StnLinks.cfg'
 
 _time_table_line_parser = time_table_line_parser.TimeTableLineParser()
 _time_table_line_serializer = time_table_line_serializer.TimeTableLineSerializer()
@@ -85,22 +87,27 @@ class Timetable:
     def save(self, directory: str) -> None:
         os.makedirs(os.path.join(directory, TIMETABLE_DIRNAME))
         for time_table_line in self.time_table_lines:
-            print("Serializing time table file " + os.path.join(directory, "TTData", time_table_line.name))
-            _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, "TTData", time_table_line.name))
+            file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name)
+            print("Serializing time table file", file_path)
+            _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name))
         
         for track in self.tracks:
-            print("Serializing track file " + os.path.join(directory, "TTData", track.name))
-            _track_serializer.serialize(track.data, os.path.join(directory, "TTData", track.name))
+            file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, track.name)
+            print("Serializing track file", file_path)
+            _track_serializer.serialize(track.data, file_path)
         
         for trip in self.trips:
-            print("Serializing trip file " + os.path.join(directory, "TTData", track.name))
-            _trip_serializer.serialize(trip.data, os.path.join(directory, "TTData", track.name))
+            file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, trip.name)
+            print("Serializing trip file", file_path)
+            _trip_serializer.serialize(trip.data, file_path)
         
-        print("Serializing busstops file " + os.path.join(directory, "TTData", "Busstops.cfg"))
-        _busstops_serializer.serialize(self.busstops, os.path.join(directory, "TTData", "Busstops.cfg"))
+        busstops_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME)
+        print("Serializing busstops file", busstops_file_path)
+        _busstops_serializer.serialize(self.busstops, busstops_file_path)
         
-        print("Serializing station links file " + os.path.join(directory, "TTData", "StnLinks.cfg"))
-        _station_links_serializer.serialize(self.station_links, os.path.join(directory, "TTData", "StnLinks.cfg"))
+        station_links_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME)
+        print("Serializing station links file", station_links_file_path)
+        _station_links_serializer.serialize(self.station_links, station_links_file_path)
 
 class TimetableSl(loader.SafeLoaderList):
     def __init__(self,
@@ -109,8 +116,8 @@ class TimetableSl(loader.SafeLoaderList):
                  ):
         self.map_directory = map_directory
         self.chrono_directory = chrono_directory
-        self.busstops = loader.SafeLoaderUnit(busstops.Busstops, os.path.join(self.map_directory, self.chrono_directory, "TTData", "Busstops.cfg"), _busstops_parser.parse)
-        self.station_links = loader.SafeLoaderUnit(station_links.StationLinks, os.path.join(self.map_directory, self.chrono_directory, "TTData", "StnLinks.cfg"), _station_links_parser.parse)
+        self.busstops = loader.SafeLoaderUnit(busstops.Busstops, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME), _busstops_parser.parse)
+        self.station_links = loader.SafeLoaderUnit(station_links.StationLinks, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME), _station_links_parser.parse)
         self.time_table_line_files = []
         self.time_table_lines: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable lines")
         self.scanned_time_table_lines: bool = False
@@ -141,18 +148,18 @@ class TimetableSl(loader.SafeLoaderList):
 
     
     def scan_time_table_lines(self) -> None:
-        self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttl"))]
-        self.time_table_lines.set_data(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(time_table_line.TimeTableLine, os.path.join(self.map_directory, self.chrono_directory, "TTData", time_table_line_file), _time_table_line_parser.parse), self.time_table_line_files)))
+        self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttl"))]
+        self.time_table_lines.set_data(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(time_table_line.TimeTableLine, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, time_table_line_file), _time_table_line_parser.parse), self.time_table_line_files)))
         self.scanned_time_table_lines  = True
     
     def scan_tracks(self) -> None:
-        self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttr"))]
-        self.tracks.set_data(list(map(lambda track_file: loader.SafeLoaderUnit(track.Track, os.path.join(self.map_directory, self.chrono_directory, "TTData", track_file), _track_parser.parse), self.track_files)))
+        self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttr"))]
+        self.tracks.set_data(list(map(lambda track_file: loader.SafeLoaderUnit(track.Track, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, track_file), _track_parser.parse), self.track_files)))
         self.scanned_tracks = True
     
     def scan_trips(self) -> None:
-        self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, "TTData")) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, "TTData", "*.ttp"))]
-        self.trips.set_data(list(map(lambda trip_file: loader.SafeLoaderUnit(trip.Trip, os.path.join(self.map_directory, self.chrono_directory, "TTData", trip_file), _trip_parser.parse), self.trip_files)))
+        self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttp"))]
+        self.trips.set_data(list(map(lambda trip_file: loader.SafeLoaderUnit(trip.Trip, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, trip_file), _trip_parser.parse), self.trip_files)))
         self.scanned_trips = True
     
     def load(self):
