@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -23,7 +23,7 @@ class StationLinksParser:
     actions={
         "STATION_LINKS": [lambda _, n: station_links.StationLinks(comment1=n[4],
                                                                   comment2=n[5],
-                                                                  station_link=n[7]
+                                                                  station_link=n[7] if n[7] is not None else []
                                                                   )],
         "NONEMPTY_LINE": [lambda _, n: n[0]],
         "NONEMPTY_LINES": [lambda _, n: [n[0]],
@@ -50,7 +50,7 @@ class StationLinksParser:
                                                                       line7=n[9],
                                                                       line8=n[10],
                                                                       line9=n[11],
-                                                                      station_link_entry=n[13]
+                                                                      station_link_entry=n[13] if n[13] is not None else []
                                                                       )],
         "STATION_LINK_GROUP_LIST": [lambda _, n: [n[0]],
                                     lambda _, n: n[0] + [n[1]]]

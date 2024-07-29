@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -18,26 +18,25 @@
 import busstops
 
 class BusstopsSerializer:
-    def serialize(self, busstops_class, file_name):
+    def serialize(self, busstops: busstops.Busstops, file_name):
         with open(file_name, 'w', encoding='iso-8859-1', newline='\r\n') as f:
-            self.serialize_(busstops_class, f)
+            self.serialize_(busstops, f)
     
-    def serialize_(self, busstops_class, f):
+    def serialize_(self, busstops: busstops.Busstops, f):
         print("---------------------------", file=f)
         print("Time Table BusStopList File", file=f)
         print("---------------------------", file=f)
         print(file=f)
-        print(busstops_class.comment1, file=f)
-        print(busstops_class.comment2, file=f)
+        print(busstops.comment1, file=f)
+        print(busstops.comment2, file=f)
         print(file=f)
-        if busstops_class.busstops is not None:
-            for busstop in busstops_class.busstops:
-                print("[busstop]", file=f)
-                print(busstop.name, file=f)
-                print(busstop.tile_index, file=f)
-                print(busstop.id, file=f)
-                print(busstop.exiting_passengers, file=f)
-                print(busstop.line4, file=f)
-                print(busstop.line5, file=f)
-                print(busstop.subname, file=f)
-                print(file=f)
+        for busstop in busstops.busstops:
+            print("[busstop]", file=f)
+            print(busstop.name, file=f)
+            print(busstop.tile_index, file=f)
+            print(busstop.id, file=f)
+            print(busstop.exiting_passengers, file=f)
+            print(busstop.line4, file=f)
+            print(busstop.line5, file=f)
+            print(busstop.subname, file=f)
+            print(file=f)

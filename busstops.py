@@ -43,7 +43,6 @@ class Busstops:
         self.busstops: list[Busstop] = busstops
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
-        if self.busstops is not None:
-            for busstop in self.busstops:
-                busstop.tile_index = busstop.tile_index + tile_indices_value
-                busstop.id = busstop.id + ids_value
+        for busstop in self.busstops:
+            busstop.tile_index = busstop.tile_index + tile_indices_value
+            busstop.id = busstop.id + ids_value

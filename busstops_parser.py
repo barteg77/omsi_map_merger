@@ -23,7 +23,7 @@ class BusstopsParser:
     actions={
         "BUSSTOPS": [lambda _, n: busstops.Busstops(comment1=n[4],
                                                     comment2=n[5],
-                                                    busstops=n[7]
+                                                    busstops=n[7] if n[7] is not None else []
                                                     )],
         "NONEMPTY_LINE": [lambda _, n: n[0]],
         "OPTIONAL_LINE": [lambda _, n: "",
