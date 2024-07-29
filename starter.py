@@ -20,6 +20,7 @@ import omsi_map_merger
 import version
 import loader
 import timetable
+import traceback
 
 EMPTY_STR = ''
 
@@ -56,6 +57,8 @@ class MapLoadingInteractionManager:
                  key_shift_up: str,
                  key_shift_down: str,
                  key_toggle_keep_groundtex: str,
+                 key_new_map_directory: str,
+                 key_new_map_name: str,
                  key_merge: str,
                  ) -> None:
         self.__omsi_map_merger: omsi_map_merger.OmsiMapMerger = merger
@@ -77,6 +80,8 @@ class MapLoadingInteractionManager:
         self.__button_shift_down: sg.Button = window[key_shift_down] # type: ignore
         self.__button_toggle_keep_groundtex: sg.Button = window[key_toggle_keep_groundtex] # type: ignore
         self.__button_merge: sg.Button = window[key_merge] # type: ignore
+        self.__input_new_map_directory: sg.In = window[key_new_map_directory] # type: ignore
+        self.__input_new_map_name: sg.In = window[key_new_map_name] # type: ignore
         self.__maps_components_by_id = dict() #add type hint (int, anything)
 
         self.__update_tree()
@@ -162,6 +167,14 @@ class MapLoadingInteractionManager:
         self.__update_tree()
         #self.__update_disability() może to jest potrzebne pomyslec kiedyś
     
+    def __handle_merge(self) -> None:
+        try:
+            self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get()).save(self.__input_new_map_directory.get())
+        except Exception:
+            error_message: str = "An error occured while merge:\n" + traceback.format_exc()
+            print(error_message)
+            sg.Popup(error_message, title="Error")
+    
     def __is_selected_component_instance(self, component_type) -> bool:
         try:
             return isinstance(self.__get_selected_map_component(), component_type)
@@ -208,6 +221,7 @@ class MapLoadingInteractionManager:
             (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines()),
             (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks()),
             (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips()),
+            (self.__button_merge, lambda: self.__handle_merge())
         ]:
             if gui_element.key == event:
                 handler() # need tree update
@@ -228,9 +242,6 @@ class MapLoadingInteractionManager:
                 self.__draw_graph() #tylko na chwilę!!!!
                 self.__update_disability()
                 return True
-        
-        if self.__button_merge.key == event:
-            print(self.__omsi_map_merger.merged_omsi_map("fffff"))
         
         return False
     
@@ -325,7 +336,8 @@ layout_right = [
         sg.Button("    →    ", key="shift_right"),],
     [sg.Button("(toggle) Keep original main ground texture on tiles of selected map", key="toggle_keep_groundtex")],
     [sg.HorizontalSeparator(),],
-    [sg.Text("New map directory"),sg.In(key="new_map_directory"), sg.FolderBrowse()],
+    [sg.Text("New map directory"), sg.In(key="new_map_directory"), sg.FolderBrowse()],
+    [sg.Text("New map name"), sg.In(key="new_map_name")],
     [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
 ]
 layout = [[sg.Column(layout_left), sg.VSep(), sg.Column(layout_right)]]
@@ -353,6 +365,8 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'shift_up',
     'shift_down',
     'toggle_keep_groundtex',
+    'new_map_directory',
+    'new_map_name',
     'merge')
 
 while True:
