@@ -28,6 +28,8 @@ import glob
 import pathlib
 import loader
 
+CHRONO_DIRNAME: str = 'Chrono'
+
 _chrono_tile_parser = chrono_tile_parser.ChronoTileParser()
 _chrono_tile_serializer = chrono_tile_serializer.ChronoTileSerializer()
 
@@ -61,6 +63,7 @@ class Chrono:
         self.timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)
     
     def save(self, map_directory: str) -> None:
+        os.makedirs(os.path.join(map_directory, CHRONO_DIRNAME, self.chrono_directory))
         joined_directory: str = os.path.join(map_directory, self.chrono_directory)
         pathlib.Path(os.path.join(map_directory, self.chrono_directory, "TTData")).mkdir(parents=True, exist_ok=True)
         self.omsi_files.save(map_directory)

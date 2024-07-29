@@ -36,6 +36,8 @@ import glob
 import os
 import itertools
 
+TIMETABLE_DIRNAME: str = 'TTData'
+
 _time_table_line_parser = time_table_line_parser.TimeTableLineParser()
 _time_table_line_serializer = time_table_line_serializer.TimeTableLineSerializer()
 
@@ -81,6 +83,7 @@ class Timetable:
         self.station_links.change_ids_and_tile_indices(ids_value, tile_indices_value)
     
     def save(self, directory: str) -> None:
+        os.makedirs(os.path.join(directory, TIMETABLE_DIRNAME))
         for time_table_line in self.time_table_lines:
             print("Serializing time table file " + os.path.join(directory, "TTData", time_table_line.name))
             _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, "TTData", time_table_line.name))

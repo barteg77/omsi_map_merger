@@ -83,9 +83,15 @@ class OmsiMap:
     
     def save_tiles(self, directory: str) -> None:
         for gc_tile, map_tile in zip(self.global_config._map, self.tiles):
-            _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile))
+            _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile.map_file))
     
     def save(self, directory: str) -> None:
+        #prepare directories
+        os.makedirs(directory, exist_ok=True)
+        if os.listdir(directory) != []:
+            raise Exception(f"Directory \"{directory}\" isn't empty.\nYou can save map only to empty directory.")
+        os.makedirs(os.path.join(directory, 'texture', 'map'))
+        
         _global_config_serializer.serialize(self.global_config, os.path.join(directory, GLOBAL_CONFIG_FILENAME))
         self.save_tiles(directory)
         self.mfiles.save(directory)
