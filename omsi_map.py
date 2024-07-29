@@ -84,6 +84,7 @@ class OmsiMap:
     def save_tiles(self, directory: str) -> None:
         for gc_tile, map_tile in zip(self.global_config._map, self.tiles):
             _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile.map_file))
+            map_tile.save_files(directory)
     
     def save(self, directory: str) -> None:
         #prepare directories
