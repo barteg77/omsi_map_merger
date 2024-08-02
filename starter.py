@@ -26,13 +26,6 @@ EMPTY_STR = ''
 
 print("OMSI Map Merger", version.version)
 
-def RepresentsInt(s):
-    try: 
-        int(s)
-        return True
-    except ValueError:
-        return False
-
 class MapLoadingInteractionManager:
     class NoSelectedMapComponentError(Exception):
         pass
