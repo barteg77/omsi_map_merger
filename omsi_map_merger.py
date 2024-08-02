@@ -235,7 +235,7 @@ class OmsiMapMerger:
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()
         groundtex_shift: dict[MapToMerge, int] = self.merged_groundtex_shift()
 
-        comment: str = "File created with OMSI Map Merger {version.version}"
+        comment: str = f"File created with OMSI Map Merger {version.version}"
 
         # constructing global config
         map_description: str = f"{new_map_name}\nMap created with OMSI Map Merger {version.version}\nMerged maps (path, shift_x, shift_y, keep_groundtex):\n"\
@@ -251,7 +251,7 @@ class OmsiMapMerger:
         gc = global_config.GlobalConfig(comment,
                                         new_map_name,
                                         new_map_name,
-                                        map_description,
+                                        map_description.split("\n"),
                                         '14',
                                         sum([mtm.get_global_config().get_data().NextIDCode for mtm in self.get_maps()]),
                                         False,
