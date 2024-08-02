@@ -17,6 +17,10 @@
 
 import os
 import shutil
+import logging
+
+logger = logging.getLogger(__name__)
+
 class OmsiFile:
     def __init__(self,
                  map_path,#="",
@@ -45,14 +49,14 @@ class OmsiFile:
         real_target_file = os.path.realpath(os.path.join(target_directory, self.get_file_name()))
         if os.path.isfile(self.real_file_name):
             if not self.real_file_name == real_target_file:
-                print("Copying file "+ self.real_file_name + " to " + real_target_file)
+                logger.info("Copying file "+ self.real_file_name + " to " + real_target_file)
                 shutil.copyfile(self.real_file_name, real_target_file)
             else:
-                print("File " + self.real_file_name + " will not be copied to the same directory")
+                logger.info("File " + self.real_file_name + " will not be copied to the same directory")
         elif self.optional:
-            print("Optional file " + self.real_file_name + " does not exist, will not be copied.")
+            logger.info("Optional file " + self.real_file_name + " does not exist, will not be copied.")
         else:
-            print("Non-optional file " + self.real_file_name + " does not exist, will not be copied.")
+            logger.info("Non-optional file " + self.real_file_name + " does not exist, will not be copied.")
 
 class OmsiFiles:
     def __init__(self, omsi_files=[]):

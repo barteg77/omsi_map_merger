@@ -27,6 +27,9 @@ import os
 import glob
 import pathlib
 import loader
+import logging
+
+logger = logging.getLogger(__name__)
 
 CHRONO_DIRNAME: str = 'Chrono'
 
@@ -69,7 +72,7 @@ class Chrono:
         self.omsi_files.save(map_directory)
         for chrono_tile in self.chrono_tiles_info:
             file_path: str = os.path.join(joined_directory, f'tile_{chrono_tile.pos_x}_{chrono_tile.pos_y}.map')
-            print(f"Serializing chrono tile file {file_path}...")
+            logger.info(f"Serializing chrono tile file {file_path}...")
             _chrono_tile_serializer.serialize(chrono_tile.tile, file_path)
         self.timetable.save(joined_directory)
 

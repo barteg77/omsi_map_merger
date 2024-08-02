@@ -15,16 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
+
 import PySimpleGUI as sg
 import omsi_map_merger
 import version
 import loader
 import timetable
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', encoding='utf-8', level=logging.DEBUG)
 
 EMPTY_STR = ''
 
-print("OMSI Map Merger", version.version)
+logger.info(f"OMSI Map Merger {version.version}")
 
 class MapLoadingInteractionManager:
     class NoSelectedMapComponentError(Exception):
@@ -165,7 +170,7 @@ class MapLoadingInteractionManager:
             self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get()).save(self.__input_new_map_directory.get())
         except Exception:
             error_message: str = "An error occured while merge:\n" + traceback.format_exc()
-            print(error_message)
+            logger.info(error_message)
             sg.Popup(error_message, title="Error")
     
     def __is_selected_component_instance(self, component_type) -> bool:
@@ -239,7 +244,7 @@ class MapLoadingInteractionManager:
         return False
     
     def __draw_graph(self) -> None:
-        print("Drawing graph...")
+        logger.info("Drawing graph...")
         try:
             colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', 'slate blue', 'slate gray', 'yellow']
             marking_color: str = 'black'
@@ -364,12 +369,14 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
 
 while True:
     event, values = window.read() # type: ignore
-    
+    logger.debug(f"GUI event occured: {event}, values: {values}")
+
     if event == sg.WIN_CLOSED or event == "cancel":
         break
     elif maps_loading_interaction_manager.handle_event(event):
         pass
-    #trzeba kiedyś ustawić raise exception jak jest event nieobsłużony
+    else:
+        logger.error("GUI event not handled")
     
-    #print(f"GUI event occured: {event}, values: {values}")
+    
 window.close()

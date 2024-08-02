@@ -35,6 +35,9 @@ import named_data as nd
 import glob
 import os
 import itertools
+import logging
+
+logger = logging.getLogger(__name__)
 
 TIMETABLE_DIRNAME: str = 'TTData'
 BUSSTOPS_FILENAME: str = 'Busstops.cfg'
@@ -70,43 +73,43 @@ class Timetable:
         self.trips: list[nd.NamedData[trip.Trip]] = ttrips
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
-        print("Changing objects' IDs and tiles' indices in tracks.")
+        logger.info("Changing objects' IDs and tiles' indices in tracks.")
         for track in self.tracks:
             track.data.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
-        print("Changing objects' IDs and tiles' indices in trips.")
+        logger.info("Changing objects' IDs and tiles' indices in trips.")
         for trip in self.trips:
             trip.data.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
-        print("Changing objects' IDs, splines' IDs and tiles' indices in Busstops.cfg file.")
+        logger.info("Changing objects' IDs, splines' IDs and tiles' indices in Busstops.cfg file.")
         self.busstops.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
-        print("Changing objects' IDs, splines' IDs and tiles' indices in StnLinks.cfg file.")
+        logger.info("Changing objects' IDs, splines' IDs and tiles' indices in StnLinks.cfg file.")
         self.station_links.change_ids_and_tile_indices(ids_value, tile_indices_value)
     
     def save(self, directory: str) -> None:
         os.makedirs(os.path.join(directory, TIMETABLE_DIRNAME))
         for time_table_line in self.time_table_lines:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name)
-            print("Serializing time table file", file_path)
+            logger.info("Serializing time table file", file_path)
             _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name))
         
         for track in self.tracks:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, track.name)
-            print("Serializing track file", file_path)
+            logger.info("Serializing track file", file_path)
             _track_serializer.serialize(track.data, file_path)
         
         for trip in self.trips:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, trip.name)
-            print("Serializing trip file", file_path)
+            logger.info("Serializing trip file", file_path)
             _trip_serializer.serialize(trip.data, file_path)
         
         busstops_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME)
-        print("Serializing busstops file", busstops_file_path)
+        logger.info("Serializing busstops file", busstops_file_path)
         _busstops_serializer.serialize(self.busstops, busstops_file_path)
         
         station_links_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME)
-        print("Serializing station links file", station_links_file_path)
+        logger.info("Serializing station links file", station_links_file_path)
         _station_links_serializer.serialize(self.station_links, station_links_file_path)
 
 class TimetableSl(loader.SafeLoaderList):

@@ -31,6 +31,9 @@ import ailists_parser
 import ailists_serializer
 import chrono
 import loader
+import logging
+
+logger = logging.getLogger(__name__)
 
 GLOBAL_CONFIG_FILENAME = "global.cfg"
 AILISTS_FILENAME = "ailists.cfg"
@@ -66,12 +69,12 @@ class OmsiMap:
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
         for tile_index, til in zip(itertools.count(), self.tiles):
-            print("Changing objects' IDs and splines' IDs: TILE ", tile_index)
+            logger.info("Changing objects' IDs and splines' IDs: TILE ", tile_index)
             til.change_ids(ids_value)
         
         self.mstandard_timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
-        print("Changing entrypoints' IDs and tile indices: global_config")
+        logger.info("Changing entrypoints' IDs and tile indices: global_config")
         self.global_config.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
         for chrono in self.mchronos:

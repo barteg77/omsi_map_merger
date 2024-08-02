@@ -26,6 +26,9 @@ import itertools
 import operator
 import version
 import copy
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MapRepetitionError(Exception):
     pass
@@ -228,7 +231,7 @@ class OmsiMapMerger:
     def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMap:
         assert self.ready(), "You can't get merged omsi map while not all maps are ready"
         assert not self.get_maps()[0].get_keep_groundtex(), "\"Keep groundtex\" on 1st map is nonsense."
-        print("Aigroup name collision:", self.aigroup_name_collision())
+        logger.warning("Aigroup name collision:", self.aigroup_name_collision())
 
         fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_pure())) for mtm in self.get_maps()])
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
@@ -287,5 +290,5 @@ class OmsiMapMerger:
                                                     ailists.AILists(list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))),
                                                     list(itertools.chain.from_iterable([fm[mtm].mchronos for mtm in self.get_maps()])),
                                                     )
-        print('merged')
+        logger.info("Maps merge completed")
         return new_om

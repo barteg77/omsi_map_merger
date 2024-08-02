@@ -20,6 +20,9 @@ import typing
 import os.path
 import omsi_files
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NoDataError(Exception):
     pass
@@ -120,11 +123,11 @@ class SafeLoaderUnit[T](SafeLoader):
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
-        print(f"SafeLoaderUnit of {'todo'} loading file \"{self.get_path()}\"...")
+        logger.info(f"SafeLoaderUnit of {'todo'} loading file \"{self.get_path()}\"...")
         try:
             loaded = self.__true_loader(self.get_path())
         except Exception as exception:
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
             if self.__optional and isinstance(exception, FileNotFoundError):
                     self.__status = FileParsingStatus.OPTIONAL_NOT_EXISTS
                     return
@@ -138,7 +141,7 @@ class SafeLoaderUnit[T](SafeLoader):
             self.__exception = self.__placeholder_exception
             self.__callback_loaded() # type: ignore
         
-        print(f"Safe loading finished. Status set to {self.get_status()}")
+        logger.info(f"Safe loading finished. Status set to {self.get_status()}")
     
     def info_detailed(self) -> str:
         status_description: str
