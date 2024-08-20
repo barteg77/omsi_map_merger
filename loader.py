@@ -123,7 +123,7 @@ class SafeLoaderUnit[T](SafeLoader):
             raise NoDataError(f"Unable to return data, file parsing status is {self.__status}.")
     
     def load(self) -> None:
-        logger.info(f"SafeLoaderUnit of {'todo'} loading file \"{self.get_path()}\"...")
+        logger.info(f"SafeLoaderUnit of {self.__data_type.__name__} loading file \"{self.get_path()}\"...")
         try:
             loaded = self.__true_loader(self.get_path())
         except Exception as exception:
