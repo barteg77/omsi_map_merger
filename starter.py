@@ -29,16 +29,20 @@ import tempfile
 import pathlib
 import time
 
+root_logger = logging.getLogger()
+
 # set up basic logger
 log_format_str: str = '%(asctime)s : %(levelname)s : %(message)s'
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', encoding='utf-8', level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+logging.basicConfig(format=log_format_str, encoding='utf-8', level=logging.DEBUG)
 
 # save log to file
 log_file_path: pathlib.Path = pathlib.Path(tempfile.gettempdir()) / f'omsi_map_merger_{time.strftime('%Y-%m-%d_%H:%M:%S')}.log'
 logger_handler_file = logging.FileHandler(str(log_file_path))
 logger_handler_file.setFormatter(logging.Formatter(log_format_str))
-logger.addHandler(logger_handler_file)
+root_logger.addHandler(logger_handler_file)
+
+# set up starter logger
+logger = logging.getLogger(__name__)
 
 EMPTY_STR = ''
 
