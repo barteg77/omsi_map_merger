@@ -23,13 +23,18 @@ import loader
 import timetable
 import traceback
 import logging
+import os
+import platform
+import sys
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', encoding='utf-8', level=logging.DEBUG)
 
 EMPTY_STR = ''
 
-logger.info(f"OMSI Map Merger {version.version}")
+logger.info(f"This is OMSI Map Merger {version.version}")
+logger.info(f"Python version is {sys.version}")
+logger.info(f"Platform is {platform.platform()}")
 
 class MapLoadingInteractionManager:
     class NoSelectedMapComponentError(Exception):
@@ -45,6 +50,7 @@ class MapLoadingInteractionManager:
                  key_remove: str,
                  key_load_whole_maps: str,
                  key_load_selected: str,
+                 key_load_open_file: str,
                  key_load_scan_chronos: str,
                  key_load_scan_timetable_lines: str,
                  key_load_scan_tracks: str,
@@ -67,6 +73,7 @@ class MapLoadingInteractionManager:
         self.__button_remove: sg.Button = window[key_remove] # type: ignore
         self.__button_load_whole_map: sg.Button = window[key_load_whole_maps] # type: ignore
         self.__button_load_selected: sg.Button = window[key_load_selected] # type: ignore
+        self.__button_load_open_editor: sg.Button = window[key_load_open_file] # type: ignore
         self.__button_load_scan_chronos: sg.Button = window[key_load_scan_chronos] # type: ignore
         self.__button_load_scan_timetable_lines: sg.Button = window[key_load_scan_timetable_lines] # type: ignore
         self.__button_load_scan_tracks: sg.Button = window[key_load_scan_tracks] # type: ignore
@@ -165,6 +172,10 @@ class MapLoadingInteractionManager:
         self.__update_tree()
         #self.__update_disability() może to jest potrzebne pomyslec kiedyś
     
+    def __handle_load_open_editor(self) -> None:
+        assert platform.system() == 'Windows', "Startfile available only on Windows"
+        os.startfile(self.__get_selected_map_component().get_path()) # type: ignore
+    
     def __handle_merge(self) -> None:
         try:
             self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get()).save(self.__input_new_map_directory.get())
@@ -185,8 +196,9 @@ class MapLoadingInteractionManager:
         self.__button_remove.update(disabled = not selected_mtm)
         self.__button_load_scan_chronos.update(disabled = not (selected_mtm
                             and self.__get_selected_map_component().get_global_config().get_status() == loader.FileParsingStatus.READ_SUCCESS))
-        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
         self.__button_load_whole_map.update(disabled = not len(self.__omsi_map_merger.get_maps()))
+        self.__button_load_selected.update(disabled = not self.__is_selected_component_instance(loader.SafeLoader))
+        self.__button_load_open_editor.update(disabled = not (self.__is_selected_component_instance(loader.SafeLoaderUnit) and platform.system() == 'Windows'))
         selected_tt :bool = self.__is_selected_component_instance(timetable.TimetableSl)
         for button in [
             self.__button_load_scan_timetable_lines,
@@ -229,6 +241,7 @@ class MapLoadingInteractionManager:
                 return True
         
         for gui_element, handler in [# handling wihtout tree/disability update
+            (self.__button_load_open_editor, lambda: self.__handle_load_open_editor),
             (self.__button_shift_left, lambda: self.__get_selected_map_component().shift(shift_x = -1)),
             (self.__button_shift_right, lambda: self.__get_selected_map_component().shift(shift_x = 1)),
             (self.__button_shift_up, lambda: self.__get_selected_map_component().shift(shift_y = 1)),
@@ -310,7 +323,7 @@ map_reading_panel = [
     ],
     [
         sg.Button("Load_selected", key="load_selected", disabled=True),
-        sg.Button("Open text editor", key="open_text_editor", disabled=True),
+        sg.Button("Open file in editor", key='load_open_file', disabled=True),
     ],
     [
         sg.Button("Scan for chronos", key='load_scan_chronos', disabled=True),
@@ -353,6 +366,7 @@ maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInter
     'load_remove',
     'load_whole_maps',
     'load_selected',
+    'load_open_file',
     'load_scan_chronos',
     'load_scan_timetable_lines',
     'load_scan_tracks',
@@ -377,6 +391,5 @@ while True:
         pass
     else:
         logger.error("GUI event not handled")
-    
-    
+
 window.close()
