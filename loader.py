@@ -127,19 +127,19 @@ class SafeLoaderUnit[T](SafeLoader):
         try:
             loaded = self.__true_loader(self.get_path())
         except Exception as exception:
-            logger.info(traceback.format_exc())
             if self.__optional and isinstance(exception, FileNotFoundError):
                     self.__status = FileParsingStatus.OPTIONAL_NOT_EXISTS
-                    return
-            self.__status = FileParsingStatus.ERROR
-            self.__exception = exception
-            self.__callback_failed() # type: ignore
+            else:
+                logger.info("An error occured while loading\n" + traceback.format_exc())
+                self.__status = FileParsingStatus.ERROR
+                self.__exception = exception
+                self.__callback_failed()
         else:
             assert type(loaded) == self.__data_type, f"true_loader must return object of type declared when constructing SafeLoader, required type: {self.__data_type}, type of returned: {type(loaded)}"
             self.__data = loaded
             self.__status = FileParsingStatus.READ_SUCCESS
             self.__exception = self.__placeholder_exception
-            self.__callback_loaded() # type: ignore
+            self.__callback_loaded()
         
         logger.info(f"Safe loading finished. Status set to {self.get_status()}")
     
