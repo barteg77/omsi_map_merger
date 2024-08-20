@@ -69,7 +69,7 @@ class OmsiMap:
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
         for tile_index, til in zip(itertools.count(), self.tiles):
-            logger.info("Changing objects' IDs and splines' IDs: TILE ", tile_index)
+            logger.info(f"Changing objects' IDs and splines' IDs: TILE {tile_index}")
             til.change_ids(ids_value)
         
         self.mstandard_timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)

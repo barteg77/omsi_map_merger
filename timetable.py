@@ -91,25 +91,25 @@ class Timetable:
         os.makedirs(os.path.join(directory, TIMETABLE_DIRNAME))
         for time_table_line in self.time_table_lines:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name)
-            logger.info("Serializing time table file", file_path)
+            logger.info(f"Serializing time table file {file_path}")
             _time_table_line_serializer.serialize(time_table_line.data, os.path.join(directory, TIMETABLE_DIRNAME, time_table_line.name))
         
         for track in self.tracks:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, track.name)
-            logger.info("Serializing track file", file_path)
+            logger.info(f"Serializing track file {file_path}")
             _track_serializer.serialize(track.data, file_path)
         
         for trip in self.trips:
             file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, trip.name)
-            logger.info("Serializing trip file", file_path)
+            logger.info(f"Serializing trip file {file_path}")
             _trip_serializer.serialize(trip.data, file_path)
         
         busstops_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME)
-        logger.info("Serializing busstops file", busstops_file_path)
+        logger.info(f"Serializing busstops file {busstops_file_path}")
         _busstops_serializer.serialize(self.busstops, busstops_file_path)
         
         station_links_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME)
-        logger.info("Serializing station links file", station_links_file_path)
+        logger.info(f"Serializing station links file{station_links_file_path}")
         _station_links_serializer.serialize(self.station_links, station_links_file_path)
 
 class TimetableSl(loader.SafeLoaderList):
