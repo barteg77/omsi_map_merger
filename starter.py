@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-
 import PySimpleGUI as sg
 import omsi_map_merger
 import version
@@ -26,15 +25,27 @@ import logging
 import os
 import platform
 import sys
+import tempfile
+import pathlib
+import time
 
-logger = logging.getLogger(__name__)
+# set up basic logger
+log_format_str: str = '%(asctime)s : %(levelname)s : %(message)s'
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', encoding='utf-8', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# save log to file
+log_file_path: pathlib.Path = pathlib.Path(tempfile.gettempdir()) / f'omsi_map_merger_{time.strftime('%Y-%m-%d_%H:%M:%S')}.log'
+logger_handler_file = logging.FileHandler(str(log_file_path))
+logger_handler_file.setFormatter(logging.Formatter(log_format_str))
+logger.addHandler(logger_handler_file)
 
 EMPTY_STR = ''
 
 logger.info(f"This is OMSI Map Merger {version.version}")
 logger.info(f"Python version is {sys.version}")
 logger.info(f"Platform is {platform.platform()}")
+logger.info(f"Log is being saved to file: \"{log_file_path}\"")
 
 class MapLoadingInteractionManager:
     class NoSelectedMapComponentError(Exception):
@@ -392,4 +403,5 @@ while True:
     else:
         logger.error("GUI event not handled")
 
+logger.info("Closing OMSI Map Merger")
 window.close()
