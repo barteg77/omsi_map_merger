@@ -189,10 +189,15 @@ class MapLoadingInteractionManager:
     
     def __handle_merge(self) -> None:
         try:
-            self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get()).save(self.__input_new_map_directory.get())
-        except Exception:
+            mr: omsi_map_merger.MergeResult = self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get())
+            if len(mr.warnings) == 0 or sg.popup_yes_no(f"There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n\
+                                                        {"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n\
+                                                        Do you still want to save merged map?",
+                                                        title="Map merge warnings") == "Yes":
+                mr.merged_map.save(self.__input_new_map_directory.get())
+        except:
             error_message: str = "An error occured while merge:\n" + traceback.format_exc()
-            logger.info(error_message)
+            logger.error(error_message)
             sg.Popup(error_message, title="Error")
     
     def __is_selected_component_instance(self, component_type) -> bool:
@@ -308,7 +313,7 @@ class MapLoadingInteractionManager:
                 top_left: tuple[int, int] = (-320, 320-index*name_row_height)
                 bottom_right: tuple[int, int] = (-200, 320-(index+1)*name_row_height)
                 self.__graph.draw_rectangle(top_left, bottom_right, color, color)
-                self.__graph.draw_text(name + (" (keep groundtex)" if keep_groundtex else ""), top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
+                self.__graph.draw_text(name + (" (keep groundtex)" if keep_groundtex else EMPTY_STR), top_left, text_location=sg.TEXT_LOCATION_TOP_LEFT)
 
         except loader.NoDataError:
             self.__graph.draw_text("An error occured while drawing.\nSome data required to draw a graph is missing.", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)

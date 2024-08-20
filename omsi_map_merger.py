@@ -156,6 +156,13 @@ def tile_shifted_ids(tile_old: tile.Tile, id_shift: int) -> tile.Tile:
                      new_splines,
                      list(map(sceneryobject_id_shifted, tile_old._object)))
 
+class MergeResult:
+    def __init__(self,
+                 merged_map: omsi_map.OmsiMap,
+                 warnings: list[str]):
+        self.merged_map: omsi_map.OmsiMap = merged_map
+        self.warnings: list[str] = warnings
+
 class OmsiMapMerger:
     def __init__(self) -> None:
         self.__maps: list[MapToMerge] = []
@@ -228,12 +235,28 @@ class OmsiMapMerger:
         tiles_counts_sequentially: list[int] = [len(mtm.get_global_config().get_data()._map) for mtm in self.get_maps()]
         return dict(zip(self.get_maps(), itertools.accumulate([0] + tiles_counts_sequentially, operator.add)))
 
-    def merged_omsi_map(self, new_map_name: str) -> omsi_map.OmsiMap:
+    def merged_omsi_map(self, new_map_name: str) -> MergeResult:
         assert self.ready(), "You can't get merged omsi map while not all maps are ready"
         assert not self.get_maps()[0].get_keep_groundtex(), "\"Keep groundtex\" on 1st map is nonsense."
-        logger.warning("Aigroup name collision:", self.aigroup_name_collision())
 
+        # warnings about merged map
+        warns: list[str] = []
+        def warn(message: str) -> None:
+            logger.info(f"Map merge warning reported: {message}")
+            warns.append(message)
+        
+        # warning about aigroup name collision
+        if self.aigroup_name_collision():
+            warn("Aigroup name collision")
+        
         fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_pure())) for mtm in self.get_maps()])
+
+        # warning about set worldcoordinates
+        for mtm in self.get_maps():
+            if fm[mtm].global_config.worldcoordinates:
+                warn(f"[worldcoordinates] are set in \"{mtm.get_directory}\" map global.cfg. \
+                     This WILL cause corruption of merged map. (This program is not capable of merging maps with set worldcoordinates.)")
+
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()
         groundtex_shift: dict[MapToMerge, int] = self.merged_groundtex_shift()
@@ -291,4 +314,4 @@ class OmsiMapMerger:
                                                     list(itertools.chain.from_iterable([fm[mtm].mchronos for mtm in self.get_maps()])),
                                                     )
         logger.info("Maps merge completed")
-        return new_om
+        return MergeResult(new_om, warns)
