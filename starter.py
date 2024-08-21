@@ -330,103 +330,115 @@ Do you still want to save merged map?",
         except loader.NoDataError:
             self.__graph.draw_text("An error occured while drawing.\nSome data required to draw a graph is missing.", (-320, -320), text_location=sg.TEXT_LOCATION_BOTTOM_LEFT)
 
-map_reading_panel = [
-    [
-        sg.Input(visible=False, enable_events=True, key='load_add_input', disabled=True),
-        sg.FolderBrowse("Add", key='load_add_button'),
-        sg.Button("Remove", key='load_remove'),
-        sg.Button("Read whole maps", key='load_whole_maps', disabled=True),
-    ],
-    [sg.Tree(sg.TreeData(),
-             ["Type", "Status", "Ready"],
-             col0_heading="Name",
-             num_rows=20,
-             enable_events=True,
-             key="load_tree",
-             select_mode=sg.TABLE_SELECT_MODE_BROWSE,
-             col0_width=40,
-             auto_size_columns=False,
-             col_widths=[10,20],
-             )
-    ],
-    [
-        sg.Button("Load_selected", key="load_selected", disabled=True),
-        sg.Button("Open file in editor", key='load_open_file', disabled=True),
-    ],
-    [
-        sg.Button("Scan for chronos", key='load_scan_chronos', disabled=True),
-        sg.Button("Scan for lines", key='load_scan_timetable_lines', disabled=True),
-        sg.Button("Scan for tracks", key='load_scan_tracks', disabled=True),
-        sg.Button("Scan for trips", key='load_scan_trips', disabled=True),
-    ],
-    [sg.Multiline(key='load_details', s=(90,10), disabled=True, default_text="det")],
-]
+try:
+    map_reading_panel = [
+        [
+            sg.Input(visible=False, enable_events=True, key='load_add_input', disabled=True),
+            sg.FolderBrowse("Add", key='load_add_button'),
+            sg.Button("Remove", key='load_remove'),
+            sg.Button("Read whole maps", key='load_whole_maps', disabled=True),
+        ],
+        [sg.Tree(sg.TreeData(),
+                ["Type", "Status", "Ready"],
+                col0_heading="Name",
+                num_rows=20,
+                enable_events=True,
+                key="load_tree",
+                select_mode=sg.TABLE_SELECT_MODE_BROWSE,
+                col0_width=40,
+                auto_size_columns=False,
+                col_widths=[10,20],
+                )
+        ],
+        [
+            sg.Button("Load_selected", key="load_selected", disabled=True),
+            sg.Button("Open file in editor", key='load_open_file', disabled=True),
+        ],
+        [
+            sg.Button("Scan for chronos", key='load_scan_chronos', disabled=True),
+            sg.Button("Scan for lines", key='load_scan_timetable_lines', disabled=True),
+            sg.Button("Scan for tracks", key='load_scan_tracks', disabled=True),
+            sg.Button("Scan for trips", key='load_scan_trips', disabled=True),
+        ],
+        [sg.Multiline(key='load_details', s=(90,10), disabled=True, default_text="det")],
+    ]
 
-layout_left = [
-    [sg.Text("Log file:"), sg.In(str(log_file_path), disabled=True), sg.Button("Open location", key='open_log_location', disabled=not run_files_manager.supported())],
-    [sg.Frame("Reading maps files", map_reading_panel)],
-]
+    layout_left = [
+        [sg.Text("Log file:"), sg.In(str(log_file_path), disabled=True), sg.Button("Open location", key='open_log_location', disabled=not run_files_manager.supported())],
+        [sg.Frame("Reading maps files", map_reading_panel)],
+    ]
 
-layout_right = [
-    [sg.Text("Set map 2 shift…"),],
-    [sg.Graph(canvas_size=(640, 640), graph_bottom_left=(-320,-320), graph_top_right=(320, 320), background_color="white", key="graph")],
-    [sg.Button("    ←    ", key="shift_left"),
-        sg.Button("    ↑    ", key="shift_up"),
-        sg.Button("    ↓    ", key="shift_down"),
-        sg.Button("    →    ", key="shift_right"),],
-    [sg.Button("(toggle) Keep original main ground texture on tiles of selected map", key="toggle_keep_groundtex")],
-    [sg.HorizontalSeparator(),],
-    [sg.Text("New map directory"), sg.In(key="new_map_directory"), sg.FolderBrowse()],
-    [sg.Text("New map name"), sg.In(key="new_map_name")],
-    [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
-]
-layout = [[sg.Column(layout_left), sg.VSep(), sg.Column(layout_right)]]
+    layout_right = [
+        [sg.Text("Set map 2 shift…"),],
+        [sg.Graph(canvas_size=(640, 640), graph_bottom_left=(-320,-320), graph_top_right=(320, 320), background_color="white", key="graph")],
+        [sg.Button("    ←    ", key="shift_left"),
+            sg.Button("    ↑    ", key="shift_up"),
+            sg.Button("    ↓    ", key="shift_down"),
+            sg.Button("    →    ", key="shift_right"),],
+        [sg.Button("(toggle) Keep original main ground texture on tiles of selected map", key="toggle_keep_groundtex")],
+        [sg.HorizontalSeparator(),],
+        [sg.Text("New map directory"), sg.In(key="new_map_directory"), sg.FolderBrowse()],
+        [sg.Text("New map name"), sg.In(key="new_map_name")],
+        [sg.Button("Merge maps!", key="merge"), sg.Button("Cancel", key="cancel")]
+    ]
+    layout = [[sg.Column(layout_left), sg.VSep(), sg.Column(layout_right)]]
 
-omm = omsi_map_merger.OmsiMapMerger()
-window = sg.Window("OMSI Map Merger", layout, finalize=True)
+    omm = omsi_map_merger.OmsiMapMerger()
+    window = sg.Window("OMSI Map Merger", layout, finalize=True)
 
-maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInteractionManager(
-    omm,
-    window,
-    'load_tree',
-    'load_details',
-    'load_add_input',
-    'load_add_button',
-    'load_remove',
-    'load_whole_maps',
-    'load_selected',
-    'load_open_file',
-    'load_scan_chronos',
-    'load_scan_timetable_lines',
-    'load_scan_tracks',
-    'load_scan_trips',
-    'graph',
-    'shift_left',
-    'shift_right',
-    'shift_up',
-    'shift_down',
-    'toggle_keep_groundtex',
-    'new_map_directory',
-    'new_map_name',
-    'merge')
+    maps_loading_interaction_manager: MapLoadingInteractionManager = MapLoadingInteractionManager(
+        omm,
+        window,
+        'load_tree',
+        'load_details',
+        'load_add_input',
+        'load_add_button',
+        'load_remove',
+        'load_whole_maps',
+        'load_selected',
+        'load_open_file',
+        'load_scan_chronos',
+        'load_scan_timetable_lines',
+        'load_scan_tracks',
+        'load_scan_trips',
+        'graph',
+        'shift_left',
+        'shift_right',
+        'shift_up',
+        'shift_down',
+        'toggle_keep_groundtex',
+        'new_map_directory',
+        'new_map_name',
+        'merge')
 
-while True:
-    event, values = window.read() # type: ignore
-    logger.debug(f"GUI event occured: {event}, values: {values}")
-
-    if event == sg.WIN_CLOSED or event == "cancel":
-        break
-    elif event == 'open_log_location':
-        try:
-            run_files_manager.run_explorer_sel(log_file_path)
-        except:
-            message: str = "Failed to open file manager"
-            logger.error(message + "\n" + traceback.format_exc())
-            sg.popup(message)
-    elif maps_loading_interaction_manager.handle_event(event):
-        pass
-    else:
-        logger.error("GUI event not handled")
+    while True:
+        event, values = window.read() # type: ignore
+        logger.debug(f"GUI event occured: {event}, values: {values}")
+        if event == sg.WIN_CLOSED or event == "cancel":
+            break
+        elif event == 'open_log_location':
+            try:
+                run_files_manager.run_explorer_sel(log_file_path)
+            except:
+                message: str = "Failed to open file manager"
+                logger.error(message + "\n" + traceback.format_exc())
+                sg.popup(message)
+        elif maps_loading_interaction_manager.handle_event(event):
+            pass
+        else:
+            logger.error("GUI event not handled")
+except:
+    fe: str = traceback.format_exc()
+    logger.fatal("Unhandled exception:\n" + fe)
+    sg.popup(f"\
+FATAL ERROR OCCURED!\n\
+Unhandled exception:\n{fe}\n\
+You have discovered an OMSI Map Merger bug, app developer may not know about.\n\n\
+App log is located in \"{log_file_path}\".\n\
+You may like to grab it and share with other users/developers to help fix this issue.\n\n\
+OMSI Map Merger will be terminated now.",
+             title="Fatal error")
+    logger.info("Program will be terminated due to fatal error.")
 
 logger.info("Closing OMSI Map Merger")
 window.close()
