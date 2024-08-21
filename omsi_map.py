@@ -91,6 +91,8 @@ class OmsiMap:
     
     def save(self, directory: str) -> None:
         #prepare directories
+        logger.info(f"Saving OmsiMap to directory: \"{directory}\"")
+        logger.info(f"Will create \"{directory}\" directory if not exists")
         os.makedirs(directory, exist_ok=True)
         if os.listdir(directory) != []:
             raise Exception(f"Directory \"{directory}\" isn't empty.\nYou can save map only to empty directory.")
@@ -103,6 +105,7 @@ class OmsiMap:
         _ailists_serializer.serialize(self.ailists, os.path.join(directory, AILISTS_FILENAME))
         for chrono in self.mchronos:
             chrono.save(directory)
+        logger.info("Map saving completed")
     
 class OmsiMapSl(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
