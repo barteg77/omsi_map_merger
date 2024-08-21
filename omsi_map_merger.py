@@ -270,10 +270,10 @@ class OmsiMapMerger:
         map_description: str = f"{new_map_name}\nMap created with OMSI Map Merger {version.version}\nMerged maps (path, shift_x, shift_y, keep_groundtex):\n"\
         + "".join(["\n* " + ", ".join([mtm.get_directory(), str(mtm.get_shift_x()), str(mtm.get_shift_y()), str(mtm.get_keep_groundtex())]) for mtm in self.get_maps()])
         
-        gc_entrypoints: list[global_config.Entrypoints] = list(itertools.chain.from_iterable([shifted_entrypoints(fm[mtm].global_config.entrypoints,#mtm._global_config.get_data().entrypoints,
+        gc_entrypoints: list[global_config.Entrypoints] = list(itertools.chain.from_iterable([shifted_entrypoints(fm[mtm].global_config.entrypoints,
                                                                                                                   idcode_shift[mtm],
                                                                                                                   tile_shift[mtm]) for mtm in self.get_maps()]))
-        gc_tiles: list[global_config.Map] = list(itertools.chain.from_iterable([shifted_gc_tiles(fm[mtm].global_config._map,#mtm._global_config.get_data()._map,
+        gc_tiles: list[global_config.Map] = list(itertools.chain.from_iterable([shifted_gc_tiles(fm[mtm].global_config._map,
                                                                                                  mtm.get_shift_x(),
                                                                                                  mtm.get_shift_y()) for mtm in self.get_maps()]))
         gc: global_config.GlobalConfig
