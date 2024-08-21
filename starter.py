@@ -207,6 +207,8 @@ Do you still want to save merged map?",
                                                     title="Map merge warnings") == "Yes":
             try:
                 mr.merged_map.save(self.__input_new_map_directory.get())
+                sg.Popup(f"Map saved in directory \"{self.__input_new_map_directory.get()}\"",
+                         title="Map save completed")
             except:
                 error_message: str = "An error occured while saving map:\n" + traceback.format_exc()
                 logger.error(error_message)
