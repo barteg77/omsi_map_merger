@@ -90,6 +90,9 @@ class MapToMerge(omsi_map.OmsiMapSl):
     def get_keep_groundtex(self) -> bool:
         return self.__keep_groundtex
     
+    def set_keep_groundtex(self, value: bool) -> None:
+        self.__keep_groundtex = value
+    
     def toggle_keep_groundtex(self) -> None:
         self.__keep_groundtex = not self.get_keep_groundtex()
 

@@ -170,6 +170,7 @@ class MapLoadingInteractionManager:
     
     def __handle_remove(self) -> None:
         self.__omsi_map_merger.remove_map(self.__omsi_map_merger.get_maps().index(self.__get_selected_map_component()))
+        self.__omsi_map_merger.get_maps()[0].set_keep_groundtex(False)
         self.__update_tree()
         #self.__button_remove.update(disabled=True)
     
@@ -231,9 +232,9 @@ class MapLoadingInteractionManager:
             self.__button_shift_right,
             self.__button_shift_up,
             self.__button_shift_down,
-            self.__button_toggle_keep_groundtex,
         ]:
             button.update(disabled=not selected_mtm)
+        self.__button_toggle_keep_groundtex.update(disabled = not (selected_mtm and self.__get_selected_map_component() is not self.__omsi_map_merger.get_maps()[0]))
         self.__button_merge.update(disabled = not self.__omsi_map_merger.ready())
     
     def handle_event(self, event) -> bool:#true if handled, false if didn't handled
