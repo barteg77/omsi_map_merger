@@ -196,15 +196,20 @@ class MapLoadingInteractionManager:
     def __handle_merge(self) -> None:
         try:
             mr: omsi_map_merger.MergeResult = self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get())
-            if len(mr.warnings) == 0 or sg.popup_yes_no(f"There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n\
-                                                        {"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n\
-                                                        Do you still want to save merged map?",
-                                                        title="Map merge warnings") == "Yes":
-                mr.merged_map.save(self.__input_new_map_directory.get())
         except:
             error_message: str = "An error occured while merge:\n" + traceback.format_exc()
             logger.error(error_message)
             sg.Popup(error_message, title="Error")
+        if len(mr.warnings) == 0 or sg.popup_yes_no(f"There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n\
+                                                    {"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n\
+                                                    Do you still want to save merged map?",
+                                                    title="Map merge warnings") == "Yes":
+            try:
+                mr.merged_map.save(self.__input_new_map_directory.get())
+            except:
+                error_message: str = "An error occured while saving map:\n" + traceback.format_exc()
+                logger.error(error_message)
+                sg.Popup(error_message, title="Error")
     
     def __is_selected_component_instance(self, component_type) -> bool:
         try:
