@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -24,19 +24,20 @@ class ChronoTileParser():
     actions = {
         "CHRONO_TILE": [lambda _, n: chrono_tile.ChronoTile(initial_comment=n[0],
                                                             version=n[2],
-                                                            list=n[3]
+                                                            elements_list=n[3] if n[3] is not None else [],
                                                             )],
         "VERSION_GROUP": [lambda _, n: n[1]],
         "SELECT_GROUP_HEADER": [lambda _, n: True,
                                 lambda _, n: False],
         "SELECT_GROUP": [lambda _, n: chrono_tile.Select(spline=n[0],
-                                                         id=n[1],
-                                                         lines=n[2]
+                                                         id=int(n[1]),
+                                                         lines=n[2] if n[2] is not None else []
                                                          )],
         "SPLINE_TERRAIN_ALIGN_2_GROUP": [lambda _, n: n[1]],
         "MIRROR_GROUP": [lambda _, n: True,
                          lambda _, n: False],
-        "SPLINE_GROUP": [lambda _, n: tile.Spline(line1=n[1],
+        "SPLINE_GROUP": [lambda _, n: tile.Spline(h=False,
+                                                  line1=n[1],
                                                   file_name=n[2],
                                                   id=n[3],
                                                   id_previous=n[4],
@@ -49,6 +50,7 @@ class ChronoTileParser():
                                                   radius=n[11],
                                                   gradient_start=n[12],
                                                   gradient_end=n[13],
+                                                  delta_h=None,
                                                   cant_start=n[14],
                                                   cant_end=n[15],
                                                   skew_start=n[16],

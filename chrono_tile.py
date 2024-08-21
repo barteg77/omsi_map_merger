@@ -18,28 +18,28 @@
 import tile
 class Select:
     def __init__(self,
-                 spline,
-                 id,
-                 lines=None):
-        self.spline = spline
-        self.id = id
-        self.lines = lines
+                 spline: bool,
+                 id: int,
+                 lines: list[str]):
+        self.spline: bool = spline
+        self.id: int = id
+        self.lines: list[str] = lines
 
 class ChronoTile:
     def __init__(self,
-                 initial_comment,
-                 version,
-                 list=None):
-        self.initial_comment = initial_comment
-        self.version = version
-        self.list = list
+                 initial_comment: str,
+                 version: str,
+                 elements_list: list[Select | tile.Spline | tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater],
+                 ):
+        self.initial_comment: str = initial_comment
+        self.version: str = version
+        self.elements_list: list[Select | tile.Spline | tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater] = elements_list
 
-    def change_ids(self, value):
-        if list is not None:
-            for entry in self.list:
-                entry.id = str(int(entry.id) + int(value))
-                if isinstance(entry, tile.Spline):
-                    entry.id_previous = entry.id_previous + value
-                    entry.id_next = entry.id_next + value
-                if (isinstance(entry, tile._Object) or isinstance(entry, tile.SplineAttachement) or isinstance(entry, tile.SplineAttachement)) and entry.varparent is not None:
-                    entry.varparent = entry.varparent + value
+    def change_ids(self, value: int) -> None:
+        for entry in self.elements_list:
+            entry.id = entry.id + value
+            if type(entry) == tile.Spline:
+                entry.id_previous = entry.id_previous + value
+                entry.id_next = entry.id_next + value
+            elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.SplineAttachement, tile.SplineAttachementRepeater])) and entry.varparent is not None: # type: ignore
+                entry.varparent = entry.varparent + value # type: ignore
