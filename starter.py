@@ -28,6 +28,7 @@ import sys
 import tempfile
 import pathlib
 import time
+import run_files_manager
 
 root_logger = logging.getLogger()
 
@@ -356,6 +357,7 @@ map_reading_panel = [
 ]
 
 layout_left = [
+    [sg.Text("Log file:"), sg.In(str(log_file_path), disabled=True), sg.Button("Open location", key='open_log_location', disabled=not run_files_manager.supported())],
     [sg.Frame("Reading maps files", map_reading_panel)],
 ]
 
@@ -408,6 +410,13 @@ while True:
 
     if event == sg.WIN_CLOSED or event == "cancel":
         break
+    elif event == 'open_log_location':
+        try:
+            run_files_manager.run_explorer_sel(log_file_path)
+        except:
+            message: str = "Failed to open file manager"
+            logger.error(message + "\n" + traceback.format_exc())
+            sg.popup(message)
     elif maps_loading_interaction_manager.handle_event(event):
         pass
     else:
