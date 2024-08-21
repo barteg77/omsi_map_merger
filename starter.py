@@ -244,50 +244,57 @@ Do you still want to save merged map?",
         self.__button_toggle_keep_groundtex.update(disabled = not (selected_mtm and self.__get_selected_map_component() is not self.__omsi_map_merger.get_maps()[0]))
         self.__button_merge.update(disabled = not self.__omsi_map_merger.ready())
     
-    def handle_event(self, event) -> bool:#true if handled, false if didn't handled
-        if self.__tree.key == event:
-            self.__update_multiline()#needn't tree update
-            self.__update_disability()
-            return True
-        
-        for gui_element, handler in [# handling wiht tree/disability update
-            (self.__input_add, self.__handle_add),
-            (self.__button_remove, self.__handle_remove),
-            (self.__button_load_whole_map, lambda: self.__omsi_map_merger.load_maps()),
-            (self.__button_load_selected, self.__handle_load_selected),
-            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().scan_chrono()),#po co to jest w lambda??
-            (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines()),
-            (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks()),
-            (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips()),
-            (self.__button_merge, lambda: self.__handle_merge())
-        ]:
-            if gui_element.key == event:
-                handler() # need tree update
-                self.__update_tree()
-                self.__update_disability()
-                self.__draw_graph() #tylko na chwilę!!!!
-                return True
-        
-        for gui_element, handler in [# handling wihtout tree/disability update
-            (self.__button_load_open_editor, lambda: self.__handle_load_open_editor),
-            (self.__button_shift_left, lambda: self.__get_selected_map_component().shift(shift_x = -1)),
-            (self.__button_shift_right, lambda: self.__get_selected_map_component().shift(shift_x = 1)),
-            (self.__button_shift_up, lambda: self.__get_selected_map_component().shift(shift_y = 1)),
-            (self.__button_shift_down, lambda: self.__get_selected_map_component().shift(shift_y = -1)),
-            (self.__button_toggle_keep_groundtex, self.__get_selected_map_component().toggle_keep_groundtex),
+    def update_md(self) -> None:
+        self.__update_multiline()#needn't tree update
+        self.__update_disability()
+    
+    def update_tdg(self) -> None:
+        self.__update_tree()
+        self.__update_disability()
+        self.__draw_graph() #tylko na chwilę!!!!
+    
+    def update_dg(self) -> None:
+        self.__update_disability()
+        self.__draw_graph() #tylko na chwilę!!!!
+    
+    def handle_event(self, event) -> bool:# true if handled, false if didn't handled
+        for gui_element, handler, updater in [
+            # some handlers have to be lambda-encapsulated because they access map components' members, that are sometimes not accesible
+            # e.g. self.__get_selected_map_component().scan_chrono() is accessible only when OmsiMapLoader is selected
+
+            (self.__tree, lambda: None, self.update_md),
+
+            (self.__input_add, self.__handle_add, self.update_tdg),
+            (self.__button_remove, self.__handle_remove, self.update_tdg),
+            (self.__button_load_whole_map, self.__omsi_map_merger.load_maps, self.update_tdg),
+            (self.__button_load_selected, self.__handle_load_selected, self.update_tdg),
+            (self.__button_load_scan_chronos, lambda: self.__get_selected_map_component().scan_chrono(), self.__update_tree),
+            (self.__button_load_scan_timetable_lines, lambda: self.__get_selected_map_component().scan_time_table_lines(), self.__update_tree),
+            (self.__button_load_scan_tracks, lambda: self.__get_selected_map_component().scan_tracks(), self.__update_tree),
+            (self.__button_load_scan_trips, lambda: self.__get_selected_map_component().scan_trips(), self.__update_tree),
+
+            (self.__button_load_open_editor, self.__handle_load_open_editor, lambda: None),
+            (self.__button_shift_left, lambda: self.__get_selected_map_component().shift(shift_x = -1), self.update_dg),
+            (self.__button_shift_right, lambda: self.__get_selected_map_component().shift(shift_x = 1), self.update_dg),
+            (self.__button_shift_up, lambda: self.__get_selected_map_component().shift(shift_y = 1), self.update_dg),
+            (self.__button_shift_down, lambda: self.__get_selected_map_component().shift(shift_y = -1), self.update_dg),
+            (self.__button_toggle_keep_groundtex, lambda: self.__get_selected_map_component().toggle_keep_groundtex(), self.__draw_graph),
+
+            (self.__button_merge, self.__handle_merge, lambda: None),
         ]:
             if gui_element.key == event:
                 handler()
-                self.__draw_graph() #tylko na chwilę!!!!
-                self.__update_disability()
+                updater()
                 return True
-        
         return False
     
     def __draw_graph(self) -> None:
         logger.info("Drawing graph...")
         try:
-            colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', 'slate blue', 'slate gray', 'yellow']
+            colors: list[str] = ['green4', 'maroon1', 'navajo white', 'navy', 'gainsboro', 'firebrick2', \
+                                 'DarkOliveGreen4', 'khaki2', 'purple1', 'turquoise2', 'SeaGreen1', 'aquamarine4', \
+                                 'DarkGoldenrod1', 'dark slate gray', 'cornflower blue', 'gray', 'medium blue', 'magenta4', \
+                                 'slate blue', 'slate gray', 'yellow']
             marking_color: str = 'black'
             maps: list[omsi_map_merger.MapToMerge] = self.__omsi_map_merger.get_maps()
             maps_colors: dict[omsi_map_merger.MapToMerge, str] = dict(zip(maps, colors))
