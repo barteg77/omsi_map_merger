@@ -373,7 +373,12 @@ try:
     ]
 
     layout_left = [
-        [sg.Text("Log file:"), sg.In(str(log_file_path), disabled=True), sg.Button("Open location", key='open_log_location', disabled=not run_files_manager.supported())],
+        [
+            sg.Text("Log file:"),
+            sg.In(str(log_file_path), disabled=True),
+            sg.Button("Copy path to clipboard", key='copy_log_path'),
+            sg.Button("Open location in file manager", key='open_log_location', disabled=not run_files_manager.supported())
+        ],
         [sg.Frame("Reading maps files", map_reading_panel)],
     ]
 
@@ -432,6 +437,9 @@ try:
                 message: str = "Failed to open file manager"
                 logger.error(message + "\n" + traceback.format_exc())
                 sg.popup(message)
+        elif event == 'copy_log_path':
+            logger.info("Copying log path to clipboard.")
+            sg.clipboard_set(str(log_file_path))
         elif maps_loading_interaction_manager.handle_event(event):
             pass
         else:
