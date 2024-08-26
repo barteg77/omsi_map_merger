@@ -32,6 +32,7 @@ import ailists_serializer
 import chrono
 import loader
 import logging
+import typing
 
 logger = logging.getLogger(__name__)
 
@@ -233,4 +234,4 @@ class OmsiMapSl(loader.SafeLoaderList):
                        self.get_omsi_files(),
                        self.get_standard_timetable().get_pure(),
                        self.get_ailists().get_data(),
-                       [x.get_pure() for x in self.get_chrono().get_data()])
+                       [typing.cast(chrono.ChronoSl, x).get_pure() for x in self.get_chrono().get_data()])
