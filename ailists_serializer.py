@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -20,7 +20,7 @@ import pprint
 
 class AIListsSerializer:
     def serialize(self, ailists_class, file_name):
-        with open(file_name, 'w', encoding='iso-8859-1', newline='\r\n') as f:
+        with open(file_name, 'w', encoding='utf-16-le', newline='\r\n') as f:
             self.serialize_(ailists_class, f)
     
     def serialize_(self, ailists_class, f):
