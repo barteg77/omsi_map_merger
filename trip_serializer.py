@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -18,50 +18,50 @@
 import trip
 
 class TripSerializer:
-    def serialize(self, trip_class, file_name):
+    def serialize(self, trip_object, file_name):
         with open(file_name, 'w', encoding='iso-8859-1', newline='\r\n') as f:
-            self.serialize_(trip_class, f)
+            self.serialize_(trip_object, f)
     
-    def serialize_(self, trip_class, f):
+    def serialize_(self, trip_object: trip.Trip, f):
         print("-----------------------", file=f)
         print("Time Table Trip File", file=f)
         print("-----------------------", file=f)
         print(file=f)
-        print(trip_class.comment1, file=f)
-        print(trip_class.comment2, file=f)
+        print(trip_object.comment1, file=f)
+        print(trip_object.comment2, file=f)
         print(file=f)
         print("[trip]", file=f)
-        print(trip_class.line1, file=f)
-        print(trip_class.line2, file=f)
-        print(trip_class.line3, file=f)
+        print(trip_object.line1, file=f)
+        print(trip_object.line2, file=f)
+        print(trip_object.line3, file=f)
         print(file=f)
         print(".........................", file=f)
         print("        Stations", file=f)
         print(".........................", file=f)
         print(file=f)
-        if trip_class.station is not None:
-            if not isinstance(trip_class.station[0], trip.Station):
-                for station in trip_class.station:
-                    print("[station_typ2]", file=f)
-                    print(station, file=f)
-                    print(file=f)
+        for station in trip_object.station:
+            if type(station) == trip.StationTyp2:
+                print("[station_typ2]", file=f)
+                print(station.id, file=f)
+                print(file=f)
+            elif type(station) == trip.Station:
+                print("[station]", file=f)
+                print(station.id, file=f)
+                print(station.interval, file=f)
+                print(station.name, file=f)
+                print(station.tile_index, file=f)
+                print(station.line5, file=f)
+                print(station.line6, file=f)
+                print(station.line7, file=f)
+                print(station.line8, file=f)
+                print(file=f)
             else:
-                for station in trip_class.station:
-                    print("[station]", file=f)
-                    print(station.id, file=f)
-                    print(station.interval, file=f)
-                    print(station.name, file=f)
-                    print(station.tile_index, file=f)
-                    print(station.line5, file=f)
-                    print(station.line6, file=f)
-                    print(station.line7, file=f)
-                    print(station.line8, file=f)
-                    print(file=f)
+                assert False, f"station of not allowed type: {type(station)}"
         print(file=f)
         print(".........................", file=f)
         print("        Profiles", file=f)
         print(".........................", file=f)
         print(file=f)
-        if trip_class.lines is not None:
-            for line in trip_class.lines:
+        if trip_object.lines is not None:
+            for line in trip_object.lines:
                 print(line, file=f)

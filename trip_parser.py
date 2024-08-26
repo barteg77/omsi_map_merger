@@ -26,11 +26,11 @@ class TripParser:
                                         line1=n[8],
                                         line2=n[9],
                                         line3=n[10],
-                                        station=n[16],
+                                        station=n[16] if n[16] is not None else [],
                                         lines=n[22]
                                         )],
         "NONEMPTY_LINE": [lambda _, n: n[0]],
-        "STATION_TYP2_GROUP": [lambda _, n: int(n[1])],
+        "STATION_TYP2_GROUP": [lambda _, n: trip.StationTyp2(int(n[1]))],
         "STATION_TYP2_GROUP_LIST": [lambda _, n: [n[0]],
                                     lambda _, n: n[0] + [n[1]]],
         "STATION_GROUP": [lambda _, n: trip.Station(id=int(n[1]),

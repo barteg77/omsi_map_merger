@@ -15,7 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-class Station:
+import typing
+
+class AnyStation:
+    def __init__(self):
+        self.id: int
+        raise NotImplementedError
+
+class Station(AnyStation):
     def __init__(self,
                  id: int,
                  interval,
@@ -35,6 +42,10 @@ class Station:
         self.line7 = line7
         self.line8 = line8
 
+class StationTyp2(AnyStation):
+    def __init__(self, id: int):
+        self.id: int = id
+
 class Trip:
     def __init__(self,
                  comment1,
@@ -42,7 +53,7 @@ class Trip:
                  line1,
                  line2,
                  line3,
-                 station: list[Station],
+                 station: list[Station] | list[StationTyp2],
                  lines=None,
                  ):
         self.comment1 = comment1
@@ -50,15 +61,11 @@ class Trip:
         self.line1 = line1
         self.line2 = line2
         self.line3 = line3
-        self.station: list[Station] = station
+        self.station: list[Station] | list[StationTyp2] = station
         self.lines = lines
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
-        if self.station is not None:
-            if isinstance(self.station[0], Station):
-                for station in self.station:
-                    station.id += ids_value
-                    station.tile_index += tile_indices_value
-            else:
-                self.station = [str(int(station) + int(ids_value)) for station in self.station]#chyba będzie działać mimo wszystko
-                                                                                               #ale bedzie trzeba ogarnąć
+        for station in self.station:
+            station.id += ids_value
+            if type(station) == Station:
+                typing.cast(Station, station).tile_index += tile_indices_value
