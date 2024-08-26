@@ -57,8 +57,8 @@ class Trip:
         if self.station is not None:
             if isinstance(self.station[0], Station):
                 for station in self.station:
-                    station.id = station.id + ids_value
-                    station.tile_index = station.tile_index + tile_indices_value
+                    station.id += ids_value
+                    station.tile_index += tile_indices_value
             else:
                 self.station = [str(int(station) + int(ids_value)) for station in self.station]#chyba będzie działać mimo wszystko
                                                                                                #ale bedzie trzeba ogarnąć

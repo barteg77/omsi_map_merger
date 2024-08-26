@@ -74,8 +74,8 @@ class StationLinks:
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
         for station_link in self.station_link:
-            station_link.id_busstop_start = station_link.id_busstop_start + ids_value
-            station_link.id_busstop_end = station_link.id_busstop_end + ids_value
+            station_link.id_busstop_start += ids_value
+            station_link.id_busstop_end += ids_value
             for station_link_entry in station_link.station_link_entry:
-                station_link_entry.id = station_link_entry.id + ids_value
-                station_link_entry.tile_index = station_link_entry.tile_index + tile_indices_value
+                station_link_entry.id += ids_value
+                station_link_entry.tile_index += tile_indices_value

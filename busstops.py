@@ -44,5 +44,5 @@ class Busstops:
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
         for busstop in self.busstops:
-            busstop.tile_index = busstop.tile_index + tile_indices_value
-            busstop.id = busstop.id + ids_value
+            busstop.tile_index += tile_indices_value
+            busstop.id += ids_value
