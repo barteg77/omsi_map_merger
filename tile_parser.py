@@ -187,6 +187,6 @@ class TileParser():
                                          actions=self.actions,
                                          ws="\r")
     def parse(self, file_name):
-        with open(file_name, encoding="utf16") as f:
+        with open(file_name, encoding="utf_16_le") as f:
             content = f.read()
         return self.parser.parse(content)[0]

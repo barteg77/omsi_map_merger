@@ -20,7 +20,7 @@ import pprint
 
 class AIListsSerializer:
     def serialize(self, ailists_class, file_name):
-        with open(file_name, 'w', encoding='utf-16-le', newline='\r\n') as f:
+        with open(file_name, 'w', encoding='utf_16_le', newline='\r\n') as f:
             self.serialize_(ailists_class, f)
     
     def serialize_(self, ailists_class, f):
