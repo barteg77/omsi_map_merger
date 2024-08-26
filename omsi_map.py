@@ -189,7 +189,7 @@ class OmsiMapSl(loader.SafeLoaderList):
     def get_tiles(self):
         return self._tiles
     
-    def get_chrono(self):
+    def get_chrono(self) -> loader.SafeLoaderList:
         return self._chronos
 
     def save_global_config(self):
@@ -233,4 +233,4 @@ class OmsiMapSl(loader.SafeLoaderList):
                        self.get_omsi_files(),
                        self.get_standard_timetable().get_pure(),
                        self.get_ailists().get_data(),
-                       [x.get_data() for x in self.get_chrono().get_data()])
+                       [x.get_pure() for x in self.get_chrono().get_data()])
