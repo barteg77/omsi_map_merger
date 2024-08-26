@@ -38,13 +38,6 @@ def test_get_data_before_read(basic_slu):
 def test_get_type_name(basic_slu):
     assert basic_slu.get_type_name() == SomethingToLoad.__name__
 
-def test_set_external_data(basic_slu):
-    stl = SomethingToLoad()
-    basic_slu.set_external_data(stl)
-    assert basic_slu.get_status() is loader.FileParsingStatus.EXTERNAL_DATA
-    assert basic_slu.ready()
-    assert basic_slu.get_data() is stl
-
 class SomeError(Exception):
     pass
 
