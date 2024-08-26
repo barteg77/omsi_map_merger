@@ -66,9 +66,8 @@ class Chrono:
         self.timetable.change_ids_and_tile_indices(ids_value, tile_indices_value)
     
     def save(self, map_directory: str) -> None:
-        os.makedirs(os.path.join(map_directory, CHRONO_DIRNAME, self.chrono_directory))
         joined_directory: str = os.path.join(map_directory, self.chrono_directory)
-        pathlib.Path(os.path.join(map_directory, self.chrono_directory, "TTData")).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(os.path.join(joined_directory, self.chrono_directory)).mkdir(parents=True)
         self.omsi_files.save(map_directory)
         for chrono_tile in self.chrono_tiles_info:
             file_path: str = os.path.join(joined_directory, f'tile_{chrono_tile.pos_x}_{chrono_tile.pos_y}.map')
@@ -112,13 +111,13 @@ class ChronoSl(loader.SafeLoaderList):
     def load(self):
         super().get_omsi_files().set_omsi_files(self.__all_omsi_files())
         super().load()
-        self.chrono_tiles_infos = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
-                                   for gc_map, chrono_tile
-                                   in zip(self.gc_map, self.chrono_tiles.get_data())
-                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
         self.get_timetable().load()
     
     def get_pure(self) -> Chrono:
         if not self.ready():
             raise loader.NoDataError
+        self.chrono_tiles_infos = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
+                                   for gc_map, chrono_tile
+                                   in zip(self.gc_map, self.chrono_tiles.get_data())
+                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
         return Chrono(self.chrono_directory, self.chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_pure())
