@@ -16,6 +16,8 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 import tile
+import typing
+
 class Select:
     def __init__(self,
                  spline: bool,
@@ -41,5 +43,8 @@ class ChronoTile:
             if type(entry) == tile.Spline:
                 entry.id_previous = entry.id_previous + value
                 entry.id_next = entry.id_next + value
-            elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.SplineAttachement, tile.SplineAttachementRepeater])) and entry.varparent is not None: # type: ignore
-                entry.varparent = entry.varparent + value # type: ignore
+            elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.SplineAttachement, tile.SplineAttachementRepeater])):
+                entry_object: tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater \
+                    = typing.cast(tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater, entry)
+                if entry_object.varparent is not None:
+                    entry_object.varparent = entry_object.varparent + value
