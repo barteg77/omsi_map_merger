@@ -52,6 +52,8 @@ logger.info(f"Python version is {sys.version}")
 logger.info(f"Platform is {platform.platform()}")
 logger.info(f"Log is being saved to file: \"{log_file_path}\"")
 
+sys.setrecursionlimit(10**4)
+
 class MapLoadingInteractionManager:
     class NoSelectedMapComponentError(Exception):
         pass
