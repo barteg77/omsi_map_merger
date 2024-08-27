@@ -60,20 +60,14 @@ class SafeLoader:
         return "Attached omsi-files:" + "".join(["\n\t"+ filename for filename in self.get_omsi_files().get_files_names()])
     
     def info_short(self) -> str:
-        status = self.get_status()
-        match status:
-            case FileParsingStatus.NOT_READ:
-                return "NOT READ"
-            case FileParsingStatus.READ_SUCCESS:
-                return "READ SUCCESSFULLY"
-            case FileParsingStatus.OPTIONAL_NOT_EXISTS:
-                return "NOT EXISTS (optional)"
-            case FileParsingStatus.ERROR:
-                return f"ERROR"
-            case FileParsingStatus.LOWER_MIXED:
-                return "MIXED"
-            case _:
-                raise Exception(f"Unable to create short info for this status (is{status}).")
+        status_text: dict[FileParsingStatus, str] = {
+            FileParsingStatus.NOT_READ: "NOT READ",
+            FileParsingStatus.READ_SUCCESS: "READ SUCCESSFULLY",
+            FileParsingStatus.OPTIONAL_NOT_EXISTS: "NOT EXISTS (optional)",
+            FileParsingStatus.ERROR: "ERROR",
+            FileParsingStatus.LOWER_MIXED: "MIXED",
+        }
+        return status_text[self.get_status()]
     
     def load(self) -> None:
         raise NotImplementedError()
