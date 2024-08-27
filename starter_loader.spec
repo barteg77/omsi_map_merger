@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -44,6 +44,7 @@ a = Analysis(['starter_loader.py'],
                     ('LICENSE_Parglare.txt', '.'),
                     ('LICENSE_PySimpleGUI.txt', '.'),
                     ('LICENSE_Python.txt', '.'),
+                    ('CREDITS.md', '.'),
                     (os.path.join(dragonmapper_root, 'data/transcriptions.csv'), 'dragonmapper/data/'),
                     (os.path.join(dragonmapper_root, 'data/hanzi_pinyin_words.tsv'), 'dragonmapper/data/'),
                     (os.path.join(dragonmapper_root, 'data/hanzi_pinyin_characters.tsv'), 'dragonmapper/data/'),
