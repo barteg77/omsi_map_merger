@@ -22,3 +22,6 @@ class NamedData[T]:
     ):
         self.name: str = name
         self.data: T = data
+
+def names(nd_list: list[NamedData]) -> list[str]:
+    return [nd.name for nd in nd_list]

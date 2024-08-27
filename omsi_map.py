@@ -90,6 +90,15 @@ class OmsiMap:
             _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile.map_file))
             map_tile.save_files(directory)
     
+    def get_time_table_line_names(self) -> list[str]:
+        return list(set(itertools.chain.from_iterable([tt.get_time_table_line_names() for tt in [self.mstandard_timetable] + [mchrono.timetable for mchrono in self.mchronos]])))
+    
+    def get_tracks_names(self) -> list[str]:
+        return list(set(itertools.chain.from_iterable([tt.get_tracks_names() for tt in [self.mstandard_timetable] + [mchrono.timetable for mchrono in self.mchronos]])))
+    
+    def get_trips_names(self) -> list[str]:
+        return list(set(itertools.chain.from_iterable([tt.get_trips_names() for tt in [self.mstandard_timetable] + [mchrono.timetable for mchrono in self.mchronos]])))
+    
     def save(self, directory: str) -> None:
         #prepare directories
         logger.info(f"Saving OmsiMap to directory: \"{directory}\"")

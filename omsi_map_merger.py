@@ -263,6 +263,16 @@ class OmsiMapMerger:
             if fm[mtm].global_config.worldcoordinates:
                 warn(f"[worldcoordinates] are set in \"{mtm.get_directory}\" map global.cfg. \
                      This WILL cause corruption of merged map. (This program is not capable of merging maps with set worldcoordinates.)")
+        
+        # warning about ttl, ttp, ttr names collision
+        for tt_entity_name_plural, names_list_list in [
+            ("lines (ttl)", [fm[mtm].get_time_table_line_names() for mtm in self.get_maps()]),
+            ("tracks (ttr)", [fm[mtm].get_tracks_names() for mtm in self.get_maps()]),
+            ("trips (ttp)", [fm[mtm].get_trips_names() for mtm in self.get_maps()]),
+        ]:
+            names: list[str] = list(itertools.chain.from_iterable(names_list_list))
+            if len(names) != len(set(names)):
+                warn(f"Time table {tt_entity_name_plural} names collision")
 
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()

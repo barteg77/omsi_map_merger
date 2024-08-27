@@ -73,6 +73,15 @@ class Timetable:
         self.tracks: list[nd.NamedData[track.Track]] = ttracks
         self.trips: list[nd.NamedData[trip.Trip]] = ttrips
     
+    def get_time_table_line_names(self) -> list[str]:
+        return nd.names(self.time_table_lines)
+    
+    def get_tracks_names(self) -> list[str]:
+        return nd.names(self.tracks)
+    
+    def get_trips_names(self) -> list[str]:
+        return nd.names(self.trips)
+    
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
         logger.info("Changing objects' IDs and tiles' indices in tracks.")
         for track in self.tracks:
