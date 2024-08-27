@@ -248,6 +248,10 @@ class OmsiMapMerger:
             logger.info(f"Map merge warning reported: {message}")
             warns.append(message)
         
+        # warning about empty map name
+        if new_map_name == "":
+            warn("Map name is empty")
+        
         # warning about aigroup name collision
         if self.aigroup_name_collision():
             warn("Aigroup name collision")
