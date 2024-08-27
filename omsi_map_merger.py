@@ -252,7 +252,7 @@ class OmsiMapMerger:
         if self.aigroup_name_collision():
             warn("Aigroup name collision")
         
-        fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_pure())) for mtm in self.get_maps()])
+        fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_data())) for mtm in self.get_maps()])
 
         # warning about set worldcoordinates
         for mtm in self.get_maps():

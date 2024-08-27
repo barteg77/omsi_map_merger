@@ -112,12 +112,15 @@ class ChronoSl(loader.SafeLoaderList):
         super().load()
         self.get_timetable().load()
     
-    def get_pure(self) -> Chrono:
+    def get_data(self) -> Chrono:
         if not self.ready():
             raise loader.NoDataError
-        chrono_tiles_infos: list[ChronoTileInfo] = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
-                                                   for gc_map, chrono_tile
+        chrono_tiles_infos: list[ChronoTileInfo] = [ChronoTileInfo(self.chrono_directory,
+                                                                   gc_map.pos_x,
+                                                                   gc_map.pos_y,
+                                                                   typing.cast(loader.SafeLoaderUnit[chrono_tile.ChronoTile], chrono_tile_sl).get_data())
+                                                   for gc_map, chrono_tile_sl
                                                    in zip(self.gc_map, self.chrono_tiles.get_sl_list())
-                                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
+                                                   if chrono_tile_sl.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
                                                    # only tiles with existing chrono tiles
-        return Chrono(self.chrono_directory, chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_pure())
+        return Chrono(self.chrono_directory, chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_data())

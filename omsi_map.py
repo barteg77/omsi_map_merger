@@ -138,12 +138,12 @@ class OmsiMapSl(loader.SafeLoaderList):
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
             tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), _tile_parser.parse, ofiles=tile_files))
-        self._tiles.set_data(tiles_safe_loaders)
+        self._tiles.set_sl_list(tiles_safe_loaders)
         self.scan_chrono()
     
     def empty_tiles_and_chronos(self) -> None:
-        self._tiles.set_data([])
-        self._chronos.set_data([])
+        self._tiles.set_sl_list([])
+        self._chronos.set_sl_list([])
 
     def __init__(self,
                  directory=""):
@@ -221,17 +221,17 @@ class OmsiMapSl(loader.SafeLoaderList):
 
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
-        self._chronos.set_data([chrono.ChronoSl(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
+        self._chronos.set_sl_list([chrono.ChronoSl(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
     
     def get_aigroups_names(self) -> list[str]:
         return [aigroup.name for aigroup in self.get_ailists().get_data().aigroups]
     
-    def get_pure(self) -> OmsiMap:
+    def get_data(self) -> OmsiMap:
         if not self.ready():
             raise loader.NoDataError
         return OmsiMap(self.get_global_config().get_data(),
-                       [x.get_data() for x in self.get_tiles().get_data()],
+                       [typing.cast(loader.SafeLoaderUnit[tile.Tile], tile_sl).get_data() for tile_sl in self.get_tiles().get_sl_list()],
                        self.get_omsi_files(),
-                       self.get_standard_timetable().get_pure(),
+                       self.get_standard_timetable().get_data(),
                        self.get_ailists().get_data(),
-                       [typing.cast(chrono.ChronoSl, x).get_pure() for x in self.get_chrono().get_data()])
+                       [typing.cast(chrono.ChronoSl, x).get_data() for x in self.get_chrono().get_sl_list()])

@@ -36,6 +36,7 @@ import glob
 import os
 import itertools
 import logging
+import typing
 
 logger = logging.getLogger(__name__)
 
@@ -138,31 +139,34 @@ class TimetableSl(loader.SafeLoaderList):
             self.station_links,
         ], "Timetable")
     
-    def get_pure(self) -> Timetable:
+    def get_data(self) -> Timetable:
         if not self.ready():
             raise loader.NoDataError
         
         return Timetable(self.busstops.get_data(),
                          self.station_links.get_data(),
-                         [nd.NamedData(*args) for args in zip(self.time_table_line_files, [sl.get_data() for sl in self.time_table_lines.get_data()])],
-                         [nd.NamedData(*args) for args in zip(self.track_files, [sl.get_data() for sl in self.tracks.get_data()])],
-                         [nd.NamedData(*args) for args in zip(self.trip_files, [sl.get_data() for sl in self.trips.get_data()])],
+                         [nd.NamedData(*args) for args in zip(self.time_table_line_files, [typing.cast(loader.SafeLoaderUnit[time_table_line.TimeTableLine], sl).get_data()
+                                                                                           for sl in self.time_table_lines.get_sl_list()])],
+                         [nd.NamedData(*args) for args in zip(self.track_files, [typing.cast(loader.SafeLoaderUnit[track.Track], sl).get_data()
+                                                                                 for sl in self.tracks.get_sl_list()])],
+                         [nd.NamedData(*args) for args in zip(self.trip_files, [typing.cast(loader.SafeLoaderUnit[trip.Trip],sl).get_data()
+                                                                                for sl in self.trips.get_sl_list()])],
         )
 
     
     def scan_time_table_lines(self) -> None:
         self.time_table_line_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttl"))]
-        self.time_table_lines.set_data(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(time_table_line.TimeTableLine, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, time_table_line_file), _time_table_line_parser.parse), self.time_table_line_files)))
+        self.time_table_lines.set_sl_list(list(map(lambda time_table_line_file: loader.SafeLoaderUnit(time_table_line.TimeTableLine, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, time_table_line_file), _time_table_line_parser.parse), self.time_table_line_files)))
         self.scanned_time_table_lines  = True
     
     def scan_tracks(self) -> None:
         self.track_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttr"))]
-        self.tracks.set_data(list(map(lambda track_file: loader.SafeLoaderUnit(track.Track, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, track_file), _track_parser.parse), self.track_files)))
+        self.tracks.set_sl_list(list(map(lambda track_file: loader.SafeLoaderUnit(track.Track, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, track_file), _track_parser.parse), self.track_files)))
         self.scanned_tracks = True
     
     def scan_trips(self) -> None:
         self.trip_files = [os.path.relpath(x, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME)) for x in glob.glob(os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, "*.ttp"))]
-        self.trips.set_data(list(map(lambda trip_file: loader.SafeLoaderUnit(trip.Trip, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, trip_file), _trip_parser.parse), self.trip_files)))
+        self.trips.set_sl_list(list(map(lambda trip_file: loader.SafeLoaderUnit(trip.Trip, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, trip_file), _trip_parser.parse), self.trip_files)))
         self.scanned_trips = True
     
     def load(self):

@@ -34,7 +34,7 @@ class FileParsingStatus(Enum):
     ERROR = auto()
     LOWER_MIXED = auto()
 
-class SafeLoader:
+class SafeLoader:# BASE CLASS, DO NOT INSTANTIATE
     # function self.__init__
     # function self.get_status
     # function self.get_data
@@ -43,15 +43,14 @@ class SafeLoader:
     # function self.info_detailed
     # self.object_specific_actions ????
     
-
     def __init__(self, ofiles: omsi_files.OmsiFiles) -> None:
         self.__omsi_files: omsi_files.OmsiFiles = ofiles
     
     def get_status(self) -> FileParsingStatus:
         raise NotImplementedError()
     
-    def get_data(self):
-        raise NotImplementedError()
+    #def get_data(self):
+    #    raise NotImplementedError()
     
     def get_omsi_files(self) -> omsi_files.OmsiFiles:
         return self.__omsi_files
@@ -182,11 +181,11 @@ class SafeLoaderList(SafeLoader):
     def get_name(self) -> str:
         return self.__name
     
-    def get_data(self) -> list[SafeLoader]:
+    def get_sl_list(self) -> list[SafeLoader]:
         return self.__lower_safe_loaders
     
-    def set_data(self, new_data: list[SafeLoader]) -> None:
-        self.__lower_safe_loaders = new_data
+    def set_sl_list(self, new_list: list[SafeLoader]) -> None:
+        self.__lower_safe_loaders = new_list
     
     def load(self) -> None:
         for sl in self.__lower_safe_loaders:
@@ -196,4 +195,4 @@ class SafeLoaderList(SafeLoader):
         return "list of SafeLoaders\n" + self.omsi_files_info()
     
     def ready(self) -> bool:
-        return all([sl.ready() for sl in self.get_data()])
+        return all([sl.ready() for sl in self.get_sl_list()])

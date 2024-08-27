@@ -138,7 +138,7 @@ class MapLoadingInteractionManager:
 
         def add_safe_loader_list(parent_component, loader_list: loader.SafeLoaderList):
             add_to_tree(parent_component, loader_list, loader_list.get_name(), "list", loader_list.info_short(), str(loader_list.ready()))
-            for loader in loader_list.get_data():
+            for loader in loader_list.get_sl_list():
                 add_safe_loader(loader_list, loader)
         
         for map_to_merge in self.__omsi_map_merger.get_maps():
