@@ -86,7 +86,6 @@ class ChronoSl(loader.SafeLoaderList):
         self.gc_map: list[global_config.Map] = gc_map
         self.chrono_translations = omsi_files.OmsiFiles()
         self.chrono_tiles: loader.SafeLoaderList = loader.SafeLoaderList(list(map(lambda tile: loader.SafeLoaderUnit(chrono_tile.ChronoTile, os.path.join(map_directory, self.chrono_directory, tile.map_file), _chrono_tile_parser.parse, optional=True), self.gc_map)), "Chrono tiles")
-        self.chrono_tiles_infos: list[ChronoTileInfo] = [] # only tiles with chrono tile
         self.timetable: timetable.TimetableSl = timetable.TimetableSl(os.path.join(self.map_directory, self.chrono_directory))
         super().__init__([self.chrono_tiles],
                          self.chrono_directory,
@@ -116,8 +115,9 @@ class ChronoSl(loader.SafeLoaderList):
     def get_pure(self) -> Chrono:
         if not self.ready():
             raise loader.NoDataError
-        self.chrono_tiles_infos = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
-                                   for gc_map, chrono_tile
-                                   in zip(self.gc_map, self.chrono_tiles.get_data())
-                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
-        return Chrono(self.chrono_directory, self.chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_pure())
+        chrono_tiles_infos: list[ChronoTileInfo] = [ChronoTileInfo(self.chrono_directory, gc_map.pos_x, gc_map.pos_y, chrono_tile.get_data())
+                                                   for gc_map, chrono_tile
+                                                   in zip(self.gc_map, self.chrono_tiles.get_sl_list())
+                                                   if chrono_tile.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS]
+                                                   # only tiles with existing chrono tiles
+        return Chrono(self.chrono_directory, chrono_tiles_infos, self.get_omsi_files(), self.get_timetable().get_pure())
