@@ -48,7 +48,7 @@ STATION_LINK_GROUP_LIST: STATION_LINK_GROUP
 
 terminals
 split_line: /---------------------------\n/;
-time_table_station_links_list_file: /Time Table StnLinkList File\n/;
+time_table_station_links_list_file: "Time Table StnLinkList File\n";
 line_end: /\n/;
 normal_line: /[^\n][^\r\n]*/;
 station_link_entry_group_header: /\[StnLink_entry\]\n/;

@@ -63,4 +63,5 @@ class StationLinksParser:
     def parse(self, file_name):
         with open(file_name, encoding="iso-8859-1") as f:
             content = f.read()
-        return self.parser.parse(content)[0]
+        tree = self.parser.parse(content).get_first_tree()
+        return self.parser.call_actions(tree)

@@ -60,12 +60,12 @@ LINES: OPTIONAL_LINE
 
 terminals
 split_line: /-----------------------\n/;
-time_table_trip_file: /Time Table Trip File\n/;
+time_table_trip_file: "Time Table Trip File\n";
 line_end: /\n/;
 normal_line: /[^\n][^\r\n]*/;
 trip_header: /\[trip\]\n/;
 dot_split_line: /\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\n/;
-stations: /        Stations\n/;
+stations: "        Stations\n";
 station_typ2_header: /\[station_typ2\]\n/;
 station_header: /\[station\]\n/;
-profiles: /        Profiles\n/;
+profiles: "        Profiles\n";

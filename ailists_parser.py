@@ -17,6 +17,7 @@
 
 import parglare
 import charset_normalizer
+import parglare.trees
 import ailists
 import os
 import logging
@@ -56,4 +57,5 @@ class AIListsParser():
         best_match = charset_normalizer.from_path(file_name).best()
         content: str = '\n'.join(str(best_match).splitlines())
         logger.debug(f"Decoded ailists: {repr(content)}")
-        return self.parser.parse(content)[0]
+        tree = self.parser.parse(content).get_first_tree()
+        return self.parser.call_actions(tree)

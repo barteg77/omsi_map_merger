@@ -36,6 +36,6 @@ TRACK_ENTRY_GROUP_LIST: TRACK_ENTRY_GROUP
 terminals
 split_line: /-----------------------\n/;
 normal_line: /[^[\n][^\r\n]*/;
-time_table_track_file: /Time Table Track File\n/;
+time_table_track_file: "Time Table Track File\n";
 line_end: /\n/;
 track_entry_header: /\[track_entry\]\n/;

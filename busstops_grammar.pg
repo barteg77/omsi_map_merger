@@ -41,7 +41,7 @@ BUSSTOP_GROUP_LIST: BUSSTOP_GROUP
 
 terminals
 split_line: /---------------------------\n/;
-time_table_busstop_list_file: /Time Table BusStopList File\n/;
+time_table_busstop_list_file: "Time Table BusStopList File\n";
 line_end: /\n/;
 normal_line: /[^\n][^\r\n]*/;
 busstop_header: /\[busstop\]\n/;

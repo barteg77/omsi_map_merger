@@ -79,4 +79,5 @@ class ChronoTileParser():
     def parse(self, file_name):
         with open(file_name, encoding="utf_16_le") as f:
             content = f.read()
-        return self.parser.parse(content)[0]
+        tree = self.parser.parse(content).get_first_tree()
+        return self.parser.call_actions(tree)

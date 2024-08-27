@@ -55,7 +55,7 @@ OPTIONAL_LINE: line_end
 
 terminals
 split_line: /-----------------------\n/;
-time_table: /Time Table Line File\n/;
+time_table: "Time Table Line File\n";
 line_end: /\n/;
 normal_line: /[^\n][^\r\n]*/;
 userallowed_header: /\[userallowed\]\n/;
