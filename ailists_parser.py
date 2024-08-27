@@ -1,4 +1,4 @@
-# Copyright 2020, 2021 Bartosz Gajewski
+# Copyright 2020, 2021, 2024 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -16,9 +16,12 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 import parglare
-from charset_normalizer import CharsetNormalizerMatches as CnM
+import charset_normalizer
 import ailists
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AIListsParser():
     actions = {
@@ -50,5 +53,7 @@ class AIListsParser():
                                          actions=self.actions,
                                          ws="\r")
     def parse(self, file_name):
-        content = str(CnM.from_path(file_name).best().first())
+        best_match = charset_normalizer.from_path(file_name).best()
+        content: str = '\n'.join(str(best_match).splitlines())
+        logger.debug(f"Decoded ailists: {repr(content)}")
         return self.parser.parse(content)[0]
