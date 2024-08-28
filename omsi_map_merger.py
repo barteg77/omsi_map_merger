@@ -70,6 +70,9 @@ class MapToMerge(omsi_map.OmsiMapSl):
     def __str__(self) -> str:
         return self.directory
     
+    def __repr__(self) -> str:
+        return self.directory
+    
     def get_shift_x(self) -> int:
         return self.shift_x
     
@@ -277,6 +280,14 @@ class OmsiMapMerger:
         idcode_shift: dict[MapToMerge, int] = self.merged_idcodes_shifts()
         tile_shift: dict[MapToMerge, int] = self.merged_tiles_indices_shift()
         groundtex_shift: dict[MapToMerge, int] = self.merged_groundtex_shift()
+        
+        # print shifts debug log
+        for name, shift_dict in [
+            ("IDCode",idcode_shift),
+            ("Tile", tile_shift),
+            ("Groundtex", groundtex_shift),
+        ]:
+            logger.debug(f"Calculated {name} shift: {shift_dict}")
 
         comment: str = f"File created with OMSI Map Merger {version.version}"
 
@@ -323,6 +334,8 @@ class OmsiMapMerger:
         
         # prepare tiles for merged map
         tiles: list[tile.Tile] = list(itertools.chain.from_iterable([fm[mtm].tiles for mtm in self.get_maps()]))
+        for map_tile, gc_tile in zip(tiles, gc_tiles):
+            map_tile.set_files_pos(gc_tile.pos_x, gc_tile.pos_y)
         
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
                                                     tiles,
