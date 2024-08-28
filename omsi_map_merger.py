@@ -321,6 +321,7 @@ class OmsiMapMerger:
             fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
             fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
         
+        # prepare tiles for merged map
         tiles: list[tile.Tile] = list(itertools.chain.from_iterable([fm[mtm].tiles for mtm in self.get_maps()]))
         
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,

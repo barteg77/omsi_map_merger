@@ -116,6 +116,18 @@ class OmsiMap:
         for chrono in self.mchronos:
             chrono.save(directory)
         logger.info("Map saving completed")
+
+class TileOFInjector:
+    def __init__(self,
+                 parser: typing.Callable[[str], tile.Tile],
+                 of: omsi_files.OmsiFiles) -> None:
+        self.parser: typing.Callable[[str], tile.Tile] = parser
+        self.of: omsi_files.OmsiFiles = of
+    
+    def parse(self, path: str) -> tile.Tile:
+        parsed_tile: tile.Tile = self.parser(path)
+        parsed_tile._files = self.of
+        return parsed_tile
     
 class OmsiMapSl(loader.SafeLoaderList):
     def set_tiles_and_chronos_gc_consistent(self) -> None:
@@ -146,7 +158,7 @@ class OmsiMapSl(loader.SafeLoaderList):
                                       params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": str(groundtex_index)},
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
-            tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), _tile_parser.parse, ofiles=tile_files))
+            tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), TileOFInjector(_tile_parser.parse, tile_files).parse , ofiles=tile_files))
         self._tiles.set_sl_list(tiles_safe_loaders)
         self.scan_chrono()
     
