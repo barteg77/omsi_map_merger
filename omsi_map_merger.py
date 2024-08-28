@@ -217,7 +217,7 @@ class OmsiMapMerger:
         return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping() and len(self.get_maps()) >= 2
     
     def merged_gc_groundtex(self) -> list[global_config.GroundTex]:
-        assert not self.get_maps()[0].get_keep_groundtex() # to do: blokada w gui
+        assert not self.get_maps()[0].get_keep_groundtex()
         groundtex: list[global_config.GroundTex] = [self.get_maps()[0].get_global_config().get_data().groundtex[0]]
         for mtm in self.get_maps():
             all_groundtex: list[global_config.GroundTex] = mtm.get_global_config().get_data().groundtex
