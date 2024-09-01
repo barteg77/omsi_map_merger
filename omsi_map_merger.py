@@ -173,12 +173,6 @@ class MergeResult:
 class OmsiMapMerger:
     def __init__(self) -> None:
         self.__maps: list[MapToMerge] = []
-        for test_map in [
-            "/home/bartek/OMSI 2/maps/Podmiejska/",
-            "/home/bartek/OMSI 2/maps/MZK Kydczice/",#;)
-            "/home/bartek/Downloads/omsi/Städtedreieck21/OMSI 2/maps/Städtedreieck21/",
-        ]:
-            self.append_map(test_map)
     
     def get_maps(self) -> list[MapToMerge]:
         return self.__maps
@@ -332,6 +326,17 @@ class OmsiMapMerger:
         for mtm in self.get_maps():
             fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
             fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
+            # add full covered groundtex if keep groundex
+            if mtm.get_keep_groundtex():
+                for map_tile, gc_tile in zip(fm[mtm].tiles, fm[mtm].global_config._map):
+                    full_covered_groundtex_file:omsi_files.OmsiFile = \
+                        omsi_files.OmsiFile(map_path=os.path.dirname(os.path.abspath(__file__)),
+                        pattern="texture/map/tile_{pos_x}_{pos_y}.map.{groundtex_index}.dds",
+                        params={"pos_x": "0", "pos_y": "0", "groundtex_index": "0"})
+                    full_covered_groundtex_file.params['pos_x'] = gc_tile.pos_x
+                    full_covered_groundtex_file.params['pos_y'] = gc_tile.pos_y
+                    full_covered_groundtex_file.params['groundtex_index'] = str(groundtex_shift[mtm])
+                    map_tile._files.add(full_covered_groundtex_file)
         
         # prepare tiles for merged map
         tiles: list[tile.Tile] = list(itertools.chain.from_iterable([fm[mtm].tiles for mtm in self.get_maps()]))
