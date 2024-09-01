@@ -20,6 +20,7 @@ import global_config
 import tile
 import ailists
 import timetable
+import omsi_files
 import os
 import typing
 import itertools
