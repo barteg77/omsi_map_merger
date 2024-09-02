@@ -32,8 +32,8 @@ def run_explorer_windows(select_file: pathlib.Path) -> None:
     if windir is None:
         raise FENFError("env. var. 'WINDIR' doesn't exists")
     else:# windir is string for sure
-        explorer_path: pathlib.Path = pathlib.Path(os.getenv(windir)) / 'explorer.exe' # type: ignore
-        subprocess.run([str(explorer_path), '/select', str(select_file)])
+        explorer_path: pathlib.Path = pathlib.Path(windir) / 'explorer.exe' # type: ignore
+        subprocess.run([str(explorer_path), f'/select,{select_file}'])
 
 def run_explorer_sel(selected_path: pathlib.Path) -> None:
     assert supported()
