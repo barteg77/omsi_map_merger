@@ -18,7 +18,7 @@
 import tile
 class TileSerializer:
     def serialize(self, tile_class, file_name):
-        with open(file_name, 'w', encoding='utf_16_le', newline='\r\n') as f:
+        with open(file_name, 'w', encoding='utf_16', newline='\r\n') as f:
             self.serialize_(tile_class, f)
 
     def serialize_(self, tile_class, f):

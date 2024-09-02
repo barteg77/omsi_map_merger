@@ -225,7 +225,8 @@ class OmsiMapMerger:
         for mtm in self.get_maps():
             all_groundtex_ct: int = len(mtm.get_global_config().get_data().groundtex)
             kept_groundtex_ct: int = all_groundtex_ct if mtm.get_keep_groundtex() else all_groundtex_ct-1
-            groundtex_shifts_sequentially.append(groundtex_shifts_sequentially[-1] + kept_groundtex_ct)
+            groundtex_shifts_sequentially.append(groundtex_shifts_sequentially[-1] + kept_groundtex_ct + 1)# +1 for 0th groundtex (below)
+            # [groundtex] entry for 0th groundtex in global.cfg is created, even if keep groundtex is False (always is)
         return dict(zip(self.get_maps(), groundtex_shifts_sequentially))
     
     def merged_idcodes_shifts(self) -> dict[MapToMerge, int]:
