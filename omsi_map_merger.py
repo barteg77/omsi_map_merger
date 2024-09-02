@@ -215,9 +215,12 @@ class OmsiMapMerger:
         assert not self.get_maps()[0].get_keep_groundtex()
         groundtex: list[global_config.GroundTex] = [self.get_maps()[0].get_global_config().get_data().groundtex[0]]
         for mtm in self.get_maps():
-            all_groundtex: list[global_config.GroundTex] = mtm.get_global_config().get_data().groundtex
-            groundtex_to_copy: list[global_config.GroundTex] = all_groundtex if mtm.get_keep_groundtex() else all_groundtex[1:]
-            groundtex += groundtex_to_copy
+            if mtm.get_keep_groundtex():
+                main_groundtex: global_config.GroundTex = copy.deepcopy(mtm.get_global_config().get_data().groundtex[0])
+                main_groundtex.num1 = '3' # indicates resolution of fully covered groundtex
+                groundtex.append(main_groundtex)
+            groundtex += mtm.get_global_config().get_data().groundtex[1:]
+            
         return groundtex
     
     def merged_groundtex_shift(self) -> dict[MapToMerge, int]:
