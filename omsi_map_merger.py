@@ -347,11 +347,22 @@ class OmsiMapMerger:
         for map_tile, gc_tile in zip(tiles, gc_tiles):
             map_tile.set_files_pos(gc_tile.pos_x, gc_tile.pos_y)
         
+        # prepare ailists
+        all_aigroups: list[ailists.AnyAIgroup] = list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))
+        def first_aigroup(name: str) -> ailists.AnyAIgroup:
+            for aigroup in all_aigroups:
+                if aigroup.name == name:
+                    return aigroup
+            assert False
+        aigroups_without_duplicates: list[ailists.AnyAIgroup] = [first_aigroup(name) for name in set(itertools.chain.from_iterable([[aig.name for aig in fm[mtm].ailists.aigroups] for mtm in self.get_maps()]))]
+        new_ailists: ailists.AILists = ailists.AILists(aigroups_without_duplicates)
+
+        #construct OmsiMap
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
                                                     tiles,
                                                     fm[self.get_maps()[0]].mfiles,
                                                     timetable.joined([fm[mtm].mstandard_timetable for mtm in self.get_maps()]),
-                                                    ailists.AILists(list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))),
+                                                    new_ailists,
                                                     list(itertools.chain.from_iterable([fm[mtm].mchronos for mtm in self.get_maps()])),
                                                     )
         logger.info("Maps merge completed")
