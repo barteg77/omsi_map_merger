@@ -18,6 +18,7 @@
 import parglare
 import tile
 import os
+import file_decoder
 
 class TileParser():
     actions = {
@@ -187,6 +188,4 @@ class TileParser():
                                          actions=self.actions,
                                          ws="\r")
     def parse(self, file_name):
-        with open(file_name, encoding="utf_16") as f:
-            content = f.read()
-        return self.parser.parse(content)[0]
+        return self.parser.parse(file_decoder.decoded(file_name, ['utf_16', 'ascii']))[0]
