@@ -445,6 +445,8 @@ try:
             pass
         else:
             logger.error("GUI event not handled")
+except KeyboardInterrupt:
+    logger.info("Keaboard interruption occured, program will be terminated")
 except:
     fe: str = traceback.format_exc()
     logger.fatal("Unhandled exception:\n" + fe)
