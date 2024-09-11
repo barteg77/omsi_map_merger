@@ -22,13 +22,9 @@ block_cipher = None
 import os
 import importlib
 
-dragonmapper_root = os.path.dirname(importlib.import_module('dragonmapper').__file__)
-charset_normalizer_root = os.path.dirname(importlib.import_module('charset_normalizer').__file__)
-
 a = Analysis(['starter_loader.py'],
              pathex=['.'],
-             binaries=[('gplv3-with-text-136x68.png', '.'),
-                       ('texture/map/tile_0_0.map.0.dds', 'texture/map/')
+             binaries=[('texture/map/tile_0_0.map.0.dds', 'texture/map/')
                        ],
              datas=[('ailists_grammar.pg', '.'),
                     ('busstops_grammar.pg', '.'),
@@ -45,10 +41,6 @@ a = Analysis(['starter_loader.py'],
                     ('LICENSE_PySimpleGUI.txt', '.'),
                     ('LICENSE_Python.txt', '.'),
                     ('CREDITS.md', '.'),
-                    (os.path.join(dragonmapper_root, 'data/transcriptions.csv'), 'dragonmapper/data/'),
-                    (os.path.join(dragonmapper_root, 'data/hanzi_pinyin_words.tsv'), 'dragonmapper/data/'),
-                    (os.path.join(dragonmapper_root, 'data/hanzi_pinyin_characters.tsv'), 'dragonmapper/data/'),
-                    (os.path.join(charset_normalizer_root, 'assets/frequencies.json'), 'charset_normalizer/assets/')
                     ],
              hiddenimports=[],
              hookspath=[],
