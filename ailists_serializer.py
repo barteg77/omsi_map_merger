@@ -16,7 +16,6 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 import ailists
-import pprint
 
 class AIListsSerializer:
     def serialize(self, ailists_class, file_name):
