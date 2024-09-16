@@ -37,8 +37,23 @@ Write-Output "Will pack OMSI Map Merger $ommVersion"
 # Create executable with PyInstaller
 pyinstaller "$sourcesDir\starter_loader.spec"
 deactivate
+$distDir = Join-Path -Path $buildPwd -ChildPath "dist\omsi_map_merger"
+
+# Copy user information Files
+$userInfoFiles = @(
+	"LICENSE.txt",
+	"LICENSE_charset_normalizer.txt",
+	"LICENSE_Parglare.txt",
+	"LICENSE_PySimpleGUI.txt",
+	"LICENSE_Python.txt",
+	"CREDITS.md"
+)
+foreach ($file in $userInfoFiles) {
+	$filePath = Join-Path -Path $sourcesDir -ChildPath $file
+	Write-Output "Copying file $filePath to dist directory $distDir"
+	Copy-Item -Path $filePath -Destination $distDir -ErrorAction Stop
+}
 
 # Create zip package with 7-Zip
-$distDir = Join-Path -Path $buildPwd -ChildPath "dist\omsi_map_merger"
 & "C:\Program Files\7-Zip\7z.exe" a "omsi_map_merger_$ommVersion.zip" $distDir
 Set-Location -Path $startPwd
