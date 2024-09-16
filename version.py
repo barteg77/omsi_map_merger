@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-version = "1.wip.1"
+version = "1.1"
