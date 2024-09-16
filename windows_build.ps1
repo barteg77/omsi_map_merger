@@ -46,7 +46,9 @@ $userInfoFiles = @(
 	"LICENSE_Parglare.txt",
 	"LICENSE_PySimpleGUI.txt",
 	"LICENSE_Python.txt",
-	"CREDITS.md"
+	"CREDITS.md",
+	"MANUAL_en.md",
+	"MANUAL_pl.md"
 )
 foreach ($file in $userInfoFiles) {
 	$filePath = Join-Path -Path $sourcesDir -ChildPath $file
