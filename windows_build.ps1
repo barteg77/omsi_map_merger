@@ -73,6 +73,15 @@ foreach ($file in $userInfoFiles) {
 	Copy-Item -Path $filePath -Destination $distDir -ErrorAction Stop
 }
 
+# Append build info
+Set-Location -Path $sourcesDir
+$branch = git branch --show-current
+$commit = git rev-parse HEAD
+Set-Location -Path $buildPwd
+$buildInfo = "Built on $datetime, version $ommVersion, branch $branch, commit $commit"
+$buildInfoPath = Join-Path -Path $distDir -ChildPath build_info.txt
+Out-File -FilePath $buildInfoPath -InputObject $buildInfo
+
 # Create zip package with 7-Zip
 & "C:\Program Files\7-Zip\7z.exe" a "omsi_map_merger_$ommVersion.zip" $distDir
 Set-Location -Path $startPwd
