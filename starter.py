@@ -171,7 +171,8 @@ class MapLoadingInteractionManager:
     
     def __handle_remove(self) -> None:
         self.__omsi_map_merger.remove_map(self.__omsi_map_merger.get_maps().index(self.__get_selected_map_component()))
-        self.__omsi_map_merger.get_maps()[0].set_keep_groundtex(False)
+        if len(self.__omsi_map_merger.get_maps()) > 0:
+            self.__omsi_map_merger.get_maps()[0].set_keep_groundtex(False)
         self.__update_tree()
         #self.__button_remove.update(disabled=True)
     
