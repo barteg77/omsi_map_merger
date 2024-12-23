@@ -1,0 +1,105 @@
+# Copyright 2024 Bartosz Gajewski
+#
+# This file is part of OMSI Map Merger.
+#
+# OMSI Map Merger is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# OMSI Map Merger is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
+
+name: Run Tests and Build Package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
+      
+      - name: Install build stuff
+        run: |
+          pip install pyinstaller
+          choco install git -y
+          choco install 7zip -y
+
+      - name: Build executable
+        shell: pwsh
+        run: |
+          $ommVersion = python -c "import version; print(version.version)"
+          echo "ommVersion=$ommVersion" >> $GITHUB_ENV
+          $buildDir = "C:\output\"
+          if (-Not (Test-Path -Path $buildDir)) {
+            New-Item -ItemType Directory -Path $buildDir
+          }
+          $distDir = Join-Path -Path $buildDir -ChildPath "dist\omsi_map_merger"
+          Write-Output "Will pack OMSI Map Merger $ommVersion"
+          pyinstaller starter_loader.spec --distpath $distDir
+      
+      - name: Copy user information files
+        shell: pwsh
+        run: |
+          $userInfoFiles = @(
+            "LICENSE.txt",
+            "LICENSE_charset_normalizer.txt",
+            "LICENSE_Parglare.txt",
+            "LICENSE_PySimpleGUI.txt",
+            "LICENSE_Python.txt",
+            "CREDITS.md",
+            "MANUAL_en.md",
+            "MANUAL_pl.md"
+          )
+          foreach ($file in $userInfoFiles) {
+            Write-Output "Copying file $file to dist directory $distDir"
+            Copy-Item -Path $file -Destination $distDir -ErrorAction Stop
+          }
+      
+      - name: Append build info
+        shell: pwsh
+        run: |
+          $datetime = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+          $branch = git rev-parse --abbrev-ref HEAD
+          $commit = git rev-parse HEAD
+          $buildInfo = "Built on $datetime, version $env:ommVersion, branch $branch, commit $commit"
+          $buildInfoPath = Join-Path -Path $distDir -ChildPath build_info.txt
+          Out-File -FilePath $buildInfoPath -InputObject $buildInfo
+      
+      - name: Zip package
+        shell: pwsh
+        run:
+          7z a "$buildDir\omsi_map_merger_$env:ommVersion.zip" "$distDir\*"
+
+      - name: Upload Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: "$buildDir\omsi_map_merger_$env:ommVersion.zip"
