@@ -20,7 +20,8 @@ name: Run Tests and Build Package
 on:
   push:
     branches:
-      - dev/workflow
+      - main
+      - dev/*
   pull_request:
     branches:
       - main
@@ -50,7 +51,6 @@ jobs:
         run: |
           pip install pyinstaller
           choco install git -y
-          choco install 7zip -y
 
       - name: Build executable
         shell: pwsh
@@ -59,14 +59,14 @@ jobs:
           echo "ommVersion=$ommVersion" >> $env:GITHUB_ENV
           $buildDir = "C:\output\"
           echo "buildDir=$buildDir" >> $env:GITHUB_ENV
-          $distDir = Join-Path -Path $buildDir -ChildPath "dist\omsi_map_merger"
+          $distDir = Join-Path -Path $buildDir -ChildPath "omsi_map_merger"
           echo "distDir=$distDir" >> $env:GITHUB_ENV
+          
           if (-Not (Test-Path -Path $buildDir)) {
             New-Item -ItemType Directory -Path $buildDir
           }
           Write-Output "Will pack OMSI Map Merger $ommVersion"
-          pyinstaller starter_loader.spec --distpath $distDir
-          echo "GITHUB_ENV $env:GITHUB_ENV"
+          pyinstaller starter_loader.spec --distpath $buildDir
       
       - name: Copy user information files
         shell: pwsh
@@ -95,14 +95,9 @@ jobs:
           $buildInfo = "Built on $datetime, version $env:ommVersion, branch $branch, commit $commit"
           $buildInfoPath = Join-Path -Path $env:distDir -ChildPath build_info.txt
           Out-File -FilePath $buildInfoPath -InputObject $buildInfo
-      
-      - name: Zip package
-        shell: pwsh
-        run:
-          7z a "$env:buildDir\omsi_map_merger_$env:ommVersion.zip" "$env:distDir\*"
 
       - name: Upload Package
         uses: actions/upload-artifact@v4
         with:
-          name: package
-          path: "${{ env.buildDir }}omsi_map_merger_${{ env.ommVersion }}.zip"
+          name: "omsi_map_merger_${{ env.ommVersion }}"
+          path: "${{ env.buildDir }}omsi_map_merger"
