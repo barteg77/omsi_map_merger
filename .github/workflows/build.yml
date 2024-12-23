@@ -67,7 +67,6 @@ jobs:
           Write-Output "Will pack OMSI Map Merger $ommVersion"
           pyinstaller starter_loader.spec --distpath $distDir
           echo "GITHUB_ENV $env:GITHUB_ENV"
-          cat "env:$GITHUB_ENV"
       
       - name: Copy user information files
         shell: pwsh
