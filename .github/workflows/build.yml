@@ -58,10 +58,12 @@ jobs:
           $ommVersion = python -c "import version; print(version.version)"
           echo "ommVersion=$ommVersion" >> $GITHUB_ENV
           $buildDir = "C:\output\"
+          echo "buildDir=$buildDir" >> $GITHUB_ENV
+          $distDir = Join-Path -Path $buildDir -ChildPath "dist\omsi_map_merger"
+          echo "distDir=$distDir" >> $GITHUB_ENV
           if (-Not (Test-Path -Path $buildDir)) {
             New-Item -ItemType Directory -Path $buildDir
           }
-          $distDir = Join-Path -Path $buildDir -ChildPath "dist\omsi_map_merger"
           Write-Output "Will pack OMSI Map Merger $ommVersion"
           pyinstaller starter_loader.spec --distpath $distDir
       
@@ -79,8 +81,8 @@ jobs:
             "MANUAL_pl.md"
           )
           foreach ($file in $userInfoFiles) {
-            Write-Output "Copying file $file to dist directory $distDir"
-            Copy-Item -Path $file -Destination $distDir -ErrorAction Stop
+            Write-Output "Copying file $file to dist directory $env:distDir"
+            Copy-Item -Path $file -Destination $env:distDir -ErrorAction Stop
           }
       
       - name: Append build info
@@ -90,16 +92,16 @@ jobs:
           $branch = git rev-parse --abbrev-ref HEAD
           $commit = git rev-parse HEAD
           $buildInfo = "Built on $datetime, version $env:ommVersion, branch $branch, commit $commit"
-          $buildInfoPath = Join-Path -Path $distDir -ChildPath build_info.txt
+          $buildInfoPath = Join-Path -Path $env:distDir -ChildPath build_info.txt
           Out-File -FilePath $buildInfoPath -InputObject $buildInfo
       
       - name: Zip package
         shell: pwsh
         run:
-          7z a "$buildDir\omsi_map_merger_$env:ommVersion.zip" "$distDir\*"
+          7z a "$env:buildDir\omsi_map_merger_$env:ommVersion.zip" "$env:distDir\*"
 
       - name: Upload Package
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: "$buildDir\omsi_map_merger_$env:ommVersion.zip"
+          path: "${{ env.buildDir }}omsi_map_merger_${{ env.ommVersion }}.zip"
