@@ -56,18 +56,18 @@ jobs:
         shell: pwsh
         run: |
           $ommVersion = python -c "import version; print(version.version)"
-          echo "ommVersion=$ommVersion" >> $GITHUB_ENV
+          echo "ommVersion=$ommVersion" >> $env:GITHUB_ENV
           $buildDir = "C:\output\"
-          echo "buildDir=$buildDir" >> $GITHUB_ENV
+          echo "buildDir=$buildDir" >> $env:GITHUB_ENV
           $distDir = Join-Path -Path $buildDir -ChildPath "dist\omsi_map_merger"
-          echo "distDir=$distDir" >> $GITHUB_ENV
+          echo "distDir=$distDir" >> $env:GITHUB_ENV
           if (-Not (Test-Path -Path $buildDir)) {
             New-Item -ItemType Directory -Path $buildDir
           }
           Write-Output "Will pack OMSI Map Merger $ommVersion"
           pyinstaller starter_loader.spec --distpath $distDir
-          echo "$GITHUB_ENV"
-          cat "$GITHUB_ENV"
+          echo "GITHUB_ENV $env:GITHUB_ENV"
+          cat "env:$GITHUB_ENV"
       
       - name: Copy user information files
         shell: pwsh
