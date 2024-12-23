@@ -100,4 +100,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "omsi_map_merger_${{ env.ommVersion }}"
-          path: "${{ env.buildDir }}omsi_map_merger"
+          path: "${{ env.buildDir }}"
