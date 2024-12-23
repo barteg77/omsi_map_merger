@@ -20,7 +20,7 @@ name: Run Tests and Build Package
 on:
   push:
     branches:
-      - main
+      - dev/workflow
   pull_request:
     branches:
       - main
@@ -66,6 +66,8 @@ jobs:
           }
           Write-Output "Will pack OMSI Map Merger $ommVersion"
           pyinstaller starter_loader.spec --distpath $distDir
+          echo "$GITHUB_ENV"
+          cat "$GITHUB_ENV"
       
       - name: Copy user information files
         shell: pwsh
