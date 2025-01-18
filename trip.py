@@ -53,6 +53,7 @@ class Trip:
                  line1,
                  line2,
                  line3,
+                 trainreverse: bool,
                  station: list[Station] | list[StationTyp2],
                  lines=None,
                  ):
@@ -61,6 +62,7 @@ class Trip:
         self.line1 = line1
         self.line2 = line2
         self.line3 = line3
+        self.trainreverse: bool = trainreverse
         self.station: list[Station] | list[StationTyp2] = station
         self.lines = lines
     

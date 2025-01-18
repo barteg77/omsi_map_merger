@@ -35,6 +35,9 @@ class TripSerializer:
         print(trip_object.line2, file=f)
         print(trip_object.line3, file=f)
         print(file=f)
+        if trip_object.trainreverse:
+            print("[trainreverse]", file=f)
+            print(file=f)
         print(".........................", file=f)
         print("        Stations", file=f)
         print(".........................", file=f)

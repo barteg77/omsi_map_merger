@@ -1,4 +1,4 @@
-// Copyright 2020 Bartosz Gajewski
+// Copyright 2020, 2024 Bartosz Gajewski
 //
 // This file is part of OMSI Map Merger.
 //
@@ -27,6 +27,7 @@ TRIP: split_line
       OPTIONAL_LINE
       OPTIONAL_LINE
       line_end
+      TRAINREVERSE_GROUP?
       dot_split_line
       stations
       dot_split_line
@@ -40,6 +41,8 @@ TRIP: split_line
       LINES?;
 
 NONEMPTY_LINE: normal_line line_end;
+TRAINREVERSE_GROUP: trainreverse_header
+                    line_end;
 STATION_TYP2_GROUP: station_typ2_header
                     NONEMPTY_LINE
                     line_end;
@@ -65,6 +68,7 @@ line_end: /\n/;
 normal_line: /[^\n][^\r\n]*/;
 trip_header: /\[trip\]\n/;
 dot_split_line: /\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\n/;
+trainreverse_header: /\[trainreverse\]\n/;
 stations: /        Stations\n/;
 station_typ2_header: /\[station_typ2\]\n/;
 station_header: /\[station\]\n/;
