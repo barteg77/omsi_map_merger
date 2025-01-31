@@ -1,4 +1,4 @@
-# Copyright 2023, 2024 Bartosz Gajewski
+# Copyright 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -18,6 +18,7 @@
 from enum import Enum, auto
 import typing
 import os.path
+import textwrap
 import omsi_files
 import traceback
 import logging
@@ -72,6 +73,9 @@ class SafeLoader:# BASE CLASS, DO NOT INSTANTIATE
         raise NotImplementedError()
     
     def ready(self) -> bool:
+        raise NotImplementedError
+    
+    def not_ready_list(self) -> str:
         raise NotImplementedError
 
 class SafeLoaderUnit[T](SafeLoader):
@@ -155,6 +159,12 @@ class SafeLoaderUnit[T](SafeLoader):
     def ready(self) -> bool:
         return self.get_status() in [FileParsingStatus.READ_SUCCESS, FileParsingStatus.OPTIONAL_NOT_EXISTS]
     
+    def not_ready_list(self) -> str:
+        ret= f"{self.get_name()} {self.info_short()}{f"\n{textwrap.indent(str(self.__exception), "  ")}"}" if not self.ready() else ""
+        if ret:
+            print(ret)
+        return ret
+    
 class SafeLoaderList(SafeLoader):
     def __init__(self,
                  sl_list: list[SafeLoader],
@@ -196,3 +206,11 @@ class SafeLoaderList(SafeLoader):
     
     def ready(self) -> bool:
         return all([sl.ready() for sl in self.get_sl_list()])
+    
+    def not_ready_list(self) -> str:
+        subloaders_not_ready: list[str] = [sl_desc for sl in self.get_sl_list() if ((sl_desc := sl.not_ready_list()) != "")]
+        if len(subloaders_not_ready) == 0:
+            return ""
+        else:
+            subloaders_summary: str = '\n'.join(subloaders_not_ready)
+            return f"{self.get_name()} {self.info_short()}:\n{textwrap.indent(subloaders_summary, "  ")}"

@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -249,7 +249,7 @@ class OmsiMapSl(loader.SafeLoaderList):
     
     def get_data(self) -> OmsiMap:
         if not self.ready():
-            raise loader.NoDataError
+            raise loader.NoDataError(f"Not whole map loaded...:\n{self.not_ready_list()}")
         return OmsiMap(self.get_global_config().get_data(),
                        [typing.cast(loader.SafeLoaderUnit[tile.Tile], tile_sl).get_data() for tile_sl in self.get_tiles().get_sl_list()],
                        self.get_omsi_files(),
