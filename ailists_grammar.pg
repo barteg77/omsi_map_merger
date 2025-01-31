@@ -1,4 +1,4 @@
-// Copyright 2020 Bartosz Gajewski
+// Copyright 2020, 2025 Bartosz Gajewski
 //
 // This file is part of OMSI Map Merger.
 //
@@ -50,8 +50,8 @@ DESCRIPTION_LINE: line_end
 terminals
 line_end: /\n/;
 normal_line: /[^[\n][^\r\n]*/;
-aigroup_2_header: /\[aigroup_2\]\n/;
-aigroup_depot_typgroup_2_header: /\[aigroup_depot_typgroup_2\]\n/;
-aigroup_depot_header: /\[aigroup_depot\]\n/;
+aigroup_2_header: "[aigroup_2]\n";
+aigroup_depot_typgroup_2_header: "[aigroup_depot_typgroup_2]\n";
+aigroup_depot_header: "[aigroup_depot]\n";
 description_line: /([^[\n]|\[[^e\n]|\[e[^n\n]|\[en[^d\n]|\[end[^\]\n])[^\r\n]*/;
-end: /\[end\]/;//tu nie ma \n bo nie zawszee po tym cos jeszcze jest np jest koniec pliku no i co??
+end: "[end]";// \n isn't necessary here
