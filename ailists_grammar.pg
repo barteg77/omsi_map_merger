@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-AILISTS: line_end*
+AILISTS: OPTIONAL_LINE*
          AIGROUP_GROUP_LIST;
 
 AIGROUP_2_GROUP: aigroup_2_header
@@ -23,18 +23,18 @@ AIGROUP_2_GROUP: aigroup_2_header
                  OPTIONAL_LINE
                  LINES
                  end
-                 line_end*;
+                 OPTIONAL_LINE*;
 AIGROUP_DEPOT_TYPGROUP_2_GROUP: aigroup_depot_typgroup_2_header
                                 OPTIONAL_LINE
                                 LINES?
                                 end
-                                line_end*;
+                                OPTIONAL_LINE*;
 AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST: AIGROUP_DEPOT_TYPGROUP_2_GROUP
                                    | AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST AIGROUP_DEPOT_TYPGROUP_2_GROUP;
 AIGROUP_DEPOT_GROUP: aigroup_depot_header
                      OPTIONAL_LINE
                      OPTIONAL_LINE
-                     line_end*
+                     OPTIONAL_LINE*
                      AIGROUP_DEPOT_TYPGROUP_2_GROUP_LIST;
 AIGROUP_GROUP: AIGROUP_2_GROUP
              | AIGROUP_DEPOT_GROUP;
