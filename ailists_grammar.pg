@@ -16,7 +16,8 @@
 // along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 AILISTS: OPTIONAL_LINE*
-         AIGROUP_GROUP_LIST;
+         AIGROUP_GROUP_LIST
+         normal_line?;
 
 AIGROUP_2_GROUP: aigroup_2_header
                  OPTIONAL_LINE
