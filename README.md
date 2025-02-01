@@ -6,7 +6,6 @@ This program merges two OMSI 2 maps creating a resulting map preserving as much 
 ### Known restrictions:
 - Syntax of source maps’ files should be matching from files created with OMSI 2 Editor (parsers are quite strict on that).
 - Line (Time Table Line) names, track names and trip names should be unique in source maps – duplicates will be dropped.
-- There cannot be text beyond sections declaring AI groups in `ailists.cfg` even though OMSI accepts it.
 - Old-type ailists ([like this](https://forum.omnibussimulator.de/forum/index.php?thread/11880-tut-changing-adjusting-the-ai-list-ailist/)) files are not handled.
 - Maps with enabled [worldcoordinates] aren't handled properly.
 - `unsched_trafficdens.txt` and `unsched_vehgroups.txt` files are not handled.
