@@ -21,10 +21,11 @@ import filecmp
 import omsi_map
 import os
 import pathlib
+import _pytest.mark.structures as pytest_structures
 
-maps_dirs: list[pathlib.Path]
+maps_dirs: list[pytest_structures.ParameterSet]
 try:
-    maps_dirs = [element for element in pathlib.Path(os.environ['OMM_TEST_MAPS_DIRECTORY']).iterdir() if element.is_dir()]
+    maps_dirs = [pytest.param(map_path, id=map_path.parts[-1]) for map_path in pathlib.Path(os.environ['OMM_TEST_MAPS_DIRECTORY']).iterdir() if map_path.is_dir()]
 except KeyError:
     maps_dirs = []
 
