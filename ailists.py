@@ -20,6 +20,12 @@ class AnyAIgroup:
         self.name: str
         self.type: str
         raise NotImplementedError("this is abstract class")
+    
+    def __key(self):
+        return (self.name, self.type)
+    
+    def __eq__(self, other: 'AnyAIgroup') -> bool:
+        return self.__key() == other.__key()
 
 class AIGroup2(AnyAIgroup):
     def __init__(self,
@@ -30,6 +36,12 @@ class AIGroup2(AnyAIgroup):
         self.name = name
         self.hof_name = hof_name
         self.types = types
+    
+    def __key(self):
+        return (self.name, self.hof_name, self.types)
+    
+    def __eq__(self, other: 'AIGroup2') -> bool:
+        return self.__key() == other.__key()
 
 class AIGroupDepotTypgroup2:
     def __init__(self,
@@ -38,6 +50,12 @@ class AIGroupDepotTypgroup2:
                  ):
         self.type = type
         self.vehicles = vehicles
+    
+    def __key(self):
+        return (self.type, self.vehicles)
+    
+    def __eq__(self, other: 'AIGroupDepotTypgroup2') -> bool:
+        return self.__key() == other.__key()
 
 class AIGroupDepot(AnyAIgroup):
     def __init__(self,
@@ -47,9 +65,21 @@ class AIGroupDepot(AnyAIgroup):
         self.name: str = name
         self.hof_name: str = hof_name
         self.typgroups: list[AIGroupDepotTypgroup2] = typgroups
+    
+    def __key(self):
+        return (self.name, self.hof_name, self.typgroups)
+    
+    def __eq__(self, other: 'AIGroupDepot') -> bool:
+        return self.__key() == other.__key()
 
 class AILists:
     def __init__(self,
                  aigroups: list[AnyAIgroup],
                  ):
         self.aigroups: list[AnyAIgroup] = aigroups
+    
+    def __key(self):
+        return (self.aigroups)
+    
+    def __eq__(self, other: 'AILists') -> bool:
+        return self.__key() == other.__key()
