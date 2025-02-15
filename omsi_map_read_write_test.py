@@ -24,6 +24,7 @@ import pathlib
 import _pytest.mark.structures as pytest_structures
 import ailists
 import ailists_parser
+import itertools
 
 maps_dirs: list[pytest_structures.ParameterSet]
 try:
@@ -57,18 +58,19 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
         'unsched_vehgroups.txt',
         'picture.jpg',
         'timezone.txt',
-        'tile_*_*.map',
-        'tile_*_*.map.water',
-        'tile_*_*.map.LM.bmp',
-        'tile_*_*.map.roadmap.bmp',
-        'tile_*_*.map',
-        'texture/map/tile_*_*.map.roadmap.bmp',
-        'texture/map/tile_*_*.map.*.dds',
         'TTData/*.tt[lpr]',
         'Chrono/*/Chrono.cfg'
-        'Chrono/tile_*_*.map',
         'Chrono/*/TTData/*.tt[lpr]',
-    ]
+    ] + list(itertools.chain.from_iterable([[ # for each tile
+            f'{map_file}',
+            f'{map_file}.terrain',
+            f'{map_file}.water',
+            f'{map_file}.LM.bmp',
+            f'{map_file}.roadmap.bmp',
+            f'texture/map/{map_file}.roadmap.bmp',
+            f'texture/map/{map_file}.*.dds',
+            f'Chrono/*/{map_file}',
+        ] for map_file in map(lambda map_entry: map_entry.map_file, test_map.global_config._map)]))
 
     for pattern in requied_files_patterns:
         for source_file in source_map_dir.glob(pattern):
