@@ -41,6 +41,8 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
     result_map_dir: pathlib.Path = tmp_path
     test_map.save(str(result_map_dir))
 
+    tiles_files: list[str] = [map_entry.map_file for map_entry in test_map.global_config._map]
+
     requied_files_patterns: list[str] = [
         'global.cfg',
         # ailists.cfg not listed here because it isn't expected to be exactly same,
@@ -62,7 +64,6 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
         'Chrono/*/Chrono.cfg'
         'Chrono/*/TTData/*.tt[lpr]',
     ] + list(itertools.chain.from_iterable([[ # for each tile
-            f'{map_file}',
             f'{map_file}.terrain',
             f'{map_file}.water',
             f'{map_file}.LM.bmp',
@@ -76,6 +77,28 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
             result_file: pathlib.Path = result_map_dir / source_file.relative_to(source_map_dir)
             assert filecmp.cmp(source_file, result_file), f"File \"{result_file}\" is not same as \"{source_file}\"."
     
+    # tile file consistency test:
+    # source file is encoded in utf-16 le bom or ascii
+    # result file is encoded in utf-16 le bom 
+    # so they may differ, but text must be same
+    for map_file in tiles_files:
+        source_file: pathlib.Path = source_map_dir / map_file
+        result_file: pathlib.Path = result_map_dir / map_file
+        source_file_text: str
+        result_file_text: str
+        for encoding in ['utf_16', 'ascii']:
+            with open(source_file, 'rt', encoding=encoding) as f:
+                try:
+                    source_file_text = f.read()
+                    break
+                except UnicodeError:
+                    pass
+        else:
+            assert False, f"Unable to read file with any of allowed encodings"
+        with open(result_file, 'rt', encoding='utf_16') as f:
+            result_file_text = f.read()
+        assert source_file_text == result_file_text, "Result tile text differ from source tile text"
+
     # ailists consistency test:
     # data in saved result ailists must be same as in source ailists
     ap: ailists_parser.AIListsParser = ailists_parser.AIListsParser()
