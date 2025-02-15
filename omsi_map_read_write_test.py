@@ -35,7 +35,8 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
     safe_loader: omsi_map.OmsiMapSl = omsi_map.OmsiMapSl(str(source_map_dir))
     safe_loader.load()
     test_map: omsi_map.OmsiMap = safe_loader.get_data()
-    test_map.save(str(tmp_path))
+    result_map_dir: pathlib.Path = tmp_path
+    test_map.save(str(result_map_dir))
 
     requied_files_patterns: list[str] = [
         'global.cfg',
@@ -67,6 +68,6 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
 
     for pattern in requied_files_patterns:
         for source_file in source_map_dir.glob(pattern):
-            result_file: pathlib.Path = source_map_dir / source_file.relative_to(source_map_dir)
+            result_file: pathlib.Path = result_map_dir / source_file.relative_to(source_map_dir)
             assert filecmp.cmp(source_file, result_file), f"File \"{result_file}\" is not same as \"{source_file}\"."
-    # ailists to be tested separately
+    
