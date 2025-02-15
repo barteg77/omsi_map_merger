@@ -66,7 +66,6 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
             f'{map_file}.terrain',
             f'{map_file}.water',
             f'{map_file}.LM.bmp',
-            f'{map_file}.roadmap.bmp',
             f'texture/map/{map_file}.roadmap.bmp',
             f'texture/map/{map_file}.*.dds',
             f'Chrono/*/{map_file}',
