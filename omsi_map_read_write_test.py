@@ -42,6 +42,7 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
     test_map.save(str(result_map_dir))
 
     tiles_files: list[str] = [map_entry.map_file for map_entry in test_map.global_config._map]
+    groundtex_count: int = len(test_map.global_config.groundtex)
 
     requied_files_patterns: list[str] = [
         'global.cfg',
@@ -63,14 +64,17 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
         'TTData/*.tt[lpr]',
         'Chrono/*/Chrono.cfg'
         'Chrono/*/TTData/*.tt[lpr]',
-    ] + list(itertools.chain.from_iterable([[ # for each tile
-            f'{map_file}.terrain',
-            f'{map_file}.water',
-            f'{map_file}.LM.bmp',
-            f'texture/map/{map_file}.roadmap.bmp',
-            f'texture/map/{map_file}.*.dds',
-            f'Chrono/*/{map_file}',
-        ] for map_file in map(lambda map_entry: map_entry.map_file, test_map.global_config._map)]))
+    ] + list(itertools.chain.from_iterable([[f'{map_file}.terrain',
+                                             f'{map_file}.water',
+                                             f'{map_file}.LM.bmp',
+                                             f'texture/map/{map_file}.roadmap.bmp',
+                                             f'Chrono/*/{map_file}'
+                                             ] + [f'texture/map/{map_file}.{groundtex_index}.dds'
+                                                  for groundtex_index
+                                                  in range(groundtex_count)]
+                                            for map_file
+                                            in tiles_files]
+                                            ))
 
     for pattern in requied_files_patterns:
         for source_file in source_map_dir.glob(pattern):
