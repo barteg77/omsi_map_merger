@@ -22,6 +22,8 @@ import omsi_map
 import os
 import pathlib
 import _pytest.mark.structures as pytest_structures
+import ailists
+import ailists_parser
 
 maps_dirs: list[pytest_structures.ParameterSet]
 try:
@@ -40,6 +42,8 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
 
     requied_files_patterns: list[str] = [
         'global.cfg',
+        # ailists.cfg not listed here because it isn't expected to be exactly same,
+        # (comments are omitted while parsing)
         'drivers.txt',
         'Holidays.txt',
         'humans.txt',
@@ -71,3 +75,8 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
             result_file: pathlib.Path = result_map_dir / source_file.relative_to(source_map_dir)
             assert filecmp.cmp(source_file, result_file), f"File \"{result_file}\" is not same as \"{source_file}\"."
     
+    # ailists consistency test:
+    # data in saved result ailists must be same as in source ailists
+    ap: ailists_parser.AIListsParser = ailists_parser.AIListsParser()
+    parsed_result_ailists: ailists.AILists = ap.parse(str(result_map_dir / 'ailists.cfg'))
+    assert test_map.ailists == parsed_result_ailists, "Result ailists data differ from source ailists data"
