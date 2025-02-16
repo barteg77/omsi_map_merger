@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -26,7 +26,7 @@ class TripParser:
                                         line1=n[8],
                                         line2=n[9],
                                         line3=n[10],
-                                        trainreverse=bool(n[11]), # n[11] is True or None
+                                        trainreverse=bool(n[12]), # n[12] is True or None
                                         station=n[17] if n[17] is not None else [],
                                         lines=n[23]
                                         )],
