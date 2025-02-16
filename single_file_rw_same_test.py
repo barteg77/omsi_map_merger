@@ -34,21 +34,24 @@ import track_serializer
 import trip_parser
 import trip_serializer
 
-test_maps_dir: pathlib.Path = pathlib.Path(os.environ['OMM_TEST_MAPS_DIRECTORY'])
-
 rw_params: list[pytest_structures.ParameterSet] = []
-for file_type_name, parser, serializer, file_patterns in [
-    ('GC', global_config_parser.GlobalConfigParser, global_config_serializer.GlobalConfigSerializer, ['*/global.cfg']),
-    ('BUSSTOPS', busstops_parser.BusstopsParser, busstops_serializer.BusstopsSerializer, ['*/TTData/Busstops.cfg', '*/Chrono/*/TTData/Busstops.cfg']),
-    ('STN-LINKS', station_links_parser.StationLinksParser, station_links_serializer.StationLinksSerializer, ['*/TTData/StnLinks.cfg', '*/Chrono/*/TTData/StnLinks.cfg']),
-    ('TTLINE', time_table_line_parser.TimeTableLineParser, time_table_line_serializer.TimeTableLineSerializer, ['*/TTData/*.ttl', '*/Chrono/*/TTData/*.ttl']),
-    ('TRACK', track_parser.TrackParser, track_serializer.TrackSerializer, ['*/TTData/*.ttr', '*/Chrono/*/TTData/*.ttr']),
-    ('TRIP', trip_parser.TripParser, trip_serializer.TripSerializer, ['*/TTData/*.ttp', '*/Chrono/*/TTData/*.ttp']),
-]:
-    for file_pattern in file_patterns:
-        for path in test_maps_dir.glob(file_pattern):
-            rw_params.append(pytest.param(parser, serializer, path, id=f"{file_type_name}: {path.relative_to(test_maps_dir)}"))
-rw_params.sort(key=lambda param: str(param.id)) # must be sorted for pytest-xdist
+try:
+    test_maps_dir: pathlib.Path = pathlib.Path(os.environ['OMM_TEST_MAPS_DIRECTORY'])
+except KeyError:
+    pass
+else:
+    for file_type_name, parser, serializer, file_patterns in [
+        ('GC', global_config_parser.GlobalConfigParser, global_config_serializer.GlobalConfigSerializer, ['*/global.cfg']),
+        ('BUSSTOPS', busstops_parser.BusstopsParser, busstops_serializer.BusstopsSerializer, ['*/TTData/Busstops.cfg', '*/Chrono/*/TTData/Busstops.cfg']),
+        ('STN-LINKS', station_links_parser.StationLinksParser, station_links_serializer.StationLinksSerializer, ['*/TTData/StnLinks.cfg', '*/Chrono/*/TTData/StnLinks.cfg']),
+        ('TTLINE', time_table_line_parser.TimeTableLineParser, time_table_line_serializer.TimeTableLineSerializer, ['*/TTData/*.ttl', '*/Chrono/*/TTData/*.ttl']),
+        ('TRACK', track_parser.TrackParser, track_serializer.TrackSerializer, ['*/TTData/*.ttr', '*/Chrono/*/TTData/*.ttr']),
+        ('TRIP', trip_parser.TripParser, trip_serializer.TripSerializer, ['*/TTData/*.ttp', '*/Chrono/*/TTData/*.ttp']),
+    ]:
+        for file_pattern in file_patterns:
+            for path in test_maps_dir.glob(file_pattern):
+                rw_params.append(pytest.param(parser, serializer, path, id=f"{file_type_name}: {path.relative_to(test_maps_dir)}"))
+    rw_params.sort(key=lambda param: str(param.id)) # must be sorted for pytest-xdist
 
 @pytest.mark.parametrize("parser_class, serializer_class, source_file", rw_params)
 def test_rw_same(parser_class, serializer_class, source_file: pathlib.Path, tmp_path: pathlib.Path):
