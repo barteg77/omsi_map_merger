@@ -207,5 +207,5 @@ class GlobalConfig:
         
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
         for entrypoint in self.entrypoints:
-            entrypoint.id = str(int(entrypoint.id) + int(ids_value))
-            entrypoint.tile_index = str(int(entrypoint.tile_index) + int(tile_indices_value))
+            entrypoint.id = entrypoint.id + ids_value
+            entrypoint.tile_index = entrypoint.tile_index + tile_indices_value
