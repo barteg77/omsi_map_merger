@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -16,28 +16,27 @@
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
 class TrackSerializer:
-    def serialize(self, track_class, file_name):
+    def serialize(self, track_object, file_name):
         with open(file_name, 'w', encoding='iso-8859-1', newline='\r\n') as f:
-            self.serialize_(track_class, f)
+            self.serialize_(track_object, f)
     
-    def serialize_(self, track_class, f):
+    def serialize_(self, track_object, f):
         print("-----------------------", file=f)
         print("Time Table Track File", file=f)
         print("-----------------------", file=f)
         print(file=f)
-        print(track_class.comment1, file=f)
-        print(track_class.comment2, file=f)
+        print(track_object.comment1, file=f)
+        print(track_object.comment2, file=f)
         print(file=f)
-        if track_class.track_entry is not None:
-            for te in track_class.track_entry:
-                print(te.comment, file=f)
-                print("[track_entry]", file=f)
-                print(te.id, file=f)
-                print(te.line2, file=f)
-                print(te.tile_index, file=f)
-                print(te.line4, file=f)
-                print(te.length, file=f)
-                print(te.line6, file=f)
-                if te.line7 is not None:
-                    print(te.line7, file=f)
-                print(file=f)
+        for te in track_object.track_entry:
+            print(te.comment, file=f)
+            print("[track_entry]", file=f)
+            print(te.id, file=f)
+            print(te.line2, file=f)
+            print(te.tile_index, file=f)
+            print(te.line4, file=f)
+            print(te.length, file=f)
+            print(te.line6, file=f)
+            if te.line7 is not None:
+                print(te.line7, file=f)
+            print(file=f)

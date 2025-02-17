@@ -1,4 +1,4 @@
-# Copyright 2020 Bartosz Gajewski
+# Copyright 2020, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -23,7 +23,7 @@ class TrackParser():
     actions = {
         "TRACK": [lambda _, n: track.Track(comment1=n[4],
                                            comment2=n[5],
-                                           track_entry=n[7]
+                                           track_entry=n[7] if n[7] is not None else [],
                                            )],
         "NONEMPTY_LINE": [lambda _, n: n[0]],
         "TRACK_ENTRY_GROUP": [lambda _, n: track.TrackEntry(comment=n[0],

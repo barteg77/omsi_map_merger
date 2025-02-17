@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -17,35 +17,34 @@
 
 class TrackEntry:
     def __init__(self,
-                 comment=None,
-                 id=None,
-                 line2=None,
-                 tile_index=None,
-                 line4=None,
-                 length=None,
-                 line6=None,
-                 line7=None
+                 comment: str,
+                 id: int,
+                 line2: str,
+                 tile_index: int,
+                 line4: str,
+                 length: str,
+                 line6: str,
+                 line7: str
                  ):
-        self.comment = comment
-        self.id = id
-        self.line2 = line2
-        self.tile_index = tile_index
-        self.line4 = line4
-        self.length = length
-        self.line6 = line6
-        self.line7 = line7
+        self.comment: str = comment
+        self.id: int = id
+        self.line2: str = line2
+        self.tile_index: int = tile_index
+        self.line4: str = line4
+        self.length: str = length
+        self.line6: str = line6
+        self.line7: str = line7
 
 class Track:
     def __init__(self,
-                 comment1=None,
-                 comment2=None,
-                 track_entry=[]):
-        self.comment1 = comment1
-        self.comment2 = comment2
-        self.track_entry = track_entry
+                 comment1: str,
+                 comment2: str,
+                 track_entry: list[TrackEntry]):
+        self.comment1: str = comment1
+        self.comment2: str = comment2
+        self.track_entry: list[TrackEntry] = track_entry
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int):
-        if self.track_entry is not None:
-            for te in self.track_entry:
-                te.id = str(int(te.id) + ids_value)
-                te.tile_index = str(int(te.tile_index) + tile_indices_value)
+        for te in self.track_entry:
+            te.id = te.id + ids_value
+            te.tile_index = te.tile_index + tile_indices_value
