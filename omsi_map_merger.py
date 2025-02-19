@@ -190,7 +190,8 @@ class OmsiMapMerger:
             for tile_pos in shifted_tiles_pos:
                 if tile_pos not in graph_data:
                     graph_data[tile_pos] = []
-                graph_data[tile_pos].append(mtm)
+                if mtm not in graph_data[tile_pos]:
+                    graph_data[tile_pos].append(mtm)
         return graph_data
     
     def overlapping(self) -> bool:
