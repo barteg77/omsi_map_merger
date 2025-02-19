@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -446,8 +446,8 @@ try:
             pass
         else:
             logger.error("GUI event not handled")
-except KeyboardInterrupt:
-    logger.info("Keaboard interruption occured, program will be terminated")
+except SystemExit:
+    logger.info("Received SystemExit, program will be terminated")
 except:
     fe: str = traceback.format_exc()
     logger.fatal("Unhandled exception:\n" + fe)
