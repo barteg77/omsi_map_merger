@@ -341,7 +341,7 @@ class OmsiMapMerger:
                 new_filename: str = f'tile_{new_pos.pos_x}_{new_pos.pos_y}.map'
                 new_tiles[new_filename] = fm[mtm].tiles[tile_file]
 
-            # add full covered groundtex if keep groundex
+                # add full covered groundtex if keep groundex
                 if mtm.get_keep_groundtex():
                     full_covered_groundtex_file:omsi_files.OmsiFile = \
                         omsi_files.OmsiFile(map_path=os.path.dirname(os.path.abspath(__file__)),
@@ -351,6 +351,7 @@ class OmsiMapMerger:
                     full_covered_groundtex_file.params['pos_y'] = str(new_pos.pos_y)
                     full_covered_groundtex_file.params['groundtex_index'] = str(groundtex_shift[mtm])
                     new_tiles[new_filename]._files.add(full_covered_groundtex_file)
+                new_tiles[new_filename].set_files_pos(new_pos.pos_x, new_pos.pos_y)
         
         # prepare ailists
         all_aigroups: list[ailists.AnyAIgroup] = list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))
