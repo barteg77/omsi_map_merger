@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -139,6 +139,7 @@ class Map:
                  pos_y: int,
                  map_file: str,
                  ):
+        assert map_file == f'tile_{pos_x}_{pos_y}.map'
         self.pos_x: int = pos_x
         self.pos_y: int = pos_y
         self.map_file: str = map_file

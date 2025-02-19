@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2023, 2024 Bartosz Gajewski
+# Copyright 2020, 2021, 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -79,6 +79,10 @@ class MapToMerge(omsi_map.OmsiMapSl):
     
     def get_shift_y(self) -> int:
         return self.shift_y
+    
+    def shifted_tile_pos(self, tile_pos: TilePos) -> TilePos:
+        return TilePos(tile_pos.pos_x + self.shift_x,
+                       tile_pos.pos_y + self.shift_y)
     
     def get_shifted_tiles_pos(self) -> list[TilePos]:
         return [TilePos(int(tile.pos_x) + self.shift_x,
@@ -209,7 +213,7 @@ class OmsiMapMerger:
         return len(set(aigroups_names_seq)) != len(aigroups_names_seq)
     
     def ready(self) -> bool:
-        return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping() and len(self.get_maps()) >= 2
+        return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping()# and len(self.get_maps()) >= 2
     
     def merged_gc_groundtex(self) -> list[global_config.GroundTex]:
         assert not self.get_maps()[0].get_keep_groundtex()
@@ -325,25 +329,28 @@ class OmsiMapMerger:
                                         )
         
         # shift idcodes, tile indices, groundtex indices
+        new_tiles: dict[str, tile.Tile] = {}
         for mtm in self.get_maps():
             fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
             fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
+            
+            # add tiles to merged map
+            tile_pos: dict[str, TilePos] = dict((gc_tile.map_file, TilePos(gc_tile.pos_x, gc_tile.pos_y)) for gc_tile in fm[mtm].global_config._map)
+            for tile_file in fm[mtm].tiles:
+                new_pos: TilePos = mtm.shifted_tile_pos(tile_pos[tile_file])
+                new_filename: str = f'tile_{new_pos.pos_x}_{new_pos.pos_y}.map'
+                new_tiles[new_filename] = fm[mtm].tiles[tile_file]
+
             # add full covered groundtex if keep groundex
-            if mtm.get_keep_groundtex():
-                for map_tile, gc_tile in zip(fm[mtm].tiles, fm[mtm].global_config._map):
+                if mtm.get_keep_groundtex():
                     full_covered_groundtex_file:omsi_files.OmsiFile = \
                         omsi_files.OmsiFile(map_path=os.path.dirname(os.path.abspath(__file__)),
                         pattern="texture/map/tile_{pos_x}_{pos_y}.map.{groundtex_index}.dds",
                         params={"pos_x": "0", "pos_y": "0", "groundtex_index": "0"})
-                    full_covered_groundtex_file.params['pos_x'] = gc_tile.pos_x
-                    full_covered_groundtex_file.params['pos_y'] = gc_tile.pos_y
+                    full_covered_groundtex_file.params['pos_x'] = str(new_pos.pos_x)
+                    full_covered_groundtex_file.params['pos_y'] = str(new_pos.pos_y)
                     full_covered_groundtex_file.params['groundtex_index'] = str(groundtex_shift[mtm])
-                    map_tile._files.add(full_covered_groundtex_file)
-        
-        # prepare tiles for merged map
-        tiles: list[tile.Tile] = list(itertools.chain.from_iterable([fm[mtm].tiles for mtm in self.get_maps()]))
-        for map_tile, gc_tile in zip(tiles, gc_tiles):
-            map_tile.set_files_pos(gc_tile.pos_x, gc_tile.pos_y)
+                    new_tiles[new_filename]._files.add(full_covered_groundtex_file)
         
         # prepare ailists
         all_aigroups: list[ailists.AnyAIgroup] = list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))
@@ -357,7 +364,7 @@ class OmsiMapMerger:
 
         #construct OmsiMap
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
-                                                    tiles,
+                                                    new_tiles,
                                                     fm[self.get_maps()[0]].mfiles,
                                                     timetable.joined([fm[mtm].mstandard_timetable for mtm in self.get_maps()]),
                                                     new_ailists,

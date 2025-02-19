@@ -51,25 +51,28 @@ _ailists_serializer = ailists_serializer.AIListsSerializer()
 class OmsiMap:
     def __init__(self,
                  mglobal_config: global_config.GlobalConfig,
-                 mtiles: list[tile.Tile],
+                 mtiles: dict[str, tile.Tile],
                  momsi_files: omsi_files.OmsiFiles,
                  mstandard_timetable: timetable.Timetable,
                  mailists: ailists.AILists,
                  mchronos: list[chrono.Chrono],
     ):
         self.global_config: global_config.GlobalConfig = mglobal_config
-        self.tiles: list[tile.Tile] = mtiles
+        self.tiles: dict[str, tile.Tile] = mtiles
         self.mfiles: omsi_files.OmsiFiles = momsi_files
         self.mstandard_timetable: timetable.Timetable = mstandard_timetable
         self.ailists: ailists.AILists = mailists
         self.mchronos: list[chrono.Chrono] = mchronos
     
+    def tiles_data(self) -> typing.Iterable:
+        return map(lambda filename: self.tiles[filename], self.tiles)
+    
     def shift_ids(self, value: int) -> None:
-        for mtile in self.tiles:
+        for mtile in self.tiles_data():
             mtile.change_ids(value)
     
     def change_ids_and_tile_indices(self, ids_value: int, tile_indices_value: int) -> None:
-        for tile_index, til in zip(itertools.count(), self.tiles):
+        for tile_index, til in zip(itertools.count(), self.tiles_data()):
             logger.info(f"Changing objects' IDs and splines' IDs: TILE {tile_index}")
             til.change_ids(ids_value)
         
@@ -82,13 +85,14 @@ class OmsiMap:
             chrono.change_ids_and_tile_indices(ids_value, tile_indices_value)
     
     def change_groundtex_indices(self, value: int) -> None:
-        for til in self.tiles:
+        for til in self.tiles_data():
             til.change_groundtex_indices(value)
     
     def save_tiles(self, directory: str) -> None:
-        for gc_tile, map_tile in zip(self.global_config._map, self.tiles):
-            _tile_serializer.serialize(map_tile, os.path.join(directory, gc_tile.map_file))
-            map_tile.save_files(directory)
+        for tile_filename in self.tiles:
+            tile_data: tile.Tile = self.tiles[tile_filename]
+            _tile_serializer.serialize(tile_data, os.path.join(directory, tile_filename))
+            tile_data.save_files(directory)
     
     def get_time_table_line_names(self) -> list[str]:
         return list(set(itertools.chain.from_iterable([tt.get_time_table_line_names() for tt in [self.mstandard_timetable] + [mchrono.timetable for mchrono in self.mchronos]])))
@@ -135,7 +139,7 @@ class OmsiMapSl(loader.SafeLoaderList):
         # set tiles' safe parsers
         tiles_safe_loaders: list[loader.SafeLoader] = []
         groundtex_count: int = len(self._global_config.get_data().groundtex)
-        for gc_tile in self._global_config.get_data()._map:
+        for gc_tile in set(self._global_config.get_data()._map):
             tile_files = omsi_files.OmsiFiles([
                 omsi_files.OmsiFile(map_path=self.directory,
                                     pattern="tile_{pos_x}_{pos_y}.map.terrain",
@@ -250,8 +254,12 @@ class OmsiMapSl(loader.SafeLoaderList):
     def get_data(self) -> OmsiMap:
         if not self.ready():
             raise loader.NoDataError(f"Not whole map loaded...:\n{self.not_ready_list()}")
+        tiles: dict[str, tile.Tile] = {}
+        for tile_sl in self.get_tiles().get_sl_list():
+            tile_slu: loader.SafeLoaderUnit[tile.Tile] = typing.cast(loader.SafeLoaderUnit[tile.Tile], tile_sl)
+            tiles[os.path.relpath(tile_slu.get_path(), self.directory)] = tile_slu.get_data()
         return OmsiMap(self.get_global_config().get_data(),
-                       [typing.cast(loader.SafeLoaderUnit[tile.Tile], tile_sl).get_data() for tile_sl in self.get_tiles().get_sl_list()],
+                       tiles,
                        self.get_omsi_files(),
                        self.get_standard_timetable().get_data(),
                        self.get_ailists().get_data(),
