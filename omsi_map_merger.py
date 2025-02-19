@@ -360,7 +360,7 @@ class OmsiMapMerger:
                 if aigroup.name == name:
                     return aigroup
             assert False
-        aigroups_without_duplicates: list[ailists.AnyAIgroup] = [first_aigroup(name) for name in set(itertools.chain.from_iterable([[aig.name for aig in fm[mtm].ailists.aigroups] for mtm in self.get_maps()]))]
+        aigroups_without_duplicates: list[ailists.AnyAIgroup] = [first_aigroup(name) for name in sorted(set(itertools.chain.from_iterable([[aig.name for aig in fm[mtm].ailists.aigroups] for mtm in self.get_maps()])))]
         new_ailists: ailists.AILists = ailists.AILists(aigroups_without_duplicates)
 
         #construct OmsiMap
