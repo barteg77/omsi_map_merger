@@ -124,7 +124,7 @@ LINES: OPTIONAL_LINE
      | LINES OPTIONAL_LINE;
 
 terminals
-normal_line: /[^\[\n][^\r\n]*|\[delete\]|\[typ\]|\[relabel\]|\[rule\]|\[kill_rule\]/;
+normal_line: /(?!\[selspline\]|\[selobject\]|\[varparent\]|\[spline_terrain_align_2\]|\[spline\]|\[spline_h\]|\[spline_terrain_align\]|\[object\]|\[attachObj\]|\[splineAttachement\]|\[splineAttachement_repeater\])[^\n][^\r\n]*/;
 line_end: /\n/;
 version_header: /\[version\]\n/;
 select_spline_header: /\[selspline\]\n/;
