@@ -49,7 +49,7 @@ else:
         ('TTLINE', time_table_line_parser.TimeTableLineParser, time_table_line_serializer.TimeTableLineSerializer, ['*/TTData/*.ttl', '*/Chrono/*/TTData/*.ttl']),
         ('TRACK', track_parser.TrackParser, track_serializer.TrackSerializer, ['*/TTData/*.ttr', '*/Chrono/*/TTData/*.ttr']),
         ('TRIP', trip_parser.TripParser, trip_serializer.TripSerializer, ['*/TTData/*.ttp', '*/Chrono/*/TTData/*.ttp']),
-        ('CHRONO-TILE', chrono_tile_parser.ChronoTileParser, chrono_tile_serializer.ChronoTileSerializer, ['*/Chrono/tile_*_*.map']),
+        ('CHRONO-TILE', chrono_tile_parser.ChronoTileParser, chrono_tile_serializer.ChronoTileSerializer, ['*/Chrono/*/tile_*_*.map']),
     ]:
         for file_pattern in file_patterns:
             for path in test_maps_dir.glob(file_pattern):
