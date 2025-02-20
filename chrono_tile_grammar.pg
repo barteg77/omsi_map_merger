@@ -124,7 +124,7 @@ LINES: OPTIONAL_LINE
      | LINES OPTIONAL_LINE;
 
 terminals
-normal_line: /[^[\n][^\r\n]*|\[delete\]|\[typ\]|\[rule\]|\[kill_rule\]/;
+normal_line: /[^\[\n][^\r\n]*|\[delete\]|\[typ\]|\[relabel\]|\[rule\]|\[kill_rule\]/;
 line_end: /\n/;
 version_header: /\[version\]\n/;
 select_spline_header: /\[selspline\]\n/;
