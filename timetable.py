@@ -1,4 +1,4 @@
-# Copyright 2020, 2023, 2024 Bartosz Gajewski
+# Copyright 2020, 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -61,14 +61,14 @@ _station_links_serializer = station_links_serializer.StationLinksSerializer()
 
 class Timetable:
     def __init__(self,
-                 tbusstops: busstops.Busstops,
-                 tstation_links: station_links.StationLinks,
+                 tbusstops: typing.Optional[busstops.Busstops],
+                 tstation_links: typing.Optional[station_links.StationLinks],
                  ttime_table_lines: list[nd.NamedData[time_table_line.TimeTableLine]],
                  ttracks: list[nd.NamedData[track.Track]],
                  ttrips: list[nd.NamedData[trip.Trip]],
     ):
-        self.busstops: busstops.Busstops = tbusstops
-        self.station_links: station_links.StationLinks = tstation_links
+        self.busstops: typing.Optional[busstops.Busstops] = tbusstops
+        self.station_links: typing.Optional[station_links.StationLinks] = tstation_links
         self.time_table_lines: list[nd.NamedData[time_table_line.TimeTableLine]] = ttime_table_lines
         self.tracks: list[nd.NamedData[track.Track]] = ttracks
         self.trips: list[nd.NamedData[trip.Trip]] = ttrips
@@ -91,11 +91,17 @@ class Timetable:
         for trip in self.trips:
             trip.data.change_ids_and_tile_indices(ids_value, tile_indices_value)
         
-        logger.info("Changing objects' IDs, splines' IDs and tiles' indices in Busstops.cfg file.")
-        self.busstops.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        if self.busstops is not None:
+            logger.info("Changing objects' IDs, splines' IDs and tiles' indices in Busstops.cfg file.")
+            self.busstops.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        else:
+            logger.info("Busstops data does not exists, won't change ids")
         
-        logger.info("Changing objects' IDs, splines' IDs and tiles' indices in StnLinks.cfg file.")
-        self.station_links.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        if self.station_links is not None:
+            logger.info("Changing objects' IDs, splines' IDs and tiles' indices in StnLinks.cfg file.")
+            self.station_links.change_ids_and_tile_indices(ids_value, tile_indices_value)
+        else:
+            logger.info("Station Links data does not exists, won't change ids")
     
     def save(self, directory: str) -> None:
         os.makedirs(os.path.join(directory, TIMETABLE_DIRNAME))
@@ -115,12 +121,18 @@ class Timetable:
             _trip_serializer.serialize(trip.data, file_path)
         
         busstops_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME)
-        logger.info(f"Serializing busstops file {busstops_file_path}")
-        _busstops_serializer.serialize(self.busstops, busstops_file_path)
-        
+        if self.busstops is not None:
+            logger.info(f"Serializing busstops file {busstops_file_path}")
+            _busstops_serializer.serialize(self.busstops, busstops_file_path)
+        else:
+            logger.info(f"Busstops data not present in timetable, \"{busstops_file_path}\" file won't be created.")
+
         station_links_file_path: str = os.path.join(directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME)
-        logger.info(f"Serializing station links file{station_links_file_path}")
-        _station_links_serializer.serialize(self.station_links, station_links_file_path)
+        if self.station_links is not None:
+            logger.info(f"Serializing station links file{station_links_file_path}")
+            _station_links_serializer.serialize(self.station_links, station_links_file_path)
+        else:
+            logger.info(f"Station Links data not present in timetable, \"{station_links_file_path}\" file won't be created.")
 
 class TimetableSl(loader.SafeLoaderList):
     def __init__(self,
@@ -129,8 +141,8 @@ class TimetableSl(loader.SafeLoaderList):
                  ):
         self.map_directory = map_directory
         self.chrono_directory = chrono_directory
-        self.busstops = loader.SafeLoaderUnit(busstops.Busstops, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME), _busstops_parser.parse)
-        self.station_links = loader.SafeLoaderUnit(station_links.StationLinks, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME), _station_links_parser.parse)
+        self.busstops = loader.SafeLoaderUnit(busstops.Busstops, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, BUSSTOPS_FILENAME), _busstops_parser.parse, optional=True)
+        self.station_links = loader.SafeLoaderUnit(station_links.StationLinks, os.path.join(self.map_directory, self.chrono_directory, TIMETABLE_DIRNAME, STNLINKS_FILENAME), _station_links_parser.parse, optional=True)
         self.time_table_line_files = []
         self.time_table_lines: loader.SafeLoaderList = loader.SafeLoaderList([], "Timetable lines")
         self.scanned_time_table_lines: bool = False
@@ -152,8 +164,8 @@ class TimetableSl(loader.SafeLoaderList):
         if not self.ready():
             raise loader.NoDataError
         
-        return Timetable(self.busstops.get_data(),
-                         self.station_links.get_data(),
+        return Timetable(self.busstops.get_data() if self.busstops.get_status != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
+                         self.station_links.get_data() if self.station_links.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
                          [nd.NamedData(*args) for args in zip(self.time_table_line_files, [typing.cast(loader.SafeLoaderUnit[time_table_line.TimeTableLine], sl).get_data()
                                                                                            for sl in self.time_table_lines.get_sl_list()])],
                          [nd.NamedData(*args) for args in zip(self.track_files, [typing.cast(loader.SafeLoaderUnit[track.Track], sl).get_data()
@@ -205,10 +217,10 @@ class TimetableSl(loader.SafeLoaderList):
 def joined(timetables: list[Timetable]) -> Timetable:
     return Timetable(busstops.Busstops("Busstops file created with Omsi Map Merger",
                                        "(comment line 2)",
-                                       list(itertools.chain.from_iterable([tt.busstops.busstops for tt in timetables]))),
+                                       list(itertools.chain.from_iterable([tt.busstops.busstops for tt in timetables if tt.busstops is not None]))),
                      station_links.StationLinks("Station Links file created with Omsi Map Merger",
                                                 "(comment line 2)",
-                                                list(itertools.chain.from_iterable([tt.station_links.station_link for tt in timetables]))),
+                                                list(itertools.chain.from_iterable([tt.station_links.station_link for tt in timetables if tt.station_links is not None]))),
                      list(itertools.chain.from_iterable([tt.time_table_lines for tt in timetables])),
                      list(itertools.chain.from_iterable([tt.tracks for tt in timetables])),
                      list(itertools.chain.from_iterable([tt.trips for tt in timetables])),
