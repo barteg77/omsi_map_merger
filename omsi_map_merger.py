@@ -198,10 +198,6 @@ class OmsiMapMerger:
         for map_to_load in self.__maps:
             map_to_load.load()
     
-    def aigroup_name_collision(self) -> bool:
-        aigroups_names_seq: list[str] = list(itertools.chain.from_iterable([[aig.name for aig in mtm.get_ailists().get_data().aigroups] for mtm in self.get_maps()]))
-        return len(set(aigroups_names_seq)) != len(aigroups_names_seq)
-    
     def ready(self) -> bool:
         return all([mtm.ready() for mtm in self.get_maps()]) and not self.overlapping()# and len(self.get_maps()) >= 2
     
@@ -245,10 +241,6 @@ class OmsiMapMerger:
         # warning about empty map name
         if new_map_name == "":
             warn("Map name is empty")
-        
-        # warning about aigroup name collision
-        if self.aigroup_name_collision():
-            warn("Aigroup name collision")
         
         fm: dict[MapToMerge, omsi_map.OmsiMap] = dict([(mtm, copy.deepcopy(mtm.get_data())) for mtm in self.get_maps()])
 
@@ -356,11 +348,12 @@ class OmsiMapMerger:
         # prepare ailists
         new_aigroups: list[ailists.AnyAIgroup] = []
         for mtm in self.get_maps():
-            for ailist in fm[mtm].ailists.aigroups:
-                if ailist.name not in map(lambda aigroup: aigroup.name, new_aigroups):
-                    new_aigroups.append(ailist)
-                else:
-                    warn(f"Dropped aigroup \"{ailist.name}\" from map \"{mtm.get_name()}\" because aigroup with this has been already picked from another map")
+            if fm[mtm].ailists is not None:
+                for ailist in typing.cast(ailists.AILists, fm[mtm].ailists).aigroups:
+                    if ailist.name not in map(lambda aigroup: aigroup.name, new_aigroups):
+                        new_aigroups.append(ailist)
+                    else:
+                        warn(f"Dropped aigroup \"{ailist.name}\" from map \"{mtm.get_name()}\" because aigroup with this has been already picked from another map")
         new_ailists: ailists.AILists = ailists.AILists(new_aigroups)
 
         # prepare chronos

@@ -55,14 +55,14 @@ class OmsiMap:
                  mtiles: dict[str, tile.Tile],
                  momsi_files: omsi_files.OmsiFiles,
                  mstandard_timetable: timetable.Timetable,
-                 mailists: ailists.AILists,
+                 mailists: typing.Optional[ailists.AILists],
                  mchronos: list[chrono.Chrono],
     ):
         self.global_config: global_config.GlobalConfig = mglobal_config
         self.tiles: dict[str, tile.Tile] = mtiles
         self.mfiles: omsi_files.OmsiFiles = momsi_files
         self.mstandard_timetable: timetable.Timetable = mstandard_timetable
-        self.ailists: ailists.AILists = mailists
+        self.ailists: typing.Optional[ailists.AILists] = mailists
         self.mchronos: list[chrono.Chrono] = mchronos
     
     def tiles_data(self) -> typing.Iterable:
@@ -117,7 +117,8 @@ class OmsiMap:
         self.save_tiles(directory)
         self.mfiles.save(directory)
         self.mstandard_timetable.save(directory)
-        _ailists_serializer.serialize(self.ailists, os.path.join(directory, AILISTS_FILENAME))
+        if self.ailists is not None:
+            _ailists_serializer.serialize(self.ailists, os.path.join(directory, AILISTS_FILENAME))
         for chrono in self.mchronos:
             chrono.save(directory)
         logger.info("Map saving completed")
@@ -187,7 +188,7 @@ class OmsiMapSl(loader.SafeLoaderList):
         self._tiles: loader.SafeLoaderList = loader.SafeLoaderList([], "Tiles")
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles(self.__fresh_omsi_files())
         self._standard_timetable: timetable.TimetableSl = timetable.TimetableSl(self.directory)
-        self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(ailists.AILists, os.path.join(self.directory, AILISTS_FILENAME), _ailists_parser.parse)
+        self._ailists: loader.SafeLoaderUnit = loader.SafeLoaderUnit(ailists.AILists, os.path.join(self.directory, AILISTS_FILENAME), _ailists_parser.parse, optional=True)
         self._chronos: loader.SafeLoaderList = loader.SafeLoaderList([], "Chronos")
         super().__init__(
             [
@@ -256,9 +257,6 @@ class OmsiMapSl(loader.SafeLoaderList):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
         self._chronos.set_sl_list([chrono.ChronoSl(self.directory, chrono_directory, self.get_tiles_filenames()) for chrono_directory in chrono_directory_list])
     
-    def get_aigroups_names(self) -> list[str]:
-        return [aigroup.name for aigroup in self.get_ailists().get_data().aigroups]
-    
     def get_data(self) -> OmsiMap:
         if not self.ready():
             raise loader.NoDataError(f"Not whole map loaded...:\n{self.not_ready_list()}")
@@ -270,5 +268,5 @@ class OmsiMapSl(loader.SafeLoaderList):
                        tiles,
                        self.get_omsi_files(),
                        self.get_standard_timetable().get_data(),
-                       self.get_ailists().get_data(),
+                       self.get_ailists().get_data() if self.get_ailists().get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
                        [typing.cast(chrono.ChronoSl, x).get_data() for x in self.get_chrono().get_sl_list()])
