@@ -107,8 +107,11 @@ class SafeLoaderUnit[T](SafeLoader):
     def get_path(self) -> str:
         return self.__path
 
-    def get_name(self) -> str:
+    def get_filename(self) -> str:
         return os.path.split(self.get_path())[-1]
+    
+    def get_name(self) -> str:
+        return self.get_filename()
     
     def get_status(self) -> FileParsingStatus:
         return self.__status
