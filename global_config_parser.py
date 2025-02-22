@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -122,7 +122,7 @@ class GlobalConfigParser():
                                                                      )],
         "ENTRYPOINTS_GROUP_LIST_": [lambda _, n: [n[0]],
                                     lambda _, n: n[0] + [n[1]]],
-        "ENTRYPOINTS_GROUP_LIST": [lambda _, n:n[2]],
+        "ENTRYPOINTS_GROUP_LIST": [lambda _, n: n[2] if n[2] is not None else []],
         "MAP_GROUP": [lambda _, n: global_config.Map(pos_x=int(n[1]),
                                                      pos_y=int(n[2]),
                                                      map_file=n[3]
