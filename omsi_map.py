@@ -33,6 +33,7 @@ import chrono
 import loader
 import logging
 import typing
+from tile_pos import TilePos
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +121,10 @@ class OmsiMap:
         for chrono in self.mchronos:
             chrono.save(directory)
         logger.info("Map saving completed")
+    
+    def tile_pos(self, filename: str) -> TilePos:
+        gc_tile: global_config.Map = next(filter(lambda map_entry: map_entry.map_file == filename, self.global_config._map))
+        return TilePos(gc_tile.pos_x, gc_tile.pos_y)
 
 class TileOFInjector:
     def __init__(self,

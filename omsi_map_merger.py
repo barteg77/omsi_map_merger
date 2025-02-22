@@ -28,6 +28,8 @@ import operator
 import version
 import copy
 import logging
+from tile_pos import TilePos
+import chrono_tile
 
 logger = logging.getLogger(__name__)
 
@@ -36,23 +38,6 @@ class MapRepetitionError(Exception):
 
 class LoadingMapNotInListToMergeError(Exception):
     pass
-
-class TilePos:
-    def __init__(self,
-                 pos_x: int,
-                 pos_y: int,
-    ) -> None:
-        self.pos_x = pos_x
-        self.pos_y = pos_y
-    
-    def __key(self):
-        return (self.pos_x, self.pos_y)
-    
-    def __eq__(self, other: 'TilePos') -> bool:
-        return self.__key() == other.__key()
-    
-    def __hash__(self) -> int:
-        return hash(self.__key())
 
 class MapToMerge(omsi_map.OmsiMapSl):
     def __init__(self,
@@ -166,6 +151,9 @@ def tile_shifted_ids(tile_old: tile.Tile, id_shift: int) -> tile.Tile:
                      tile_old.variable_terrain,
                      new_splines,
                      list(map(sceneryobject_id_shifted, tile_old._object)))
+
+def standard_tile_filename(tile_pos: TilePos) -> str:
+    return f'tile_{tile_pos.pos_x}_{tile_pos.pos_y}.map'
 
 class MergeResult:
     def __init__(self,
@@ -334,12 +322,22 @@ class OmsiMapMerger:
         for mtm in self.get_maps():
             fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
             fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
+
+            for chrono in fm[mtm].mchronos:
+                new_chrono_tiles: dict[str, chrono_tile.ChronoTile] = {}
+                for old_filename in chrono.chrono_tiles:
+                    old_pos: TilePos = fm[mtm].tile_pos(old_filename)
+                    new_pos: TilePos = mtm.shifted_tile_pos(old_pos)
+                    new_filename: str = standard_tile_filename(new_pos)
+                    new_chrono_tiles[new_filename] = chrono.chrono_tiles[old_filename]
+                #apply changes
+                chrono.chrono_tiles = new_chrono_tiles
             
             # add tiles to merged map
             tile_pos: dict[str, TilePos] = dict((gc_tile.map_file, TilePos(gc_tile.pos_x, gc_tile.pos_y)) for gc_tile in fm[mtm].global_config._map)
             for tile_file in fm[mtm].tiles:
                 new_pos: TilePos = mtm.shifted_tile_pos(tile_pos[tile_file])
-                new_filename: str = f'tile_{new_pos.pos_x}_{new_pos.pos_y}.map'
+                new_filename: str = standard_tile_filename(new_pos)
                 new_tiles[new_filename] = fm[mtm].tiles[tile_file]
 
                 # add full covered groundtex if keep groundex
