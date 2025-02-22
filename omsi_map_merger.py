@@ -323,15 +323,15 @@ class OmsiMapMerger:
             fm[mtm].change_ids_and_tile_indices(idcode_shift[mtm],  tile_shift[mtm])
             fm[mtm].change_groundtex_indices(groundtex_shift[mtm])
 
-            for chrono in fm[mtm].mchronos:
+            for chrono_event in fm[mtm].mchronos:
                 new_chrono_tiles: dict[str, chrono_tile.ChronoTile] = {}
-                for old_filename in chrono.chrono_tiles:
+                for old_filename in chrono_event.chrono_tiles:
                     old_pos: TilePos = fm[mtm].tile_pos(old_filename)
                     new_pos: TilePos = mtm.shifted_tile_pos(old_pos)
                     new_filename: str = standard_tile_filename(new_pos)
-                    new_chrono_tiles[new_filename] = chrono.chrono_tiles[old_filename]
+                    new_chrono_tiles[new_filename] = chrono_event.chrono_tiles[old_filename]
                 #apply changes
-                chrono.chrono_tiles = new_chrono_tiles
+                chrono_event.chrono_tiles = new_chrono_tiles
             
             # add tiles to merged map
             tile_pos: dict[str, TilePos] = dict((gc_tile.map_file, TilePos(gc_tile.pos_x, gc_tile.pos_y)) for gc_tile in fm[mtm].global_config._map)
