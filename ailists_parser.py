@@ -1,4 +1,4 @@
-# Copyright 2020, 2021, 2024 Bartosz Gajewski
+# Copyright 2020, 2021, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class AIListsParser():
     actions = {
-        "AILISTS": [lambda _, n: ailists.AILists(aigroups=n[1])],
+        "AILISTS": [lambda _, n: ailists.AILists(aigroups=n[1] if n[1] is not None else [])],
         "AIGROUP_2_GROUP": [lambda _, n: ailists.AIGroup2(name=n[1],
                                                           hof_name=n[2],
                                                           types=n[3])],
