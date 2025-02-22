@@ -354,11 +354,12 @@ class OmsiMapMerger:
         
         # prepare ailists
         new_aigroups: list[ailists.AnyAIgroup] = []
-        for aigroup in itertools.chain.from_iterable(map(lambda mtm: fm[mtm].ailists.aigroups, self.get_maps())):
-            if aigroup.name not in map(lambda aigroup: aigroup.name, new_aigroups):
-                new_aigroups.append(aigroup)
+        for mtm in self.get_maps():
+            for ailist in fm[mtm].ailists.aigroups:
+            if ailist.name not in map(lambda aigroup: aigroup.name, new_aigroups):
+                new_aigroups.append(ailist)
             else:
-                warn(f"Dropped aigroup \"{aigroup.name}\", because aigroup with this name already exists.")
+                warn(f"Dropped aigroup \"{ailist.name}\" from map \"{mtm.get_name()}\" because aigroup with this has been already picked from another map")
         new_ailists: ailists.AILists = ailists.AILists(new_aigroups)
 
         #construct OmsiMap
