@@ -30,6 +30,7 @@ import copy
 import logging
 from tile_pos import TilePos
 import chrono_tile
+import chrono
 
 logger = logging.getLogger(__name__)
 
@@ -356,11 +357,20 @@ class OmsiMapMerger:
         new_aigroups: list[ailists.AnyAIgroup] = []
         for mtm in self.get_maps():
             for ailist in fm[mtm].ailists.aigroups:
-            if ailist.name not in map(lambda aigroup: aigroup.name, new_aigroups):
-                new_aigroups.append(ailist)
-            else:
-                warn(f"Dropped aigroup \"{ailist.name}\" from map \"{mtm.get_name()}\" because aigroup with this has been already picked from another map")
+                if ailist.name not in map(lambda aigroup: aigroup.name, new_aigroups):
+                    new_aigroups.append(ailist)
+                else:
+                    warn(f"Dropped aigroup \"{ailist.name}\" from map \"{mtm.get_name()}\" because aigroup with this has been already picked from another map")
         new_ailists: ailists.AILists = ailists.AILists(new_aigroups)
+
+        # prepare chronos
+        new_chronos: list[chrono.Chrono] = []
+        for mtm in self.get_maps():
+            for chrono_event in fm[mtm].mchronos:
+                if chrono_event.chrono_directory not in map(lambda chrono_event: chrono_event.chrono_directory, new_chronos):
+                    new_chronos.append(chrono_event)
+                else:
+                    warn(f"Dropped chrono \"{chrono_event.chrono_directory}\" from map \"{mtm.get_name()}\" because chrono with this has been already picked from another map")
 
         #construct OmsiMap
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
@@ -368,7 +378,7 @@ class OmsiMapMerger:
                                                     fm[self.get_maps()[0]].mfiles,
                                                     timetable.joined([fm[mtm].mstandard_timetable for mtm in self.get_maps()]),
                                                     new_ailists,
-                                                    list(itertools.chain.from_iterable([fm[mtm].mchronos for mtm in self.get_maps()])),
+                                                    new_chronos,
                                                     )
         logger.info("Maps merge completed")
         return MergeResult(new_om, warns)
