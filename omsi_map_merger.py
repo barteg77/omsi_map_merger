@@ -311,7 +311,7 @@ class OmsiMapMerger:
                                         '14',
                                         sum([mtm.get_global_config().get_data().NextIDCode for mtm in self.get_maps()]),
                                         False,
-                                        False,
+                                        all(map(lambda omap: fm[omap].global_config.dynhelperactive, self.get_maps())),
                                         any(map(lambda omap: fm[omap].global_config.realrail, self.get_maps())),
                                         fm[self.get_maps()[0]].global_config.backgroundimage,
                                         fm[self.get_maps()[0]].global_config.mapcam,
