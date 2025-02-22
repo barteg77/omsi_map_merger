@@ -139,7 +139,7 @@ class OmsiMapSl(loader.SafeLoaderList):
         # set tiles' safe parsers
         tiles_safe_loaders: list[loader.SafeLoader] = []
         groundtex_count: int = len(self._global_config.get_data().groundtex)
-        for gc_tile in set(self._global_config.get_data()._map):
+        for gc_tile in set(self._global_config.get_data()._map):# to do: refactor to allow tile filenames pos matching "tile_x_y.map"
             tile_files = omsi_files.OmsiFiles([
                 omsi_files.OmsiFile(map_path=self.directory,
                                     pattern="tile_{pos_x}_{pos_y}.map.terrain",
@@ -243,10 +243,13 @@ class OmsiMapSl(loader.SafeLoaderList):
         for f in [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Holidays_*.txt"))]:
             of_list.append(omsi_files.OmsiFile(map_path=self.directory, pattern=f, optional=True))
         return of_list
-
+    
+    def get_tiles_filenames(self) -> set[str]:
+            return set(map_entry.map_file for map_entry in self.get_global_config().get_data()._map)
+    
     def scan_chrono(self):
         chrono_directory_list = [os.path.relpath(x, self.directory) for x in glob.glob(os.path.join(self.directory, "Chrono", "*", ""))]
-        self._chronos.set_sl_list([chrono.ChronoSl(self.directory, chrono_directory, self._global_config.get_data()._map) for chrono_directory in chrono_directory_list])
+        self._chronos.set_sl_list([chrono.ChronoSl(self.directory, chrono_directory, self.get_tiles_filenames()) for chrono_directory in chrono_directory_list])
     
     def get_aigroups_names(self) -> list[str]:
         return [aigroup.name for aigroup in self.get_ailists().get_data().aigroups]
