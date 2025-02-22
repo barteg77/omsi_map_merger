@@ -353,14 +353,13 @@ class OmsiMapMerger:
                 new_tiles[new_filename].set_files_pos(new_pos.pos_x, new_pos.pos_y)
         
         # prepare ailists
-        all_aigroups: list[ailists.AnyAIgroup] = list(itertools.chain.from_iterable([fm[mtm].ailists.aigroups for mtm in self.get_maps()]))
-        def first_aigroup(name: str) -> ailists.AnyAIgroup:
-            for aigroup in all_aigroups:
-                if aigroup.name == name:
-                    return aigroup
-            assert False
-        aigroups_without_duplicates: list[ailists.AnyAIgroup] = [first_aigroup(name) for name in sorted(set(itertools.chain.from_iterable([[aig.name for aig in fm[mtm].ailists.aigroups] for mtm in self.get_maps()])))]
-        new_ailists: ailists.AILists = ailists.AILists(aigroups_without_duplicates)
+        new_aigroups: list[ailists.AnyAIgroup] = []
+        for aigroup in itertools.chain.from_iterable(map(lambda mtm: fm[mtm].ailists.aigroups, self.get_maps())):
+            if aigroup.name not in map(lambda aigroup: aigroup.name, new_aigroups):
+                new_aigroups.append(aigroup)
+            else:
+                warn(f"Dropped aigroup \"{aigroup.name}\", because aigroup with this name already exists.")
+        new_ailists: ailists.AILists = ailists.AILists(new_aigroups)
 
         #construct OmsiMap
         new_om: omsi_map.OmsiMap = omsi_map.OmsiMap(gc,
