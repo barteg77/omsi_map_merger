@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -101,9 +101,10 @@ class GlobalConfigSerializer:
             print(global_config_class.realyearoffset, file=f)
             #print(file=f)#like OMSI 2 Editor
 
-        print("[standarddepot]", file=f)
-        print(global_config_class.standarddepot, file=f)
-        print(file=f)
+        if global_config_class.standarddepot is not None:
+            print("[standarddepot]", file=f)
+            print(global_config_class.standarddepot, file=f)
+            print(file=f)
 
         for gtex in global_config_class.groundtex:
             print("[groundtex]", file=f)
