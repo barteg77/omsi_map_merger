@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -69,7 +69,15 @@ class ChronoTileParser():
                        lambda _, n: n[0] + [n[1]],
                        lambda _, n: n[0] + [n[1]]],
         
-		"NONEMPTY_LINE": [lambda _, n: n[0]]
+		"NONEMPTY_LINE": [lambda _, n: n[0]],
+        "NOT_NEW_OBJ_LINE": [lambda _, n: "",
+                             lambda _, n: n[0]],
+        "NOT_NEW_OBJ_LINES": [lambda _, n: [n[0]],
+                              lambda _, n: n[0] + [n[1]]],
+        "NOT_OBJ_MOD_LINE": [lambda _, n: "",
+                             lambda _, n: n[0]],
+        "NOT_OBJ_MOD_LINES": [lambda _, n: [n[0]],
+                              lambda _, n: n[0] + [n[1]]],
     }
     def __init__(self):
         self.grammar = parglare.Grammar.from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), "chrono_tile_grammar.pg"))

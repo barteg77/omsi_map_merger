@@ -28,7 +28,7 @@ SELECT_GROUP_HEADER : select_spline_header
                     | select_object_header;
 SELECT_GROUP: SELECT_GROUP_HEADER
               NONEMPTY_LINE
-              LINES;
+              NOT_NEW_OBJ_LINES;
 SPLINE_TERRAIN_ALIGN_2_GROUP: spline_terrain_align_2_header
                               OPTIONAL_LINE
                               line_end;
@@ -63,7 +63,7 @@ OBJECT_GROUP: NONEMPTY_LINE
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE
-              LINES?
+              NOT_OBJ_MOD_LINES?
               line_end
               VARPARENT_GROUP?
               SPLINE_TERRAIN_ALIGN_GROUP?
@@ -74,7 +74,7 @@ SPLINEATTACHEMENT_GROUP: NONEMPTY_LINE
                          OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                          OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                          OPTIONAL_LINE OPTIONAL_LINE
-                         LINES?
+                         NOT_OBJ_MOD_LINES?
                          line_end
                          VARPARENT_GROUP?
                          SPLINE_TERRAIN_ALIGN_GROUP?
@@ -85,7 +85,7 @@ SPLINEATTACHEMENT_REPEATER_GROUP: NONEMPTY_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
-                                  LINES?
+                                  NOT_OBJ_MOD_LINES?
                                   line_end
                                   VARPARENT_GROUP?
                                   SPLINE_TERRAIN_ALIGN_GROUP?
@@ -120,11 +120,19 @@ GROUP_LIST: SELECT_GROUP
 NONEMPTY_LINE: normal_line line_end;
 OPTIONAL_LINE: line_end
              | normal_line line_end;
-LINES: OPTIONAL_LINE
-     | LINES OPTIONAL_LINE;
+NOT_NEW_OBJ_LINE: line_end
+                | not_new_obj_line line_end;
+NOT_NEW_OBJ_LINES: NOT_NEW_OBJ_LINE
+                 | NOT_NEW_OBJ_LINES NOT_NEW_OBJ_LINE;
+NOT_OBJ_MOD_LINE: line_end
+                | not_obj_mod_line line_end;
+NOT_OBJ_MOD_LINES: NOT_OBJ_MOD_LINE
+                 | NOT_OBJ_MOD_LINES NOT_OBJ_MOD_LINE;
 
 terminals
-normal_line: /(?!\[selspline\]|\[selobject\]|\[varparent\]|\[spline_terrain_align_2\]|\[spline\]|\[spline_h\]|\[spline_terrain_align\]|\[object\]|\[attachObj\]|\[splineAttachement\]|\[splineAttachement_repeater\])[^\n][^\r\n]*/;
+normal_line: /[^\n][^\r\n]*/;
+not_new_obj_line: /(?!\[selspline\]|\[selobject\]|\[spline_terrain_align_2\]|\[spline\]|\[spline_h\]|\[spline_terrain_align\]|\[object\]|\[attachObj\]|\[splineAttachement\]|\[splineAttachement_repeater\])[^\n][^\r\n]*/;
+not_obj_mod_line: /(?!\[selspline\]|\[selobject\]|\[spline_terrain_align_2\]|\[spline\]|\[spline_h\]|\[spline_terrain_align\]|\[object\]|\[attachObj\]|\[splineAttachement\]|\[splineAttachement_repeater\]|\[spline_terrain_align_2\]|\[varparent\]|\[spline_terrain_align\]|\[rule\]|\[kill_rule\])[^\n][^\r\n]*/;
 line_end: /\n/;
 version_header: /\[version\]\n/;
 select_spline_header: /\[selspline\]\n/;
