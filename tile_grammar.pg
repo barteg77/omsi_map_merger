@@ -1,4 +1,4 @@
-// Copyright 2020 Bartosz Gajewski
+// Copyright 2020, 2025 Bartosz Gajewski
 //
 // This file is part of OMSI Map Merger.
 //
@@ -74,7 +74,7 @@ OBJECT_GROUP: NONEMPTY_LINE
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE
-              LINES?
+              NOT_OBJ_MOD_LINES?
               line_end
               VARPARENT_GROUP?
               SPLINE_TERRAIN_ALIGN_GROUP?
@@ -85,7 +85,7 @@ SPLINEATTACHEMENT_GROUP: NONEMPTY_LINE
                          OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                          OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                          OPTIONAL_LINE OPTIONAL_LINE
-                         LINES?
+                         NOT_OBJ_MOD_LINES?
                          line_end
                          VARPARENT_GROUP?
                          SPLINE_TERRAIN_ALIGN_GROUP?
@@ -96,7 +96,7 @@ SPLINEATTACHEMENT_REPEATER_GROUP: NONEMPTY_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
                                   OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
-                                  LINES?
+                                  NOT_OBJ_MOD_LINES?
                                   line_end
                                   VARPARENT_GROUP?
                                   SPLINE_TERRAIN_ALIGN_GROUP?
@@ -124,13 +124,15 @@ RULE_GROUP_LIST: RULE_GROUP
 OPTIONAL_LINE: line_end
              | normal_line line_end;
 NONEMPTY_LINE: normal_line line_end;
-LINES: LINE
-     | LINES LINE;
-LINE: OPTIONAL_LINE;
+NOT_OBJ_MOD_LINE: line_end
+                | not_obj_mod_line line_end;
+NOT_OBJ_MOD_LINES: NOT_OBJ_MOD_LINE
+                 | NOT_OBJ_MOD_LINES NOT_OBJ_MOD_LINE;
 
 terminals
 line_end: /\n/;
-normal_line: /[^[\n][^\r\n]*/;
+normal_line: /[^\n][^\r\n]*/;
+not_obj_mod_line: /(?!\[spline_terrain_align_2\]|\[spline\]|\[spline_h\]|\[spline_terrain_align\]|\[object\]|\[attachObj\]|\[splineAttachement\]|\[splineAttachement_repeater\]|\[spline_terrain_align_2\]|\[varparent\]|\[spline_terrain_align\]|\[rule\]|\[kill_rule\])[^\n][^\r\n]*/;
 version_header: /\[version\]\n/;
 terrain_header: /\[terrain\]\n/;
 water_header: /\[water\]\n/;

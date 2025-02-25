@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -91,8 +91,6 @@ class TileParser():
                               lambda _, n: [n[0]],
                               lambda _, n: n[0] + [n[1]],
                               lambda _, n: n[0] + [n[1]]],
-        "LINES": [lambda _, n: [n[0]],
-                  lambda _, n: n[0] + [n[1]]],
         "SPLINE_TERRAIN_ALGIN_GROUP": [lambda _, n: True],
         "OBJECT_HEADER_GROUP": [lambda _, n: False,
                                 lambda _, n: True],
@@ -180,7 +178,11 @@ class TileParser():
                             lambda _, n: n[0] + [n[1]]],
         "OPTIONAL_LINE": [lambda _, n: "",
                           lambda _, n: n[0]],
-		"NONEMPTY_LINE": [lambda _, n: n[0]]
+		"NONEMPTY_LINE": [lambda _, n: n[0]],
+        "NOT_OBJ_MOD_LINE": [lambda _, n: "",
+                             lambda _, n: n[0]],
+        "NOT_OBJ_MOD_LINES": [lambda _, n: [n[0]],
+                              lambda _, n: n[0] + [n[1]]],
     }
     def __init__(self):
         self.grammar = parglare.Grammar.from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), "tile_grammar.pg"))
