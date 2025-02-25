@@ -1,4 +1,4 @@
-// Copyright 2020 Bartosz Gajewski
+// Copyright 2020, 2025 Bartosz Gajewski
 //
 // This file is part of OMSI Map Merger.
 //
@@ -35,14 +35,14 @@ STATION_LINK_ENTRY_GROUP: NONEMPTY_LINE
                           line_end;
 STATION_LINK_ENTRY_GROUP_LIST: STATION_LINK_ENTRY_GROUP
                              | STATION_LINK_ENTRY_GROUP_LIST STATION_LINK_ENTRY_GROUP;
-STATION_LINK_GROUP: NONEMPTY_LINE
-                    line_end
+STATION_LINK_COMMENT_GROUP: NONEMPTY_LINE line_end;
+STATION_LINK_GROUP: STATION_LINK_COMMENT_GROUP?
                     station_link_header
                     NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
                     NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE NONEMPTY_LINE
                     NONEMPTY_LINE
                     line_end
-                    STATION_LINK_ENTRY_GROUP_LIST;
+                    STATION_LINK_ENTRY_GROUP_LIST?;
 STATION_LINK_GROUP_LIST: STATION_LINK_GROUP
                        | STATION_LINK_GROUP_LIST STATION_LINK_GROUP;
 

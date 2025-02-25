@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -31,8 +31,9 @@ class StationLinksSerializer:
         print(station_links.comment2, file=f)
         print(file=f)
         for station_link in station_links.station_link:
-            print(station_link.comment, file=f)
-            print(file=f)
+            if station_link.comment is not None:
+                print(station_link.comment, file=f)
+                print(file=f)
             print("[StnLink]", file=f)
             print(station_link.line1, file=f)
             print(station_link.id_busstop_start, file=f)

@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -40,17 +40,18 @@ class StationLinksParser:
                                                                                  )],
         "STATION_LINK_ENTRY_GROUP_LIST": [lambda _, n: [n[0]],
                                           lambda _, n: n[0] + [n[1]]],
+        "STATION_LINK_COMMENT_GROUP": [lambda _, n: n[0]],
         "STATION_LINK_GROUP": [lambda _, n: station_links.StationLink(comment=n[0],
-                                                                      line1=n[3],
-                                                                      id_busstop_start=int(n[4]),
-                                                                      id_busstop_end=int(n[5]),
-                                                                      line4=n[6],
-                                                                      line5=n[7],
-                                                                      line6=n[8],
-                                                                      line7=n[9],
-                                                                      line8=n[10],
-                                                                      line9=n[11],
-                                                                      station_link_entry=n[13] if n[13] is not None else []
+                                                                      line1=n[2],
+                                                                      id_busstop_start=int(n[3]),
+                                                                      id_busstop_end=int(n[4]),
+                                                                      line4=n[5],
+                                                                      line5=n[6],
+                                                                      line6=n[7],
+                                                                      line7=n[8],
+                                                                      line8=n[9],
+                                                                      line9=n[10],
+                                                                      station_link_entry=n[12] if n[12] is not None else []
                                                                       )],
         "STATION_LINK_GROUP_LIST": [lambda _, n: [n[0]],
                                     lambda _, n: n[0] + [n[1]]]
