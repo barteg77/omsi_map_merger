@@ -105,6 +105,7 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
 
     # ailists consistency test:
     # data in saved result ailists must be same as in source ailists
-    ap: ailists_parser.AIListsParser = ailists_parser.AIListsParser()
-    parsed_result_ailists: ailists.AILists = ap.parse(str(result_map_dir / 'ailists.cfg'))
-    assert test_map.ailists == parsed_result_ailists, "Result ailists data differ from source ailists data"
+    if (source_map_dir / 'ailists.cfg').is_file():
+        ap: ailists_parser.AIListsParser = ailists_parser.AIListsParser()
+        parsed_result_ailists: ailists.AILists = ap.parse(str(result_map_dir / 'ailists.cfg'))
+        assert test_map.ailists == parsed_result_ailists, "Result ailists data differ from source ailists data"
