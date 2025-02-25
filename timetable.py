@@ -164,7 +164,7 @@ class TimetableSl(loader.SafeLoaderList):
         if not self.ready():
             raise loader.NoDataError
         
-        return Timetable(self.busstops.get_data() if self.busstops.get_status != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
+        return Timetable(self.busstops.get_data() if self.busstops.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
                          self.station_links.get_data() if self.station_links.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS else None,
                          [nd.NamedData(*args) for args in zip(self.time_table_line_files, [typing.cast(loader.SafeLoaderUnit[time_table_line.TimeTableLine], sl).get_data()
                                                                                            for sl in self.time_table_lines.get_sl_list()])],
