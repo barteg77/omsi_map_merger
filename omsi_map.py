@@ -168,7 +168,7 @@ class OmsiMapSl(loader.SafeLoaderList):
                                       params={"pos_x": gc_tile.pos_x, "pos_y": gc_tile.pos_y, "groundtex_index": str(groundtex_index)},
                                       optional=True)
                   for groundtex_index in range(1, groundtex_count+1) ])
-            tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), TileOFInjector(_tile_parser.parse, tile_files).parse , ofiles=tile_files))
+            tiles_safe_loaders.append(loader.SafeLoaderUnit(tile.Tile, os.path.join(self.directory, gc_tile.map_file), TileOFInjector(_tile_parser.parse, tile_files).parse , ofiles=tile_files, optional=True))
         self._tiles.set_sl_list(tiles_safe_loaders)
         self.scan_chrono()
     
@@ -263,7 +263,10 @@ class OmsiMapSl(loader.SafeLoaderList):
         tiles: dict[str, tile.Tile] = {}
         for tile_sl in self.get_tiles().get_sl_list():
             tile_slu: loader.SafeLoaderUnit[tile.Tile] = typing.cast(loader.SafeLoaderUnit[tile.Tile], tile_sl)
-            tiles[os.path.relpath(tile_slu.get_path(), self.directory)] = tile_slu.get_data()
+            if tile_slu.get_status() != loader.FileParsingStatus.OPTIONAL_NOT_EXISTS:
+                tiles[os.path.relpath(tile_slu.get_path(), self.directory)] = tile_slu.get_data()
+            else:
+                logger.info(f"Tile \"{tile_slu.get_name()}\" won't be exported to OmsiMap, its file \"{tile_slu.get_path()}\" doesn't exist.")
         return OmsiMap(self.get_global_config().get_data(),
                        tiles,
                        self.get_omsi_files(),

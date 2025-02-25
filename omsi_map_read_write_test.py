@@ -87,21 +87,22 @@ def test_map_rw(source_map_dir: pathlib.Path, tmp_path: pathlib.Path):
     # so they may differ, but text must be same
     for map_file in tiles_files:
         source_file: pathlib.Path = source_map_dir / map_file
-        result_file: pathlib.Path = result_map_dir / map_file
-        source_file_text: str
-        result_file_text: str
-        for encoding in ['utf_16', 'ascii']:
-            with open(source_file, 'rt', encoding=encoding) as f:
-                try:
-                    source_file_text = f.read()
-                    break
-                except UnicodeError:
-                    pass
-        else:
-            assert False, f"Unable to read file with any of allowed encodings"
-        with open(result_file, 'rt', encoding='utf_16') as f:
-            result_file_text = f.read()
-        assert source_file_text == result_file_text, "Result tile text differ from source tile text"
+        if source_file.is_file():
+            result_file: pathlib.Path = result_map_dir / map_file
+            source_file_text: str
+            result_file_text: str
+            for encoding in ['utf_16', 'ascii']:
+                with open(source_file, 'rt', encoding=encoding) as f:
+                    try:
+                        source_file_text = f.read()
+                        break
+                    except UnicodeError:
+                        pass
+            else:
+                assert False, f"Unable to read file with any of allowed encodings"
+            with open(result_file, 'rt', encoding='utf_16') as f:
+                result_file_text = f.read()
+            assert source_file_text == result_file_text, "Result tile text differ from source tile text"
 
     # ailists consistency test:
     # data in saved result ailists must be same as in source ailists
