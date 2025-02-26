@@ -205,17 +205,16 @@ class MapLoadingInteractionManager:
                                                         ) == "Yes":
                 try:
                     mr.merged_map.save(self.__input_new_map_directory.get())
-                    sg.Popup(f"Map saved in directory \"{self.__input_new_map_directory.get()}\"",
+                    sg.popup(f"Map saved in directory \"{self.__input_new_map_directory.get()}\"",
                             title="Map save completed")
                 except:
                     error_message: str = "An error occured while saving map:\n" + traceback.format_exc()
                     logger.error(error_message)
-                    sg.Popup(error_message, title="Error")
+                    sg.popup(error_message, title="Error")
         except:
             error_message: str = "An error occured while merge:\n" + traceback.format_exc()
             logger.error(error_message)
-            sg.Popup(error_message, title="Error")
-        
+            sg.popup(error_message, title="Error")
     
     def __is_selected_component_instance(self, component_type) -> bool:
         try:
