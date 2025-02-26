@@ -197,11 +197,11 @@ class MapLoadingInteractionManager:
     def __handle_merge(self) -> None:
         try:
             mr: omsi_map_merger.MergeResult = self.__omsi_map_merger.merged_omsi_map(self.__input_new_map_name.get())
-            if len(mr.warnings) == 0 or sg.popup_yes_no(f"\
-There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n\
-{"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n\
-Do you still want to save merged map?",
-                                                        title="Map merge warnings") == "Yes":
+            if len(mr.warnings) == 0 or sg.popup_yes_no(f"There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n"
+                                                        f"{"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n"
+                                                        "Do you still want to save merged map?",
+                                                        title="Map merge warnings"
+                                                        ) == "Yes":
                 try:
                     mr.merged_map.save(self.__input_new_map_directory.get())
                     sg.Popup(f"Map saved in directory \"{self.__input_new_map_directory.get()}\"",
@@ -451,13 +451,12 @@ except SystemExit:
 except:
     fe: str = traceback.format_exc()
     logger.fatal("Unhandled exception:\n" + fe)
-    sg.popup(f"\
-FATAL ERROR OCCURED!\n\
-Unhandled exception:\n{fe}\n\
-You have discovered an OMSI Map Merger bug, app developer may not know about.\n\n\
-App log is located in \"{log_file_path}\".\n\
-You may like to grab it and share with other users/developers to help fix this issue.\n\n\
-OMSI Map Merger will be terminated now.",
+    sg.popup("FATAL ERROR OCCURED!\n"
+             f"Unhandled exception:\n{fe}\n"
+             "You have discovered an OMSI Map Merger bug, app developer may not know about.\n\n"
+             f"App log is located in \"{log_file_path}\".\n"
+             "You may like to grab it and share with other users/developers to help fix this issue.\n\n"
+             "OMSI Map Merger will be terminated now.",
              title="Fatal error")
     logger.info("Program will be terminated due to fatal error.")
 
