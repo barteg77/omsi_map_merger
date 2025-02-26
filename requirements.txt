@@ -17,5 +17,5 @@
 
 charset_normalizer==3.3.2
 parglare==0.13.0
-PySimpleGUI==4.70.1
+FreeSimpleGUI==5.1.1
 pytest==8.2.2

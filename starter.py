@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with OMSI Map Merger. If not, see <http://www.gnu.org/licenses/>.
 
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import omsi_map_merger
 import version
 import loader

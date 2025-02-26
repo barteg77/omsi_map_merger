@@ -9,10 +9,21 @@ This project owes its success to the following people and organizations:
 ## Third-party Libraries
 
 - [Parglare](https://www.igordejanovic.net/parglare/stable/): Parser library interpreting maps' files. (see LICENSE_Parglare.txt for license).
-- [PySimpleGUI](https://pysimplegui.com/): Starter GUI,
+- [FreeSimpleGUI](https://github.com/spyoungtech/FreeSimpleGui): Starter GUI,
+    > This project was forked from the LGPL3-licensed PySimpleGUI project. All code from PySimpleGUI is copyrighted
+    > by the original author(s). Subsequent modifications (effective April 3, 2024) are the Copyright of FreeSimpleGUI (Spencer Phillip Young)
+    > and are distributed under the same license terms of the LGPL3, as found in license.txt
+    > 
+    > 'PySimpleGUI' is a trademark registered in the United States to Satisfice Labs LLC
+    > 
+    > FreeSimpleGUI has no official association with PySimpleGUI or Satisfice Labs LLC and no such associations are expressed or implied.
+    
+    spyoungtech, maintainer of FreeSimpleGUI in [NOTICE](https://github.com/spyoungtech/FreeSimpleGUI/blob/v5.1.1/NOTICE)
+    
     Copyright 2018, 2019, 2020, 2021, 2022, 2023, 2024 PySimpleGUI(tm)
     Copyright 2024 PySimpleSoft, Inc.
     Copyright 2024 MB
+    Copyright 2024 FreeSimpleGUI (Spencer Phillip Young)
     under terms of LGPLv3+ - see LICENSE_PySimpleGUI.txt
 - [Charset Normalizer](https://charset-normalizer.readthedocs.io/en/latest/): Decoding ailists (see LICENSE_charset_normalizer.txt for license)
 - [Python](https://python.org/) - see LICENSE_Python.txt
