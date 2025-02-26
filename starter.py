@@ -200,7 +200,8 @@ class MapLoadingInteractionManager:
             if len(mr.warnings) == 0 or sg.popup_yes_no(f"There {"was a warning" if len(mr.warnings) == 1 else "were warnings"} reported during map merge:\n"
                                                         f"{"\n".join([f"\t*{warn}" for warn in mr.warnings])}\n"
                                                         "Do you still want to save merged map?",
-                                                        title="Map merge warnings"
+                                                        title="Map merge warnings",
+                                                        line_width=250,
                                                         ) == "Yes":
                 try:
                     mr.merged_map.save(self.__input_new_map_directory.get())
