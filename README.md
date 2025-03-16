@@ -16,7 +16,7 @@ OMSI Map Merger is distributed in two forms: standalone Windows executable and a
 ### All-in-one on Windows
 To run you have to extract package archive and run `omsi_map_merger/omsi_map_merger.exe`.
 ### Python source
-To run you need Python 3.12 (or newer compatible) and have to install pip packages using this command: `pip install charset-normalizer==3.3.2 parglare==0.13.0 PySimpleGUI==4.70.1`.
+To run you need Python 3.12 (or newer compatible) and have to install pip packages using this command: `pip install -r requirements.txt`.
 
 Merger should be started by typing `python3 starter.py` in console.
 
