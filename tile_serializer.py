@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -98,10 +98,7 @@ class TileSerializer:
             for obj in tile_class._object:
                 print(obj.description, file=f)
                 if isinstance(obj, tile._Object):
-                    if obj.attach_object:
-                        print("[attachObj]", file=f)
-                    else:
-                        print("[object]", file=f)
+                    print("[object]", file=f)
                     print(obj.line1, file=f)
                     print(obj.file_name, file=f)
                     print(obj.id, file=f)
@@ -112,6 +109,18 @@ class TileSerializer:
                     print(obj.pitch, file=f)
                     print(obj.bank, file=f)
                     print(obj.line10, file=f)
+                elif isinstance(obj, tile.AttachObj):
+                    print("[attachObj]", file=f)
+                    print(obj.line1, file=f)
+                    print(obj.file_name, file=f)
+                    print(obj.id, file=f)
+                    print(obj.attached_to_object_id, file=f)
+                    print(obj.line5, file=f)
+                    print(obj.attach_point_idx, file=f)
+                    print(obj.rotate, file=f)
+                    print(obj.pitch, file=f)
+                    print(obj.bank, file=f)
+                    print(obj.labels_count, file=f)
                 elif isinstance(obj, tile.SplineAttachement):
                     print("[splineAttachement]", file=f)
                     print(obj.line1, file=f)

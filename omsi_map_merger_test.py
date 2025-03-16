@@ -1,4 +1,4 @@
-# Copyright 2024 Bartosz Gajewski
+# Copyright 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -73,7 +73,7 @@ def some_tile() -> tile.Tile:
                                      '0','0',None,'0','0','0','0','0',False, None,[]),
                      ],
                      [
-                         tile._Object('Object Nr. 1',False, '0','Sceneryobjects\\Buildings_MC\\bw_50s_01.sco',6,'53.3936693422588','126.708424359543','0','29.4639429430018','0','0','0',[], None, False, []),
+                         tile._Object('Object Nr. 1', '0','Sceneryobjects\\Buildings_MC\\bw_50s_01.sco',6,'53.3936693422588','126.708424359543','0','29.4639429430018','0','0','0',[], None, False, []),
                          tile.SplineAttachement('Object Nr. 0','0','Sceneryobjects\\Buildings_MC\\bw_30s_01.sco',1,'0','48.6367491077964','0','9.71228307628491','277.671388033057','0','0', \
                                                 '29.9999995292025','299.999995292025','0','0',None, None, False, None),
                          tile.SplineAttachementRepeater('Object Nr. 23','0','12','117','Sceneryobjects\\Dodatkowe busze Heir\\Busz 4a\\Busz 4_5m.sco', 10989,'0','-3.52011121533649',\

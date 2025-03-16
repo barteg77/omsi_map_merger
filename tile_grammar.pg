@@ -67,10 +67,8 @@ SPLINE_GROUP_LIST: SPLINE_GROUP
                  | SPLINE_GROUP_LIST SPLINE_H_GROUP;
 SPLINE_TERRAIN_ALIGN_GROUP: spline_terrain_align_header
                             line_end;
-OBJECT_HEADER_GROUP: object_header
-                   | attachObj_header;
 OBJECT_GROUP: NONEMPTY_LINE
-              OBJECT_HEADER_GROUP
+              object_header
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
               OPTIONAL_LINE OPTIONAL_LINE
@@ -79,6 +77,16 @@ OBJECT_GROUP: NONEMPTY_LINE
               VARPARENT_GROUP?
               SPLINE_TERRAIN_ALIGN_GROUP?
               RULE_GROUP_LIST?;
+ATTACHOBJ_GROUP: NONEMPTY_LINE
+                 attachObj_header
+                 OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                 OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
+                 OPTIONAL_LINE OPTIONAL_LINE
+                 NOT_OBJ_MOD_LINES?
+                 line_end
+                 VARPARENT_GROUP?
+                 SPLINE_TERRAIN_ALIGN_GROUP?
+                 RULE_GROUP_LIST?;
 SPLINEATTACHEMENT_GROUP: NONEMPTY_LINE
                          splineAttachement_header
                          OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE OPTIONAL_LINE
@@ -102,9 +110,11 @@ SPLINEATTACHEMENT_REPEATER_GROUP: NONEMPTY_LINE
                                   SPLINE_TERRAIN_ALIGN_GROUP?
                                   RULE_GROUP_LIST?;
 OBJECT_GROUP_LIST: OBJECT_GROUP
+                 | ATTACHOBJ_GROUP
                  | SPLINEATTACHEMENT_GROUP
                  | SPLINEATTACHEMENT_REPEATER_GROUP
                  | OBJECT_GROUP_LIST OBJECT_GROUP
+                 | OBJECT_GROUP_LIST ATTACHOBJ_GROUP
                  | OBJECT_GROUP_LIST SPLINEATTACHEMENT_GROUP
                  | OBJECT_GROUP_LIST SPLINEATTACHEMENT_REPEATER_GROUP;
 VARPARENT_GROUP: varparent_header

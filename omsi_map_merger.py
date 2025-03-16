@@ -130,7 +130,7 @@ def tile_shifted_ids(tile_old: tile.Tile, id_shift: int) -> tile.Tile:
         sco_type: typing.Type[tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater] = type(sco)
         match sco_type:
             case tile._Object:
-                return tile._Object(sco.description, sco.attach_object, sco.line1, sco.file_name, sco.id+id_shift, sco.pos_x, \
+                return tile._Object(sco.description, sco.line1, sco.file_name, sco.id+id_shift, sco.pos_x, \
                                     sco.pos_z, sco.pos_y, sco.rotate, sco.pitch, sco.bank, sco.line10, \
                                         sco.opt_lines, son(sco.varparent, id_shift), sco.spline_terrain_align, sco.rule_list)
             case tile.SplineAttachement:

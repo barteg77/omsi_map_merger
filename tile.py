@@ -1,4 +1,4 @@
-# Copyright 2020, 2023, 2024 Bartosz Gajewski
+# Copyright 2020, 2023, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -106,7 +106,6 @@ class Spline:
 class _Object:
     def __init__(self,
                  description: str,
-				 attach_object: bool,
                  line1: str,
                  file_name: str,
                  id: int,
@@ -123,7 +122,6 @@ class _Object:
                  rule_list: list[Rule] | None,
                  ):
         self.description: str = description
-        self.attach_object: bool = attach_object
         self.line1: str = line1
         self.file_name: str = file_name
         self.id: int = id
@@ -140,9 +138,54 @@ class _Object:
         self.rule_list: list[Rule] | None = rule_list
     
     def __key(self):
-        return (self.description, self.attach_object, self.line1, self.file_name, self.id, self.pos_x, \
-                self.pos_z, self.pos_y, self.rotate, self.pitch, self.bank, self.line10, \
-                self.opt_lines, self.varparent, self.spline_terrain_align, self.rule_list)
+        return (self.description, self.line1, self.file_name, self.id, self.pos_x, self.pos_z, \
+                self.pos_y, self.rotate, self.pitch, self.bank, self.line10, self.opt_lines, \
+                self.varparent, self.spline_terrain_align, self.rule_list)
+    
+    def __eq__(self, other: '_Object') -> bool:
+        return self.__key() == other.__key()
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
+
+class AttachObj:
+    def __init__(self,
+                 description: str,
+                 line1: str,
+                 file_name: str,
+                 id: int,
+                 attached_to_object_id: int,
+                 line5: str,
+                 attach_point_idx: str,
+                 rotate: str,
+                 pitch: str,
+                 bank: str,
+                 labels_count: str,
+                 opt_lines: list[str] | None,
+                 varparent: int | None,
+                 spline_terrain_align: bool,
+                 rule_list: list[Rule] | None,
+                 ):
+        self.description: str = description
+        self.line1: str = line1
+        self.file_name: str = file_name
+        self.id: int = id
+        self.attached_to_object_id: int = attached_to_object_id
+        self.line5: str = line5
+        self.attach_point_idx: str = attach_point_idx
+        self.rotate: str = rotate
+        self.pitch: str = pitch
+        self.bank: str = bank
+        self.labels_count: str = labels_count
+        self.opt_lines: list[str] | None = opt_lines
+        self.varparent: int | None = varparent
+        self.spline_terrain_align: bool = spline_terrain_align
+        self.rule_list: list[Rule] | None = rule_list
+    
+    def __key(self):
+        return (self.description, self.line1, self.file_name, self.id, self.attached_to_object_id, self.line5, \
+                self.attach_point_idx, self.rotate, self.pitch, self.bank, self.labels_count, self.opt_lines, \
+                self.varparent, self.spline_terrain_align, self.rule_list)
     
     def __eq__(self, other: '_Object') -> bool:
         return self.__key() == other.__key()
@@ -269,7 +312,7 @@ class Tile:
                  variable_terrainlightmap: bool,
                  variable_terrain: bool,
                  spline: list[Spline],
-                 _object: list[_Object | SplineAttachement | SplineAttachementRepeater],
+                 _object: list[_Object | AttachObj | SplineAttachement | SplineAttachementRepeater],
                  ):
         self.initial_comment: str = initial_comment
         self.version: str = version
@@ -278,7 +321,7 @@ class Tile:
         self.variable_terrainlightmap: bool = variable_terrainlightmap
         self.variable_terrain: bool = variable_terrain
         self.spline: list[Spline] = spline
-        self._object: list[_Object | SplineAttachement | SplineAttachementRepeater] = _object
+        self._object: list[_Object | AttachObj | SplineAttachement | SplineAttachementRepeater] = _object
         self._files: omsi_files.OmsiFiles = omsi_files.OmsiFiles()
     
     def __key(self):
@@ -302,6 +345,8 @@ class Tile:
         if self._object is not None:
             for obj in self._object:
                 obj.id = obj.id + value
+                if isinstance(obj, AttachObj):
+                    obj.attached_to_object_id += value
                 if obj.varparent is not None:
                    obj.varparent = obj.varparent + value
     
