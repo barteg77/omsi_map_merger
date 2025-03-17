@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -87,13 +87,10 @@ class ChronoTileSerializer:
                         print(rul.line4, file=f)
                 print(file=f)
     
-            elif isinstance(entry, tile._Object) or isinstance(entry, tile.SplineAttachement) or isinstance(entry, tile.SplineAttachementRepeater):
+            elif isinstance(entry, tile._Object) or isinstance(entry, tile.AttachObj) or isinstance(entry, tile.SplineAttachement) or isinstance(entry, tile.SplineAttachementRepeater):
                 print(entry.description, file=f)
                 if isinstance(entry, tile._Object):
-                    if entry.attach_object:
-                        print("[attachObj]", file=f)
-                    else:
-                        print("[object]", file=f)
+                    print("[object]", file=f)
                     print(entry.line1, file=f)
                     print(entry.file_name, file=f)
                     print(entry.id, file=f)
@@ -104,6 +101,18 @@ class ChronoTileSerializer:
                     print(entry.pitch, file=f)
                     print(entry.bank, file=f)
                     print(entry.line10, file=f)
+                elif isinstance(entry, tile.AttachObj):
+                    print("[attachObj]", file=f)
+                    print(entry.line1, file=f)
+                    print(entry.file_name, file=f)
+                    print(entry.id, file=f)
+                    print(entry.attached_to_object_id, file=f)
+                    print(entry.line5, file=f)
+                    print(entry.attach_point_idx, file=f)
+                    print(entry.rotate, file=f)
+                    print(entry.pitch, file=f)
+                    print(entry.bank, file=f)
+                    print(entry.labels_count, file=f)
                 elif isinstance(entry, tile.SplineAttachement):
                     print("[splineAttachement]", file=f)
                     print(entry.line1, file=f)

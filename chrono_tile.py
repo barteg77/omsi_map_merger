@@ -1,4 +1,4 @@
-# Copyright 2020, 2024 Bartosz Gajewski
+# Copyright 2020, 2024, 2025 Bartosz Gajewski
 #
 # This file is part of OMSI Map Merger.
 #
@@ -44,7 +44,10 @@ class ChronoTile:
                 entry.id_previous += value
                 entry.id_next += value
             elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.SplineAttachement, tile.SplineAttachementRepeater])):
-                entry_object: tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater \
-                    = typing.cast(tile._Object | tile.SplineAttachement | tile.SplineAttachementRepeater, entry)
+                entry_object: tile._Object | tile.AttachObj | tile.SplineAttachement | tile.SplineAttachementRepeater \
+                    = typing.cast(tile._Object | tile.AttachObj | tile.SplineAttachement | tile.SplineAttachementRepeater, entry)
                 if entry_object.varparent is not None:
                     entry_object.varparent += value
+                if type(entry) == tile.AttachObj:
+                    typing.cast(tile.AttachObj, entry).attached_to_object_id += value
+
