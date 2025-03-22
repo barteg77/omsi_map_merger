@@ -43,7 +43,7 @@ class ChronoTile:
             if type(entry) == tile.Spline:
                 entry.id_previous += value
                 entry.id_next += value
-            elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.SplineAttachement, tile.SplineAttachementRepeater])):
+            elif any(map(lambda valid_type: type(entry) == valid_type, [tile._Object, tile.AttachObj, tile.SplineAttachement, tile.SplineAttachementRepeater])):
                 entry_object: tile._Object | tile.AttachObj | tile.SplineAttachement | tile.SplineAttachementRepeater \
                     = typing.cast(tile._Object | tile.AttachObj | tile.SplineAttachement | tile.SplineAttachementRepeater, entry)
                 if entry_object.varparent is not None:
